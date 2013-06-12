@@ -1,0 +1,31 @@
+dfunc "ask_name" 2
+lfunc $0 "io" "write"
+ref $0.0 %1
+const $0.1 "Excuse me, what's your name? "
+call void $0
+lfunc $1 "io" "readline"
+ref $1.0 %0
+call result $1
+return
+end.
+
+
+dfunc "__main" 0
+fork $2
+  lfunc $1 "" "ask_name"
+  lcontext $1.0 #stdin
+  lcontext $1.1 #stdout
+  call $2 $1
+  end.
+const $0 "hello "
+wait $2
+stracc $0 $2
+const $3 "!\n"
+stracc $0 $3
+lfunc $4 "io" "write"
+lcontext $4.0 #stdout
+ref $4.1 $0
+call result $4
+return
+end.
+

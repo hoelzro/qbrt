@@ -1,0 +1,13 @@
+.*.swp
+*.qb
+o/
+/qbc
+/qbi
+/qbrt
+/token.out
+/lemon
+/lib/qblex.c
+/lib/qbparse.h
+/lib/qbparse.c
+/lexparse/qb.out
+/tmp/
