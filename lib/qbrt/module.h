@@ -8,7 +8,6 @@
 #include <list>
 #include <stack>
 #include <string.h>
-#include "primitive.h"
 #include "string.h"
 #include "function.h"
 
@@ -26,7 +25,7 @@ struct Module;
 
 struct Version
 {
-	U16 version;
+	uint16_t version;
 	char iteration[6];
 };
 
