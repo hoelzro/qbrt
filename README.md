@@ -89,7 +89,7 @@ executables.
 The compiler takes a .uqb assembly code file as input and writes a
 corresponding binary bytecode file (.qb) as output.
 
-```qbc T/hello.uqb```
+```> qbc T/hello.uqb```
 
 ### The inspector
 
@@ -97,14 +97,14 @@ The inspector is used primarily as a development tool for the compiler.
 It takes a compiled .qb file and displays information about
 various resources included in the file and all the code.
 
-```qbi T/hello```
+```> qbi T/hello```
 
 ### The interpreter
 
 The interpreter takes a compiled .qb file and executes it. This is
 where all of the runtime
 
-```qbrt T/hello```
+```> qbrt T/hello```
 
 ### Build Dependencies
 
