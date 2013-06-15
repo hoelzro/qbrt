@@ -75,8 +75,7 @@ struct OpContext
 	virtual const char * function_name() const = 0;
 	virtual int & pc() const = 0;
 	virtual Worker & worker() const = 0;
-	virtual const Object & obj() const = 0;
-	const ResourceTable & resource() const { return obj().resource; }
+	virtual const ResourceTable & resource() const = 0;
 	virtual qbrt_value * get_context(const std::string &) = 0;
 };
 
@@ -91,7 +90,6 @@ public:
 	{}
 
 	virtual Worker & worker() const { return w; }
-	virtual const Object & obj() const { return *func.mod->o; }
 	virtual const char * function_name() const { return func.name(); }
 	virtual int & pc() const { return frame.pc; }
 	virtual uint8_t regc() const { return func.regc; }
@@ -153,6 +151,11 @@ public:
 	qbrt_value * get_context(const std::string &name)
 	{
 		return add_context(&frame, name);
+	}
+
+	const ResourceTable & resource() const
+	{
+		return func.mod->resource;
 	}
 
 private:
@@ -394,15 +397,15 @@ void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
 {
 	const ModSym &modsym(fetch_modsym(ctx.resource(), i.modsym));
 	const char *modname =
-		fetch_string(ctx.obj().resource, modsym.mod_name);
+		fetch_string(ctx.resource(), modsym.mod_name);
 	const char *protoname =
-		fetch_string(ctx.obj().resource, modsym.sym_name);
-	const char *fname = fetch_string(ctx.obj().resource, i.funcname);
+		fetch_string(ctx.resource(), modsym.sym_name);
+	const char *fname = fetch_string(ctx.resource(), i.funcname);
 	const Module *mod = NULL;
 	if (modname && *modname) {
 		mod = find_module(ctx.worker(), modname);
 	} else {
-		mod = find_module(ctx.worker(), ctx.obj().module);
+		mod = ctx.worker().current->function_call().mod;
 	}
 
 	Function qbrt(mod->fetch_protocol_function(protoname, fname));
@@ -490,8 +493,8 @@ void execute_unimorph(OpContext &ctx, const unimorph_instruction &i)
 
 void execute_loadtype(OpContext &ctx, const loadtype_instruction &i)
 {
-	const char *modname = fetch_string(ctx.obj().resource, i.modname);
-	const char *type_name = fetch_string(ctx.obj().resource, i.type);
+	const char *modname = fetch_string(ctx.resource(), i.modname);
+	const char *type_name = fetch_string(ctx.resource(), i.type);
 	const Module &mod(*find_module(ctx.worker(), modname));
 	const Type *typ = mod.fetch_struct(type_name);
 	qbrt_value &dst(ctx.dstvalue(i.reg));
@@ -501,7 +504,7 @@ void execute_loadtype(OpContext &ctx, const loadtype_instruction &i)
 
 void execute_loadobj(OpContext &ctx, const loadobj_instruction &i)
 {
-	const char *modname = fetch_string(ctx.obj().resource, i.modname);
+	const char *modname = fetch_string(ctx.resource(), i.modname);
 	load_module(ctx.worker(), modname);
 	ctx.pc() += loadobj_instruction::SIZE;
 }
@@ -595,7 +598,7 @@ inline static void execute_instruction(Worker &w, const instruction &i)
 void override_function(Worker &w, function_value &f)
 {
 	const Module &mod(*current_module(w));
-	const ResourceTable &resource(w.current->function_call().mod->o->resource);
+	const ResourceTable &resource(w.current->function_call().mod->resource);
 	const Function &oldf(f.func);
 
 	const ProtocolResource *proto;
@@ -685,7 +688,7 @@ ostream & inspect_function(ostream &out, const Function &f)
 {
 	out << "function " << f.name() << "/" << (int) f.argc()
 		<< '+' << (int) f.regc() << endl;
-	out << "object/module: " << f.obj->module <<'/'<< f.mod->name << endl;
+	out << "module: " << f.mod->name << endl;
 	out << "name/context/fcontext: " << f.resource->name_idx << '/'
 		<< f.resource->context_idx << '/' << (int) f.resource->fcontext
 		<< endl;

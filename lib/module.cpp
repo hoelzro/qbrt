@@ -36,12 +36,12 @@ uint32_t ResourceTable::size(uint16_t i) const
 
 const char * Function::name() const
 {
-	return fetch_string(obj->resource, resource->name_idx);
+	return fetch_string(mod->resource, resource->name_idx);
 }
 
 uint32_t Function::code_offset() const
 {
-	return resource->code - obj->resource.data
+	return resource->code - mod->resource.data
 		+ ResourceTable::DATA_OFFSET;
 }
 
@@ -52,10 +52,7 @@ void add_c_function(Module &mod, const std::string &name, c_function f)
 
 Function Module::fetch_function(const std::string &name) const
 {
-	if (!o) {
-		return Function();
-	}
-	const ResourceTable &tbl(o->resource);
+	const ResourceTable &tbl(resource);
 	const FunctionResource *f;
 	const char *fname;
 	for (uint16_t i(0); i<tbl.resource_count; ++i) {
@@ -67,7 +64,7 @@ Function Module::fetch_function(const std::string &name) const
 		if (name != fname) {
 			continue;
 		}
-		return Function(f, o, this);
+		return Function(f, this);
 	}
 	return Function();
 }
@@ -80,8 +77,8 @@ const Type * Module::fetch_struct(const std::string &type) const
 	if (!s) {
 		return NULL;
 	}
-	const char *structname = fetch_string(o->resource, s->name_id);
-	return new Type(o->module, structname, s->field_count);
+	const char *structname = fetch_string(resource, s->name_id);
+	return new Type(name, structname, s->field_count);
 }
 
 qbrt_value * find_global(Module &mod, const char *name)
@@ -121,7 +118,7 @@ struct ProtocolSearch
 
 const ProtocolResource * Module::fetch_protocol(const std::string &name) const
 {
-	return o->resource.find(ProtocolSearch(name));
+	return resource.find(ProtocolSearch(name));
 }
 
 struct ProtocolFunctionSearch
@@ -265,34 +262,28 @@ struct PolymorphFunctionSearch
 Function Module::fetch_protocol_function(const std::string &protoname
 		, const std::string &fname) const
 {
-	if (!o) {
-		return Function();
-	}
 	const FunctionResource *f;
-	f = o->resource.find(ProtocolFunctionSearch(protoname, fname));
+	f = resource.find(ProtocolFunctionSearch(protoname, fname));
 	if (!f) {
 		return Function();
 	}
-	return Function(f, o, this);
+	return Function(f, this);
 }
 
 Function Module::fetch_override(const std::string &protomod
 		, const std::string &protoname, const Type &type
 		, const std::string &fname) const
 {
-	if (!o) {
-		return Function();
-	}
 	const FunctionResource *f;
 	PolymorphFunctionSearch query(protomod, protoname, fname, type);
-	f = o->resource.find(query);
+	f = resource.find(query);
 	if (!f) {
 		return Function();
 	}
-	return Function(f, o, this);
+	return Function(f, this);
 }
 
-bool open_object(ifstream &objstr, const std::string &objname)
+bool open_qb(ifstream &objstr, const std::string &objname)
 		// , const Version &min, const Version &max);
 {
 	string filename(objname +".qb");
@@ -330,24 +321,21 @@ void read_resource_table(ResourceTable &tbl, istream &input)
 	tbl.index = index;
 }
 
-void load_object(Object &obj, istream &input)
-{
-	read_header(obj.header, input);
-	obj.module = obj.header.library_name;
-	read_resource_table(obj.resource, input);
-}
-
 Module * load_module(const string &objname)
 {
 	ifstream in;
-	if (!open_object(in, objname)) {
+	if (!open_qb(in, objname)) {
 		return NULL;
 	}
-	Object *obj = new Object();
-	load_object(*obj, in);
+	Module *mod = new Module(objname);
+	read_header(mod->header, in);
+	if (mod->header.library_name != objname) {
+		cerr << "module name mismatch: " << mod->header.library_name
+			<< " != " << objname << endl;
+		return NULL;
+	}
+	read_resource_table(mod->resource, in);
 	in.close();
 
-	Module *mod = new Module(objname);
-	mod->o = obj;
 	return mod;
 }

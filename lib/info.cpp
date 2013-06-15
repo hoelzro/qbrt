@@ -513,9 +513,8 @@ void show_object_info(const char *objname)
 	if (!mod) {
 		exit(1);
 	}
-	const Object &obj(*mod->o);
-	const ObjectHeader &header(obj.header);
-	const ResourceTable &resource(obj.resource);
+	const ObjectHeader &header(mod->header);
+	const ResourceTable &resource(mod->resource);
 
 	string isapp(header.flags.f.application ? "yes" : "no");
 	cout << "magic: " << header.magic << endl;

@@ -36,7 +36,7 @@ void CodeFrame::io_pop()
 
 const char * FunctionCall::name() const
 {
-	return fetch_string(mod->o->resource, resource->name_idx);
+	return fetch_string(mod->resource, resource->name_idx);
 }
 
 void FunctionCall::finish_frame(Worker &w)
@@ -138,7 +138,7 @@ const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
 	}
 
 	int fct(PFC_TYPE(f.resource->fcontext));
-	const ResourceTable &res(f.obj->resource);
+	const ResourceTable &res(f.mod->resource);
 	const ProtocolResource *proto;
 	uint16_t ctx(f.resource->context_idx);
 	if (fct == FCT_POLYMORPH) {
@@ -165,7 +165,7 @@ Function find_overridden_function(Worker &w, const Function &func)
 		return Function();
 	}
 
-	const ResourceTable &res(func.obj->resource);
+	const ResourceTable &res(func.mod->resource);
 	const ProtocolResource *proto;
 
 	uint16_t polymorph_index(func.resource->context_idx);

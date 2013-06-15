@@ -241,7 +241,6 @@ struct copy_instruction
 
 
 struct Module;
-struct Object;
 
 struct PolymorphArg
 {
@@ -352,17 +351,14 @@ struct ContextStack
 struct Function
 {
 	const FunctionResource *resource;
-	const Object *obj;
 	const Module *mod;
 
-	Function(const FunctionResource *f, const Object *o, const Module *m)
+	Function(const FunctionResource *f, const Module *m)
 		: resource(f)
-		, obj(o)
 		, mod(m)
 	{}
 	Function()
 		: resource(NULL)
-		, obj(NULL)
 		, mod(NULL)
 	{}
 

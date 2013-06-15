@@ -20,7 +20,6 @@
 #define RESOURCE_PROTOCOL	0x82
 #define RESOURCE_POLYMORPH	0x83
 
-struct Object;
 struct Module;
 
 struct Version
@@ -205,28 +204,14 @@ struct ResourceTable
 	uint16_t resource_count;
 };
 
-struct Object
-{
-	std::string module;
-	ObjectHeader header;
-	ResourceTable resource;
-};
-
 struct Module
 {
 	std::string name;
+	ObjectHeader header;
+	ResourceTable resource;
 	std::map< std::string, c_function > cfunction;
 	std::map< std::string, qbrt_value > globals;
-	const Object *o;
 
-	void load_object(const Object &obj)
-	{
-		if (o) {
-			std::cerr << "module already loaded: " << obj.module
-				<< std::endl;
-		}
-		o = &obj;
-	}
 	const void * fetch_resource(const std::string &name) const;
 	Function fetch_function(const std::string &name) const;
 	Function fetch_override(const std::string &protomod
@@ -238,8 +223,7 @@ struct Module
 			, const std::string &function_name) const;
 
 	Module(const std::string &module_name)
-		: name(module_name)
-		, o(NULL)
+	: name(module_name)
 	{}
 };
 
@@ -281,8 +265,7 @@ Function find_override(Worker &, const char *protocol_mod
 
 void add_c_function(Module &, const std::string &name, c_function);
 
-bool open_object(std::ifstream &lib, const std::string &objname);
+bool open_qb(std::ifstream &lib, const std::string &qbname);
 		// , const Version &min, const Version &max);
-void load_object(Object &, std::istream &input);
 
 #endif
