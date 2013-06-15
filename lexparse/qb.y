@@ -42,8 +42,6 @@ using namespace std;
 }
 
 program ::= top_list(B). {
-	cout << "program is code\n";
-	cout << B->size() << " function declarations\n";
 	parsed_stmts = B;
 }
 
@@ -62,11 +60,9 @@ top_stmt(A) ::= polymorph_block(B). { A = B; }
 
 block(A) ::= sub_block(B) END. {
 	A = B;
-cerr << "end block\n";
 }
 block(A) ::= END. {
 	A = NULL;
-cerr << "empty block\n";
 }
 sub_block(A) ::= sub_block(B) stmt(C). {
 	A = B;
@@ -78,7 +74,6 @@ sub_block(A) ::= stmt(B). {
 }
 
 func_block(A) ::= dfunc_stmt(B) block(C). {
-	cout << "dfunc_stmt " << B->name.value << "/" << (int) B->arity << endl;
 	B->code = C;
 	A = B;
 }
@@ -89,15 +84,13 @@ dfunc_stmt(A) ::= DFUNC STR(B) INT(C). {
 func_list(A) ::= func_list(B) func_block(C). {
 	A = B ? B : new Stmt::List();
 	if (C) {
-		C->pretty(cout);
-		cout << endl;
 		A->push_back(C);
 	} else {
-		cout << "null function block\n";
+		cerr << "null function block\n";
 	}
 }
 func_list ::= . {
-	cout << "end of function list" << endl;
+	cerr << "end of function list" << endl;
 }
 protocol_block(A) ::= dprotocol_stmt(B) func_list(C) ENDPROTOCOL. {
 	A = B;
@@ -110,11 +103,9 @@ dprotocol_stmt(A) ::= DPROTOCOL STR(B) INT(C). {
 morphtype_list(A) ::= morphtype_list(B) morphtype_stmt(C). {
 	A = B ? B : new Stmt::List();
 	if (C) {
-		C->pretty(cout);
-		cout << endl;
 		A->push_back(C);
 	} else {
-		cout << "null morphtype block\n";
+		cerr << "null morphtype block\n";
 	}
 }
 morphtype_list ::= . {
@@ -137,7 +128,6 @@ dpolymorph_stmt(A) ::= DPOLYMORPH modsym(B). {
 fork_block(A) ::= fork_stmt(B) block(C). {
 	A = B;
 	A->code = C;
-cerr << "fork block\n";
 }
 fork_stmt(A) ::= FORK reg(B). {
 	A = new fork_stmt(B);
@@ -196,9 +186,6 @@ stmt(A) ::= ISUB reg(B) reg(C) reg(D). {
 }
 stmt(A) ::= LABEL(B). {
 	A = new label_stmt(B->label());
-}
-stmt ::= LCONST reg(A) STR(B). {
-     std::cout << "lconst " << A <<" " << B->text << endl;
 }
 stmt(A) ::= LCONTEXT reg(B) HASHTAG(C). {
 	A = new lcontext_stmt(B, C->label());

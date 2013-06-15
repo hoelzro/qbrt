@@ -90,7 +90,6 @@ STRC	(\\.|[^\"])
 "idiv"		{ lex_token(TOKEN_IDIV); }
 "imult"		{ lex_token(TOKEN_IMULT); }
 "isub"		{ lex_token(TOKEN_ISUB); }
-"lconst"	{ lex_token(TOKEN_LCONST); }
 "lcontext"	{ lex_token(TOKEN_LCONTEXT); }
 "lfunc"		{ lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ lex_token(TOKEN_LPFUNC); }

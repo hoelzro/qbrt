@@ -5,7 +5,7 @@ It's purpose is to provide flexible, accessible runtime features
 and a common runtime environment to high level programming language.
 By doing so, qbrt aims to reduce the barrier to entry for language
 designers to build more concurrent and interoperable programming
-languages that take advantage of multiple CPU hardware.
+languages that take advantage of multiprocessor systems.
 
 ## Hello World Example
 
@@ -89,16 +89,22 @@ executables.
 The compiler takes a .uqb assembly code file as input and writes a
 corresponding binary bytecode file (.qb) as output.
 
+```qbc T/hello.uqb```
+
 ### The inspector
 
 The inspector is used primarily as a development tool for the compiler.
 It takes a compiled .qb file and displays information about
 various resources included in the file and all the code.
 
+```qbi T/hello```
+
 ### The interpreter
 
 The interpreter takes a compiled .qb file and executes it. This is
 where all of the runtime
+
+```qbrt T/hello```
 
 ### Build Dependencies
 
