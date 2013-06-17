@@ -77,6 +77,7 @@ struct OpContext
 	virtual Worker & worker() const = 0;
 	virtual const ResourceTable & resource() const = 0;
 	virtual qbrt_value * get_context(const std::string &) = 0;
+	virtual void io(StreamIO *op) = 0;
 };
 
 class WorkerOpContext
@@ -156,6 +157,11 @@ public:
 	const ResourceTable & resource() const
 	{
 		return func.mod->resource;
+	}
+
+	virtual void io(StreamIO *op)
+	{
+		frame.io_push(op);
 	}
 
 private:
@@ -627,7 +633,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 void ccall(Worker &w, qbrt_value &res, cfunction_value &f)
 {
 	c_function cf = f.func;
-	WorkerCContext ctx(f, w.current->io);
+	WorkerOpContext ctx(w);
 	cf(ctx, res);
 }
 
@@ -650,9 +656,9 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 	}
 }
 
-void core_print(CContext &ctx, qbrt_value &out)
+void core_print(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.value(0);
+	const qbrt_value *val = &ctx.srcvalue(0);
 	if (! val) {
 		cout << "no param for print\n";
 		return;
@@ -792,9 +798,9 @@ ostream & inspect(ostream &out, const qbrt_value &v)
 /**
  * Return the type of the input
  */
-void get_qbrt_type(CContext &ctx, qbrt_value &out)
+void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.value(0);
+	const qbrt_value *val = &ctx.srcvalue(0);
 	if (!val) {
 		cerr << "no param for qbrt_type\n";
 		return;
@@ -830,9 +836,9 @@ void get_qbrt_type(CContext &ctx, qbrt_value &out)
 	qbrt_value::typ(out, t);
 }
 
-void list_empty(CContext &ctx, qbrt_value &out)
+void list_empty(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.value(0);
+	const qbrt_value *val = &ctx.srcvalue(0);
 	if (! val) {
 		cerr << "no param for list empty\n";
 		return;
@@ -848,9 +854,9 @@ void list_empty(CContext &ctx, qbrt_value &out)
 	}
 }
 
-void list_head(CContext &ctx, qbrt_value &out)
+void list_head(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &val = ctx.value(0);
+	const qbrt_value &val = ctx.srcvalue(0);
 	switch (val.type->id) {
 		case VT_LIST:
 			out = head(val.data.list);
@@ -862,9 +868,9 @@ void list_head(CContext &ctx, qbrt_value &out)
 	}
 }
 
-void list_pop(CContext &ctx, qbrt_value &out)
+void list_pop(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &val(ctx.value(0));
+	qbrt_value &val(ctx.dstvalue(0));
 	switch (val.type->id) {
 		case VT_LIST:
 			qbrt_value::list(out, pop(val.data.list));
@@ -876,10 +882,10 @@ void list_pop(CContext &ctx, qbrt_value &out)
 	}
 }
 
-void core_open(CContext &ctx, qbrt_value &out)
+void core_open(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &filename(ctx.value(0));
-	qbrt_value &mode(ctx.value(1));
+	const qbrt_value &filename(ctx.srcvalue(0));
+	const qbrt_value &mode(ctx.srcvalue(1));
 	if (filename.type->id != VT_BSTRING) {
 		cerr << "first argument to open is not a string\n";
 		cerr << "argument is type: " << (int)filename.type->id << endl;
@@ -895,9 +901,9 @@ void core_open(CContext &ctx, qbrt_value &out)
 	qbrt_value::stream(out, new Stream(fd, f));
 }
 
-void core_readline(CContext &ctx, qbrt_value &out)
+void core_readline(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.value(0));
+	qbrt_value &stream(ctx.dstvalue(0));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
@@ -906,10 +912,10 @@ void core_readline(CContext &ctx, qbrt_value &out)
 	ctx.io(stream.data.stream->readline(*out.data.str));
 }
 
-void core_write(CContext &ctx, qbrt_value &out)
+void core_write(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.value(0));
-	qbrt_value &text(ctx.value(1));
+	qbrt_value &stream(ctx.dstvalue(0));
+	const qbrt_value &text(ctx.srcvalue(1));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
@@ -1038,6 +1044,9 @@ int main(int argc, const char **argv)
 	const char *objname = argv[1];
 	init_executioners();
 
+	Module *mod_core = new Module("core");
+	add_c_function(*mod_core, "spawn", core_spawn);
+
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, "empty", list_empty);
 	add_c_function(*mod_list, "head", list_head);
@@ -1051,6 +1060,7 @@ int main(int argc, const char **argv)
 
 	Application app;
 	Worker &w(new_worker(app));
+	load_module(w, "core", mod_list);
 	load_module(w, "list", mod_list);
 	load_module(w, "io", mod_io);
 

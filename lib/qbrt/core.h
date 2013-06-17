@@ -16,7 +16,6 @@ struct qbrt_value_index;
 struct function_value;
 struct cfunction_value;
 struct Worker;
-struct CContext;
 struct Type;
 struct List;
 struct Map;
@@ -25,7 +24,8 @@ struct Stream;
 struct Tuple;
 struct Promise;
 struct Failure;
-typedef void (*c_function)(CContext &, qbrt_value &out);
+struct OpContext;
+typedef void (*c_function)(OpContext &, qbrt_value &out);
 
 
 // VALUE TYPES

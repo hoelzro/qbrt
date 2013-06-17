@@ -409,15 +409,6 @@ struct cfunction_value
 };
 
 
-struct CContext
-{
-	virtual ~CContext() {}
-	virtual uint8_t regc() const = 0;
-	virtual qbrt_value & value(uint8_t) = 0;
-	virtual qbrt_value & value(uint8_t, uint8_t) = 0;
-	virtual void io(StreamIO *) = 0;
-};
-
 static inline qbrt_value & follow_ref(qbrt_value &val)
 {
 	qbrt_value *ref = &val;
@@ -427,41 +418,6 @@ static inline qbrt_value & follow_ref(qbrt_value &val)
 	return *ref;
 }
 
-class WorkerCContext
-: public CContext
-{
-public:
-	WorkerCContext(qbrt_value_index &idx, StreamIO *&io)
-		: index(idx)
-		, nextio(io)
-	{}
-
-	virtual uint8_t regc() const
-	{
-		return index.num_values();
-	}
-	virtual qbrt_value & value(uint8_t reg)
-	{
-		return follow_ref(index.value(reg));
-	}
-	virtual qbrt_value & value(uint8_t primary, uint8_t secondary)
-	{
-		qbrt_value_index *idx;
-		idx = follow_ref(index.value(primary)).data.reg;
-		return follow_ref(idx->value(secondary));
-	}
-	virtual void io(StreamIO *op)
-	{
-		if (nextio) {
-			std::cerr << "nextio is not null!\n";
-		}
-		nextio = op;
-	}
-
-private:
-	qbrt_value_index &index;
-	StreamIO *&nextio;
-};
 
 #define QBRT_FUNCTION_INFO_SIZE 10
 
