@@ -136,17 +136,17 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 string pretty_reg(uint16_t r)
 {
 	ostringstream result;
-	if (IS_PRIMARY_REG(r)) {
+	if (REG_IS_PRIMARY(r)) {
 		result << "r";
 		result << (int) (r & 0x007f);
-	} else if (IS_SECONDARY_REG(r)) {
+	} else if (REG_IS_SECONDARY(r)) {
 		result << "r";
 		result << (int) ((r & 0x7f00) >> 8);
 		result << ".r";
 		result << (int) (r & 0x7f);
-	} else if (REG_RESULT == r) {
+	} else if (SPECIAL_REG_RESULT == r) {
 		result << "result";
-	} else if (REG_VOID == r) {
+	} else if (CONST_REG_VOID == r) {
 		result << "void";
 	} else {
 		result << "wtf? " << r;

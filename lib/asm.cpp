@@ -251,16 +251,16 @@ AsmReg::operator reg_t () const
 		case '%':
 		case '$':
 			if (ext >= 0) {
-				id = REG2(idx, ext);
+				id = SECONDARY_REG(idx, ext);
 			} else {
-				id = REG(idx);
+				id = PRIMARY_REG(idx);
 			}
 			break;
 		case 'v':
-			id = REG_VOID;
+			id = CONST_REG_VOID;
 			break;
 		case 'r':
-			id = REG_RESULT;
+			id = SPECIAL_REG_RESULT;
 			break;
 	}
 	return id;

@@ -24,7 +24,7 @@ using namespace std;
 #define MAX_EPOLL_EVENTS 16
 
 
-qbrt_value CONST_REGISTER[NUM_CONST_REGISTERS];
+qbrt_value CONST_REGISTER[CONST_REG_COUNT];
 
 ostream & inspect(ostream &, const qbrt_value &);
 ostream & inspect_function(ostream &, const Function &);
@@ -40,16 +40,16 @@ int inspect_indent(0);
 void init_const_registers()
 {
 	for (int i(0); i<16; ++i) {
-		qbrt_value::i(CONST_REGISTER[CONST_REG_ID(REG_CINT(i))], i);
+		qbrt_value::i(CONST_REGISTER[REG_CINT(i)], i);
 	}
-	qbrt_value::b(CONST_REGISTER[CONST_REG_ID(REG_FALSE)], false);
-	qbrt_value::b(CONST_REGISTER[CONST_REG_ID(REG_TRUE)], true);
-	qbrt_value::fp(CONST_REGISTER[CONST_REG_ID(REG_FZERO)], 0.0);
-	qbrt_value::str(CONST_REGISTER[CONST_REG_ID(REG_EMPTYSTR)], "");
-	qbrt_value::str(CONST_REGISTER[CONST_REG_ID(REG_NEWLINE)], "\n");
-	qbrt_value::list(CONST_REGISTER[CONST_REG_ID(REG_EMPTYLIST)], NULL);
-	qbrt_value::vect(CONST_REGISTER[CONST_REG_ID(REG_EMPTYVECT)], NULL);
-	CONST_REGISTER[CONST_REG_ID(REG_VOID)] = qbrt_value();
+	qbrt_value::b(CONST_REGISTER[REG_FALSE], false);
+	qbrt_value::b(CONST_REGISTER[REG_TRUE], true);
+	qbrt_value::fp(CONST_REGISTER[REG_FZERO], 0.0);
+	qbrt_value::str(CONST_REGISTER[REG_EMPTYSTR], "");
+	qbrt_value::str(CONST_REGISTER[REG_NEWLINE], "\n");
+	qbrt_value::list(CONST_REGISTER[REG_EMPTYLIST], NULL);
+	qbrt_value::vect(CONST_REGISTER[REG_EMPTYVECT], NULL);
+	CONST_REGISTER[REG_VOID] = qbrt_value();
 }
 
 qbrt_value & get_special_reg(CodeFrame &f, reg_t reg)
@@ -97,18 +97,18 @@ public:
 	virtual const qbrt_value & srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
-		if (IS_PRIMARY_REG(reg)) {
-			primary = reg & 0x007f;
+		if (REG_IS_PRIMARY(reg)) {
+			primary = REG_EXTRACT_PRIMARY(reg);
 			return follow_ref(func.value(primary));
-		} else if (IS_SECONDARY_REG(reg)) {
-			primary = (reg & 0x7f00) >> 8;
-			secondary = reg & 0x007f;
+		} else if (REG_IS_SECONDARY(reg)) {
+			primary = REG_EXTRACT_SECONDARY1(reg);
+			secondary = REG_EXTRACT_SECONDARY2(reg);
 			return follow_ref(func.value(primary)).data.reg
 				->value(secondary);
-		} else if (REG_RESULT == reg) {
+		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
 		} else {
-			return CONST_REGISTER[reg & 0x7fff];
+			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf src reg? " << reg << endl;
 		return *(qbrt_value *) NULL;
@@ -117,20 +117,20 @@ public:
 	virtual qbrt_value & dstvalue(uint16_t reg)
 	{
 		uint8_t primary, secondary;
-		if (IS_PRIMARY_REG(reg)) {
-			primary = reg & 0x007f;
+		if (REG_IS_PRIMARY(reg)) {
+			primary = REG_EXTRACT_PRIMARY(reg);
 			return follow_ref(func.value(primary));
-		} else if (IS_SECONDARY_REG(reg)) {
-			primary = (reg & 0x7f00) >> 8;
-			secondary = reg & 0x007f;
+		} else if (REG_IS_SECONDARY(reg)) {
+			primary = REG_EXTRACT_SECONDARY1(reg);
+			secondary = REG_EXTRACT_SECONDARY2(reg);
 			return follow_ref(func.value(primary)).data.reg
 				->value(secondary);
-		} else if (REG_VOID == reg) {
+		} else if (CONST_REG_VOID == reg) {
 			return w.drain;
-		} else if (REG_RESULT == reg) {
+		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
 		} else {
-			return CONST_REGISTER[reg & 0x7fff];
+			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf dst reg? " << reg << endl;
 		return *(qbrt_value *) NULL;
@@ -138,11 +138,11 @@ public:
 
 	virtual qbrt_value & refvalue(uint16_t reg)
 	{
-		if (IS_PRIMARY_REG(reg)) {
-			return func.value(EXTRACT_PRIMARY_REG(reg));
-		} else if (IS_SECONDARY_REG(reg)) {
-			uint16_t r1(EXTRACT_SECONDARY_REG1(reg));
-			uint16_t r2(EXTRACT_SECONDARY_REG2(reg));
+		if (REG_IS_PRIMARY(reg)) {
+			return func.value(REG_EXTRACT_PRIMARY(reg));
+		} else if (REG_IS_SECONDARY(reg)) {
+			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
+			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
 			return func.value(r1).data.reg->value(r2);
 		}
 		cerr << "Unsupported ref register: " << reg << endl;
@@ -303,7 +303,7 @@ void execute_brfail(OpContext &ctx, const brfail_instruction &i)
 void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
-	qbrt_value &result(ctx.dstvalue(REG_RESULT));
+	qbrt_value &result(ctx.dstvalue(SPECIAL_REG_RESULT));
 	qbrt_value::fail(result, new Failure(failtype));
 	ctx.pc() += cfailure_instruction::SIZE;
 }
@@ -536,7 +536,7 @@ void execute_return(OpContext &ctx, const return_instruction &i)
 
 void fail(OpContext &ctx, Failure *f)
 {
-	qbrt_value &result(ctx.dstvalue(REG_RESULT));
+	qbrt_value &result(ctx.dstvalue(SPECIAL_REG_RESULT));
 	qbrt_value::fail(result, f);
 
 	Worker &w(ctx.worker());
@@ -1045,7 +1045,7 @@ int main(int argc, const char **argv)
 	init_executioners();
 
 	Module *mod_core = new Module("core");
-	add_c_function(*mod_core, "spawn", core_spawn);
+	// add_c_function(*mod_core, "spawn", core_spawn);
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, "empty", list_empty);

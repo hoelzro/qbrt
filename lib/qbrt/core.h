@@ -263,36 +263,46 @@ static inline const Type & value_type(const qbrt_value &v)
 
 
 // CONSTRUCT REGISTERS
-#define REG(r)		((uint16_t) (0x80 | (r & 0x7f)))
-#define REG2(p,s)	((uint16_t) (((p & 0x7f) << 8) | (s & 0x7f)))
-#define REGC(c)		((uint16_t) (0x8000 | (0x3fff & c)))
+#define PRIMARY_REG(r)		((uint16_t) (0x80 | (r & 0x7f)))
+#define SECONDARY_REG(p,s)	((uint16_t) (((p & 0x7f) << 8) | (s & 0x7f)))
+#define CONST_REG(id)		((uint16_t) (0x8000 | (0x3fff & id)))
+#define SPECIAL_REG(id)		((uint16_t) (0xc000 | (0x3fff & id)))
 
 // REGISTER QUERIES
-#define IS_USER_REG(r)		((r & 0x8000) == 0x0000)
-#define IS_SYSTEM_REG(r)	((r & 0x8000) == 0x8000)
-#define IS_PRIMARY_REG(r)	((r & 0x8080) == 0x0080)
-#define IS_SECONDARY_REG(r)	((r & 0x8080) == 0x0000)
-#define IS_CONST_REG(r)		((r & 0xc000) == 0x8000)
-#define IS_SPECIAL_REG(r)	((r & 0xc000) == 0xc000)
+#define REG_IS_PRIMARY(r)	((r & 0x8080) == 0x0080)
+#define REG_IS_SECONDARY(r)	((r & 0x8080) == 0x0000)
+#define REG_IS_CONST(r)		((r & 0xc000) == 0x8000)
+#define REG_IS_SPECIAL(r)	((r & 0xc000) == 0xc000)
 
-#define EXTRACT_PRIMARY_REG(r)		(r & 0x007f)
-#define EXTRACT_SECONDARY_REG1(r)	((r >> 8) & 0x007f)
-#define EXTRACT_SECONDARY_REG2(r)	(r & 0x007f)
+#define REG_EXTRACT_PRIMARY(r)		(r & 0x007f)
+#define REG_EXTRACT_SECONDARY1(r)	((r >> 8) & 0x007f)
+#define REG_EXTRACT_SECONDARY2(r)	(r & 0x007f)
+#define REG_EXTRACT_CONST(r)		(r & 0x3fff)
+#define REG_EXTRACT_SPECIAL(r)		(r & 0x3fff)
 
-#define REG_RESULT	0xc000
+#define REG_RESULT	0x000
+#define REG_PID		0x001
+#define REG_PPID	0x002
 
-#define REG_VOID	REGC(0x000) // void
-#define REG_FALSE	REGC(0x010) // false
-#define REG_TRUE	REGC(0x011) // true
-#define REG_FZERO	REGC(0x012) // 0.0
-#define REG_EMPTYSTR	REGC(0x013) // ""
-#define REG_NEWLINE	REGC(0x014) // "\n"
-#define REG_EMPTYLIST	REGC(0x015) // []
-#define REG_EMPTYVECT	REGC(0x016) // []
-#define REG_CINT(i)	REGC(0x03f & i) // 0x0 - 0xf
-#define NUM_CONST_REGISTERS 0x20
+#define SPECIAL_REG_RESULT	(SPECIAL_REG(REG_RESULT))
+#define SPECIAL_REG_PID		(SPECIAL_REG(REG_PID))
+#define SPECIAL_REG_PPID	(SPECIAL_REG(REG_PPID))
 
-#define CONST_REG_ID(c)	(0x3fff & c)
+#define REG_VOID	0x000 // void
+#define REG_FALSE	0x010 // false
+#define REG_TRUE	0x011 // true
+#define REG_FZERO	0x012 // 0.0
+#define REG_EMPTYSTR	0x013 // ""
+#define REG_NEWLINE	0x014 // "\n"
+#define REG_EMPTYLIST	0x015 // []
+#define REG_EMPTYVECT	0x016 // []
+#define REG_CINT(i)	(0x03f & i) // 0x0 - 0xf
+#define CONST_REG_COUNT	0x040
+
+#define CONST_REG_VOID	(CONST_REG(REG_VOID))
+#define CONST_REG_FALSE	(CONST_REG(REG_FALSE))
+#define CONST_REG_TRUE	(CONST_REG(REG_TRUE))
+
 
 // register types
 // 0b0x/1 -> primary 128
