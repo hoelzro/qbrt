@@ -352,7 +352,8 @@ uint8_t print_instruction(const uint8_t *funcdata)
 	const instruction &i(*(const instruction *) funcdata);
 	instruction_printer p = PRINTER[i.opcode()];
 	if (!p) {
-		cerr << "null printer for: " << (int) i.opcode() << endl;
+		cerr << "\nnull printer for: " << (int) i.opcode() << endl;
+		exit(1);
 	}
 	return p(i);
 }
