@@ -699,6 +699,29 @@ struct lpfunc_stmt
 	}
 };
 
+/** Create a new process
+ *
+ * Launch the new process with function in the 2nd register
+ * Store the pid in the first register
+ */
+struct newproc_stmt
+: public Stmt
+{
+	newproc_stmt(AsmReg *pid, AsmReg *func)
+	: pid(pid)
+	, func(func)
+	{}
+	AsmReg *pid;
+	AsmReg *func;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &out) const
+	{
+		out << "newproc " << *pid <<' '<< *func;
+	}
+};
+
 struct stracc_stmt
 : public Stmt
 {

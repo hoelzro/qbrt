@@ -93,6 +93,7 @@ STRC	(\\.|[^\"])
 "lcontext"	{ lex_token(TOKEN_LCONTEXT); }
 "lfunc"		{ lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ lex_token(TOKEN_LPFUNC); }
+"newproc"	{ lex_token(TOKEN_NEWPROC); }
 "stracc"	{ lex_token(TOKEN_STRACC); }
 "unimorph"	{ lex_token(TOKEN_UNIMORPH); }
 "wait"		{ lex_token(TOKEN_WAIT); }

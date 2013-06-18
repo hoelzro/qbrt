@@ -10,6 +10,7 @@
 #include "qbrt/string.h"
 #include "qbrt/tuple.h"
 #include "qbrt/list.h"
+#include "instruction/schedule.h"
 
 using namespace std;
 
@@ -185,6 +186,7 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_STUPLE] = stuple_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CLIST] = clist_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONS] = cons_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_NEWPROC] = newproc_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_STRACC] = stracc_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_WAIT] = wait_instruction::SIZE;
 }

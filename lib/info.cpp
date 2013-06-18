@@ -5,6 +5,7 @@
 #include "qbrt/function.h"
 #include "qbrt/module.h"
 #include "qbrt/logic.h"
+#include "instruction/schedule.h"
 #include <vector>
 #include <map>
 #include <stdio.h>
@@ -88,6 +89,13 @@ uint8_t print_lpfunc_instruction(const lpfunc_instruction &i)
 	cout << " s" << i.modsym;
 	cout << " s" << i.funcname << endl;
 	return lpfunc_instruction::SIZE;
+}
+
+uint8_t print_newproc_instruction(const newproc_instruction &i)
+{
+	cout << "newproc " << pretty_reg(i.pid)
+		<<' '<< pretty_reg(i.func) << endl;
+	return newproc_instruction::SIZE;
 }
 
 uint8_t print_stracc_instruction(const stracc_instruction &i)
@@ -279,6 +287,7 @@ void set_printers()
 	PRINTER[OP_BREQ] = (instruction_printer) print_breq_instruction;
 	PRINTER[OP_BRFAIL] = (instruction_printer) print_brfail_instruction;
 	PRINTER[OP_BRNFAIL] = (instruction_printer) print_brfail_instruction;
+	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;
 	PRINTER[OP_STRACC] = (instruction_printer) print_stracc_instruction;
 	PRINTER[OP_WAIT] = (instruction_printer) print_wait_instruction;
 }

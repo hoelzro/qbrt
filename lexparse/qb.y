@@ -198,6 +198,9 @@ stmt(A) ::= LPFUNC reg(B) modsym(C) STR(D). {
 	A = new lpfunc_stmt(B, C, D->strval());
 	C = NULL;
 }
+stmt(A) ::= NEWPROC reg(B) reg(C). {
+	A = new newproc_stmt(B, C);
+}
 stmt(A) ::= STRACC reg(B) reg(C). {
 	A = new stracc_stmt(B, C);
 }

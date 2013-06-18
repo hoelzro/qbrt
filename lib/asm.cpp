@@ -18,6 +18,7 @@
 #include "qbrt/module.h"
 #include "qbrt/list.h"
 #include "qbrt/tuple.h"
+#include "instruction/schedule.h"
 #include "qbtoken.h"
 #include "qbparse.h"
 #include "asm.h"
@@ -440,6 +441,7 @@ DEFINE_IWRITER(lcontext);
 DEFINE_IWRITER(loadtype);
 DEFINE_IWRITER(loadobj);
 DEFINE_IWRITER(lpfunc);
+DEFINE_IWRITER(newproc);
 DEFINE_IWRITER(stracc);
 DEFINE_IWRITER(unimorph);
 DEFINE_IWRITER(move);
@@ -478,6 +480,7 @@ void init_writers()
 	WRITER[OP_LOADTYPE] = (instruction_writer)iwriter<loadtype_instruction>;
 	WRITER[OP_LOADOBJ] = (instruction_writer)iwriter<loadobj_instruction>;
 	WRITER[OP_LPFUNC] = (instruction_writer)iwriter<lpfunc_instruction>;
+	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
 	WRITER[OP_STRACC] = (instruction_writer)iwriter<stracc_instruction>;
 	WRITER[OP_UNIMORPH] = (instruction_writer)iwriter<unimorph_instruction>;
 	WRITER[OP_MOVE] = (instruction_writer) iwriter<move_instruction>;
@@ -723,6 +726,9 @@ ostream & operator << (ostream &out, const Token &t)
 			break;
 		case TOKEN_LCONTEXT:
 			out << "lcontext";
+			break;
+		case TOKEN_NEWPROC:
+			out << "newproc";
 			break;
 		case TOKEN_STR:
 			out << "STRING";
@@ -1150,6 +1156,17 @@ void lpfunc_stmt::generate_code(AsmFunc &f)
 	instruction *i;
 	i = new lpfunc_instruction(*dst, *protocol->index, *function.index);
 	asm_instruction(f, i);
+}
+
+void newproc_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*pid);
+	r->alloc(*func);
+}
+
+void newproc_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new newproc_instruction(*pid, *func));
 }
 
 void stracc_stmt::allocate_registers(RegAlloc *r)
