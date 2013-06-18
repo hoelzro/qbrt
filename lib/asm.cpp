@@ -1400,6 +1400,10 @@ int main(int argc, const char **argv)
 		string output_name(base_name +".qb");
 		cout << "output_name = " << output_name << endl;
 		fin.open(input_name.c_str());
+		if (!fin) {
+			cerr << "error opening file: " << input_name << endl;
+			return -1;
+		}
 		in = &fin;
 		out.open(output_name.c_str(), ios::binary | ios::out);
 
