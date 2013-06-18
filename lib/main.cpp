@@ -170,6 +170,98 @@ private:
 	FunctionCall &func;
 };
 
+class WorkerCContext
+: public OpContext
+{
+public:
+	WorkerCContext(Worker &w, cfunction_value &cf)
+	: w(w)
+	, frame(*w.current)
+	, cfunc(cf)
+	{}
+
+	virtual Worker & worker() const { return w; }
+	virtual const char * function_name() const { return "cfunction"; }
+	virtual int & pc() const { return *(int *) NULL; }
+	virtual uint8_t regc() const { return cfunc.regc; }
+	virtual const qbrt_value & srcvalue(uint16_t reg) const
+	{
+		uint8_t primary, secondary;
+		if (REG_IS_PRIMARY(reg)) {
+			primary = REG_EXTRACT_PRIMARY(reg);
+			return follow_ref(cfunc.value(primary));
+		} else if (REG_IS_SECONDARY(reg)) {
+			primary = REG_EXTRACT_SECONDARY1(reg);
+			secondary = REG_EXTRACT_SECONDARY2(reg);
+			return follow_ref(cfunc.value(primary)).data.reg
+				->value(secondary);
+		} else if (SPECIAL_REG_RESULT == reg) {
+			cerr << "no src result register for c functions\n";
+			return *(qbrt_value *) NULL;
+		} else {
+			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+		}
+		cerr << "wtf src reg? " << reg << endl;
+		return *(qbrt_value *) NULL;
+	}
+
+	virtual qbrt_value & dstvalue(uint16_t reg)
+	{
+		uint8_t primary, secondary;
+		if (REG_IS_PRIMARY(reg)) {
+			primary = REG_EXTRACT_PRIMARY(reg);
+			return follow_ref(cfunc.value(primary));
+		} else if (REG_IS_SECONDARY(reg)) {
+			primary = REG_EXTRACT_SECONDARY1(reg);
+			secondary = REG_EXTRACT_SECONDARY2(reg);
+			return follow_ref(cfunc.value(primary)).data.reg
+				->value(secondary);
+		} else if (CONST_REG_VOID == reg) {
+			return w.drain;
+		} else if (SPECIAL_REG_RESULT == reg) {
+			cerr << "no dst result register for c functions\n";
+			return *(qbrt_value *) NULL;
+		} else {
+			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+		}
+		cerr << "wtf dst reg? " << reg << endl;
+		return *(qbrt_value *) NULL;
+	}
+
+	virtual qbrt_value & refvalue(uint16_t reg)
+	{
+		if (REG_IS_PRIMARY(reg)) {
+			return cfunc.value(REG_EXTRACT_PRIMARY(reg));
+		} else if (REG_IS_SECONDARY(reg)) {
+			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
+			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
+			return cfunc.value(r1).data.reg->value(r2);
+		}
+		cerr << "Unsupported ref register: " << reg << endl;
+		return *(qbrt_value *) NULL;
+	}
+
+	qbrt_value * get_context(const std::string &name)
+	{
+		return add_context(&frame, name);
+	}
+
+	const ResourceTable & resource() const
+	{
+		return *(const ResourceTable *) NULL;
+	}
+
+	virtual void io(StreamIO *op)
+	{
+		frame.io_push(op);
+	}
+
+private:
+	Worker &w;
+	CodeFrame &frame;
+	cfunction_value &cfunc;
+};
+
 
 void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 {
@@ -633,7 +725,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 void ccall(Worker &w, qbrt_value &res, cfunction_value &f)
 {
 	c_function cf = f.func;
-	WorkerOpContext ctx(w);
+	WorkerCContext ctx(w, f);
 	cf(ctx, res);
 }
 
@@ -838,7 +930,7 @@ void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 
 void list_empty(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(0);
+	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
 	if (! val) {
 		cerr << "no param for list empty\n";
 		return;
@@ -856,7 +948,7 @@ void list_empty(OpContext &ctx, qbrt_value &out)
 
 void list_head(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &val = ctx.srcvalue(0);
+	const qbrt_value &val = ctx.srcvalue(PRIMARY_REG(0));
 	switch (val.type->id) {
 		case VT_LIST:
 			out = head(val.data.list);
@@ -870,7 +962,7 @@ void list_head(OpContext &ctx, qbrt_value &out)
 
 void list_pop(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &val(ctx.dstvalue(0));
+	qbrt_value &val(ctx.dstvalue(PRIMARY_REG(0)));
 	switch (val.type->id) {
 		case VT_LIST:
 			qbrt_value::list(out, pop(val.data.list));
@@ -884,8 +976,8 @@ void list_pop(OpContext &ctx, qbrt_value &out)
 
 void core_open(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &filename(ctx.srcvalue(0));
-	const qbrt_value &mode(ctx.srcvalue(1));
+	const qbrt_value &filename(ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &mode(ctx.srcvalue(PRIMARY_REG(0)));
 	if (filename.type->id != VT_BSTRING) {
 		cerr << "first argument to open is not a string\n";
 		cerr << "argument is type: " << (int)filename.type->id << endl;
@@ -903,7 +995,7 @@ void core_open(OpContext &ctx, qbrt_value &out)
 
 void core_readline(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.dstvalue(0));
+	qbrt_value &stream(ctx.dstvalue(PRIMARY_REG(0)));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
@@ -914,8 +1006,8 @@ void core_readline(OpContext &ctx, qbrt_value &out)
 
 void core_write(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.dstvalue(0));
-	const qbrt_value &text(ctx.srcvalue(1));
+	qbrt_value &stream(ctx.dstvalue(PRIMARY_REG(0)));
+	const qbrt_value &text(ctx.srcvalue(PRIMARY_REG(1)));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
@@ -1015,8 +1107,6 @@ void gotowork(Worker &w)
 				// continue as normal
 				break;
 			case CFS_IOWAIT:
-				cerr << "really? how'd we get here?\n";
-				break;
 			case CFS_NEW:
 			case CFS_PEERWAIT:
 				w.stale->push_back(w.current);

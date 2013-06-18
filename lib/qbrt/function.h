@@ -397,13 +397,15 @@ struct cfunction_value
 {
 	c_function func;
 	qbrt_value *reg;
+	uint8_t regc;
 
 	cfunction_value(c_function f)
 		: func(f)
-		, reg(new qbrt_value[num_values()])
+		, reg(new qbrt_value[10])
+		, regc(10)
 	{}
 
-	uint8_t num_values() const { return 10; }
+	uint8_t num_values() const { return regc; }
 	qbrt_value & value(uint8_t r) { return reg[r]; }
 	const qbrt_value & value(uint8_t r) const { return reg[r]; }
 };
