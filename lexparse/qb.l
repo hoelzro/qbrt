@@ -114,7 +114,8 @@ STRC	(\\.|[^\"])
 }
 
 .	{
-	printf("Unrecognized character:\t'%s' %d\n", yytext, *yytext);
+	printf("Unrecognized character:\t'%s' %d @ ", yytext, *yytext);
+	printf("%d,%d\n", Token::s_lineno, Token::s_column);
 	exit(1);
 }
 
