@@ -57,3 +57,22 @@ const $0.0 3 // Load constant 3 into parameter 0 of function "foo"
 const $0.1 8 // Load constant 8 into parameter 1 of function "foo"
 call $1 $0
 ```
+
+## Const Registers
+
+Some values are used frequently enough that having direct access to them
+is beneficial. Three examples of these are void, true and false. In these
+cases, the user language can simply write the supported constant where
+the register would be.
+
+## Special Registers
+
+Special registers are a way for a qbrt program to get direct access
+into data in the virtual machine. The most often used example of this
+is the "result" register which contains the result of a function.
+
+```
+const $0 2
+const $1 3
+imult result $0 $1 // assigns the product of 2 and 3 to the result register
+```
