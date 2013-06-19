@@ -1,7 +1,5 @@
 # Qbrt Registers
 
-NOTE: This document is still in draft.
-
 Qbrt is a hybrid register/stack virtual machine. Each function in
 the call stack has the necessary registers allocated when the
 function is loaded.
