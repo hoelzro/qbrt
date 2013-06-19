@@ -201,6 +201,9 @@ stmt(A) ::= LPFUNC reg(B) modsym(C) STR(D). {
 stmt(A) ::= NEWPROC reg(B) reg(C). {
 	A = new newproc_stmt(B, C);
 }
+stmt(A) ::= RECV reg(B) reg(C). {
+	A = new recv_stmt(B, C);
+}
 stmt(A) ::= STRACC reg(B) reg(C). {
 	A = new stracc_stmt(B, C);
 }

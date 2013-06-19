@@ -442,6 +442,7 @@ DEFINE_IWRITER(loadtype);
 DEFINE_IWRITER(loadobj);
 DEFINE_IWRITER(lpfunc);
 DEFINE_IWRITER(newproc);
+DEFINE_IWRITER(recv);
 DEFINE_IWRITER(stracc);
 DEFINE_IWRITER(unimorph);
 DEFINE_IWRITER(move);
@@ -481,6 +482,7 @@ void init_writers()
 	WRITER[OP_LOADOBJ] = (instruction_writer)iwriter<loadobj_instruction>;
 	WRITER[OP_LPFUNC] = (instruction_writer)iwriter<lpfunc_instruction>;
 	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
+	WRITER[OP_RECV] = (instruction_writer)iwriter<recv_instruction>;
 	WRITER[OP_STRACC] = (instruction_writer)iwriter<stracc_instruction>;
 	WRITER[OP_UNIMORPH] = (instruction_writer)iwriter<unimorph_instruction>;
 	WRITER[OP_MOVE] = (instruction_writer) iwriter<move_instruction>;
@@ -729,6 +731,9 @@ ostream & operator << (ostream &out, const Token &t)
 			break;
 		case TOKEN_NEWPROC:
 			out << "newproc";
+			break;
+		case TOKEN_RECV:
+			out << "recv";
 			break;
 		case TOKEN_STR:
 			out << "STRING";
@@ -1167,6 +1172,17 @@ void newproc_stmt::allocate_registers(RegAlloc *r)
 void newproc_stmt::generate_code(AsmFunc &f)
 {
 	asm_instruction(f, new newproc_instruction(*pid, *func));
+}
+
+void recv_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*dst);
+	r->alloc(*tube);
+}
+
+void recv_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new recv_instruction(*dst, *tube));
 }
 
 void stracc_stmt::allocate_registers(RegAlloc *r)

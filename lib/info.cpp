@@ -98,6 +98,13 @@ uint8_t print_newproc_instruction(const newproc_instruction &i)
 	return newproc_instruction::SIZE;
 }
 
+uint8_t print_recv_instruction(const recv_instruction &i)
+{
+	cout << "recv " << pretty_reg(i.dst)
+		<<' '<< pretty_reg(i.tube) << endl;
+	return recv_instruction::SIZE;
+}
+
 uint8_t print_stracc_instruction(const stracc_instruction &i)
 {
 	cout << "stracc " << pretty_reg(i.dst)
@@ -288,6 +295,7 @@ void set_printers()
 	PRINTER[OP_BRFAIL] = (instruction_printer) print_brfail_instruction;
 	PRINTER[OP_BRNFAIL] = (instruction_printer) print_brfail_instruction;
 	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;
+	PRINTER[OP_RECV] = (instruction_printer) print_recv_instruction;
 	PRINTER[OP_STRACC] = (instruction_printer) print_stracc_instruction;
 	PRINTER[OP_WAIT] = (instruction_printer) print_wait_instruction;
 }

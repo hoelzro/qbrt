@@ -722,6 +722,29 @@ struct newproc_stmt
 	}
 };
 
+/** Create a new process
+ *
+ * Launch the new process with function in the 2nd register
+ * Store the pid in the first register
+ */
+struct recv_stmt
+: public Stmt
+{
+	recv_stmt(AsmReg *dst, AsmReg *tube)
+	: dst(dst)
+	, tube(tube)
+	{}
+	AsmReg *dst;
+	AsmReg *tube;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &out) const
+	{
+		out << "recv " << *dst <<' '<< *tube;
+	}
+};
+
 struct stracc_stmt
 : public Stmt
 {

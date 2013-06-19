@@ -260,6 +260,7 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_FORK		0x4a
 #define OP_WAIT		0x4b
 #define OP_NEWPROC	0x4c
+#define OP_RECV		0x4d
 #define NUM_OP_CODES	0x100
 
 

@@ -22,5 +22,23 @@ struct newproc_instruction
 	static const uint8_t SIZE = 5;
 };
 
+struct recv_instruction
+: public instruction
+{
+	uint64_t opcode_data : 8;
+	uint64_t dst : 16;
+	uint64_t tube : 16;
+	uint64_t reserved : 24;
+
+	recv_instruction(reg_t dst, reg_t tube)
+	: opcode_data(OP_RECV)
+	, dst(dst)
+	, tube(tube)
+	, reserved(0)
+	{}
+
+	static const uint8_t SIZE = 5;
+};
+
 
 #endif
