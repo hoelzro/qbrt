@@ -17,8 +17,8 @@ Branch if the operand is true or false
 
 Arguments: <op> <label>
 
-op - the operand register to test
-label - the location to jump to if the test is successful
+* **op** the operand register to test
+* **label** the location to jump to if the test is successful
 
 ### Branch Comparisons
 
@@ -26,9 +26,9 @@ Compare two operands and branch if the comparison is true
 
 Arguments: <op1> <op2> <label>
 
-**op1** the first operand in the comparison
-**op2** the second operand in the comparison
-**label** the location to jump to if the test is successful
+* **op1** the first operand in the comparison
+* **op2** the second operand in the comparison
+* **label** the location to jump to if the test is successful
 
 ### breq
 
@@ -51,9 +51,9 @@ register and 2 operand registers.
 
 Arguments: <result> <op1> <op2>
 
-**result** the register in which to store the result
-**op1** the register with the first operand
-**op2** the register with the second operand
+* **result** the register in which to store the result
+* **op1** the register with the first operand
+* **op2** the register with the second operand
 
 ### addi
 
