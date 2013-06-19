@@ -20,7 +20,17 @@ Arguments: <op> <label>
 * **op** the operand register to test
 * **label** the location to jump to if the test is successful
 
-### Branch Comparisons
+Example:
+```
+const $1 "initialized"
+brt $0 @label
+const $1 "no branch"
+@label
+// if $0 is true, register $1 will now contain "initialized"
+// if $0 is false, register $1 will now contain "no branch"
+```
+
+### Comparison Branch Instructions
 
 Compare two operands and branch if the comparison is true
 
@@ -63,7 +73,7 @@ Example:
 ```
 const $1 5
 const $2 7
-addi $0 $1 $2	// register $0 will contain integer 12
+addi $0 $1 $2   // register $0 will contain integer 12
 ```
 
 ### isub
@@ -74,9 +84,8 @@ Example:
 ```
 const $1 9
 const $2 4
-addi $0 $1 $2
+addi $0 $1 $2   // register $0 will contain integer 5.
 ```
-After execution, register $0 will contain integer 5.
 
 ### imult
 
@@ -86,9 +95,8 @@ Example:
 ```
 const $1 3
 const $2 6
-imult $0 $1 $2
+imult $0 $1 $2  // register $0 will contain integer 18.
 ```
-After execution, register $0 will contain integer 18.
 
 ### idiv
 
@@ -98,6 +106,5 @@ Example:
 ```
 const $1 12
 const $2 3
-idiv $0 $1 $2
+idiv $0 $1 $2   // register $0 will contain integer 4.
 ```
-After execution, register $0 will contain integer 4.
