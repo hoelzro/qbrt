@@ -35,9 +35,9 @@ the maximum number of combined function parameters and registers
 available in a single function.
 
 ```
-const $1 3	// Load constant 3 into direct register 1
-imult $0 %0 $1	// Multiple parameter 0 and primary register 1,
-		// storing the result in primary register 0
+const $1 3      // Load constant 3 into direct register 1
+imult $0 %0 $1  // Multiple parameter 0 and primary register 1,
+                // storing the result in primary register 0
 ```
 
 ## Secondary Registers
@@ -51,8 +51,8 @@ is the index of the function parameter.
 
 ```
 lfunc $0 "" "foo"
-const $0.0 3 // Load constant 3 into parameter 0 of function "foo"
-const $0.1 8 // Load constant 8 into parameter 1 of function "foo"
+const $0.0 3   // Load constant 3 into parameter 0 of function "foo"
+const $0.1 8   // Load constant 8 into parameter 1 of function "foo"
 call $1 $0
 ```
 
@@ -72,5 +72,5 @@ is the "result" register which contains the result of a function.
 ```
 const $0 2
 const $1 3
-imult result $0 $1 // assigns the product of 2 and 3 to the result register
+imult result $0 $1  // assigns the product of 2 and 3 to the result register
 ```
