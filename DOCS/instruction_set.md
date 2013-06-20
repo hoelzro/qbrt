@@ -28,6 +28,78 @@ stracc $0 $1
 // $0 now contains "base string postfixed"
 ```
 
+### const
+
+The const instruction puts a constant string into a given register.
+
+The const instruction can also load an integer into a register. In
+the compiled code, const string and const int are actually implemented
+with two different instructions.
+
+Arguments: &lt;dst&gt; &lt;value&gt;
+
+* **dst** the register where the constant will be stored
+* **value** the value to store, can be a string or an int
+
+Example:
+```
+const $0 "this is a string"
+const $1 5
+```
+
+## Function Instructions
+
+Functions are a necessary construct for abstracting and reusing
+functionality. Here is an example and the related functions.
+
+Example:
+```
+dfunc "decrement" 1
+const $0 1
+isub result %0 $0
+return
+end.
+
+dfunc "__main" 0
+lfunc $0 "" "decrement" // $0 contains the "decrement" function
+const $0.0 5
+call $1 $0              // $1 should now contain 4
+return
+end.
+```
+
+### dfunc
+
+Declare a function with a given name and number of parameters.
+Function declarations begin a function block and must be ended
+with an end statement.
+
+Arguments: &lt;name&gt; &lt;argc&gt;
+
+* **name** a string for the function name
+* **argc** an integer for the number of parameters that the function has
+
+### lfunc
+
+Load a function from the given module with the given function name and
+store it in the destination register.
+
+Arguments: &lt;dst&gt; &lt;module name&gt; &lt;function name&gt;
+
+* **dst** the register where the function should be loaded
+* **module name** the string name of the module that has the function
+* **function name** the string name of the function to load
+
+### call
+
+Call a function that has been loaded into a register and store its
+result in a different register.
+
+Arguments: &lt;result&gt; &lt;function&gt;
+
+* **result** the register where the function result should be stored
+* **function** the function to call, with parameters initialized
+
 ## Concurrency Instructions
 
 ### fork
@@ -55,7 +127,8 @@ fork $0            // put a promise in $0
   const $1 2
   const $2 3
   imult $0 $1 $2   // overwrite the promise in $0 with an actual value
-  end.             // the forked execution stops here
+  end.             // the fork instruction starts a block that stops here
+                   // with the end. statement
 const $3 4
 wait $0            // wait here until $0 is set
 imult $4 $0 $3     // $4 now contains 2 * 3 * 4, or 24
