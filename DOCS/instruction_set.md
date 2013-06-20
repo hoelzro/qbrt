@@ -15,7 +15,7 @@ for things that might otherwise be implemented as functions.
 Append one string to another, to easily build up longer strings,
 particularly interpolated strings.
 
-Arguments: <base> <postfix>
+Arguments: &lt;base&gt; &lt;postfix&gt;
 
 * **base** the initial string to be appended to
 * **postfix** the string to be appended to the base
@@ -45,7 +45,7 @@ instructions that will eventually be implemented. This version is
 asynchronous only and will not result in the second path executing
 on a different CPU.
 
-Arguments: <reg>
+Arguments: &lt;reg&gt;
 
 * **reg** the register to store the promised value
 
@@ -66,7 +66,7 @@ imult $4 $0 $3     // $4 now contains 2 * 3 * 4, or 24
 Block the current execution path and wait for another execution
 path to set an actual value in the register.
 
-Arguments: <reg>
+Arguments: &lt;reg&gt;
 
 * **reg** the register that currently contains a promise
 
@@ -78,7 +78,7 @@ See **fork** above for an example.
 
 Jump to a particular location
 
-Arguments: <label>
+Arguments: &lt;label&gt;
 
 * **label** the location to jump to
 
@@ -95,7 +95,7 @@ const $1 "never gets here"
 
 Branch if the operand is true or false
 
-Arguments: <op> <label>
+Arguments: &lt;op&gt; &lt;label&gt;
 
 * **op** the operand register to test
 * **label** the location to jump to if the test is successful
@@ -114,7 +114,7 @@ const $1 "no branch"
 
 Branch if the operand is or is not a failure
 
-Arguments: <op> <label>
+Arguments: &lt;op&gt; &lt;label&gt;
 
 * **op** the operand register to test
 * **label** the location to jump to if the test is successful
@@ -132,7 +132,7 @@ const $1 "no branch"
 
 Compare two operands and branch if the comparison is true
 
-Arguments: <op1> <op2> <label>
+Arguments: &lt;op1&gt; &lt;op2&gt; &lt;label&gt;
 
 * **op1** the first operand in the comparison
 * **op2** the second operand in the comparison
@@ -157,7 +157,7 @@ Instructions for doing arithmetic operations.
 Binary operations all have the same arguments: 3 registers, a result
 register and 2 operand registers.
 
-Arguments: <result> <op1> <op2>
+Arguments: &lt;result&gt; &lt;op1&gt; &lt;op2&gt;
 
 * **result** the register in which to store the result
 * **op1** the register with the first operand
