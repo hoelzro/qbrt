@@ -5,6 +5,12 @@ notice some inconsistency among instructions. This is temporary
 and will be made consistent once the instruction set becomes more
 stable.
 
+There is almost (but not quite) a one to one match between
+the qbrt instructions that you write and the compiled instructions that
+the virtual machine executes. An example of this is the ```const```
+instruction which compiles to type specific instructions
+(eg. int or string).
+
 ## String Instructions
 
 String operations are very common so get special support as instructions
