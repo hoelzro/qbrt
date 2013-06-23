@@ -472,6 +472,16 @@ struct Failure
 		qbrt_value::hashtag(type, type_label);
 	}
 
+	Failure(const Failure &fail, const char *fname, int pc)
+	: type(fail.type)
+	, debug(fail.debug.str())
+	, usage(fail.usage.str())
+	, function_name(fname)
+	, pc(pc)
+	, exit_code(fail.exit_code)
+	, http_code(fail.http_code)
+	{}
+
 	std::string debug_msg() const
 	{
 		std::ostringstream msg;
@@ -507,6 +517,8 @@ struct Failure
 };
 
 #define NEW_FAILURE(type, fname, pc) (new Failure(type, fname, pc))
-#define NEW_TYPE_FAILURE(fname, pc) (NEW_FAILURE("typefailure", fname, pc))
+#define DUPE_FAILURE(fail, fname, pc) (new Failure(fail, fname, pc))
+#define FAIL_TYPE(fname, pc) (NEW_FAILURE("typefailure", fname, pc))
+#define FAIL_NOFUNCTION(fname, pc) (NEW_FAILURE("nofunction", fname, pc))
 
 #endif

@@ -525,7 +525,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	CHECK_FAILURE(dst, src);
 
 	if (dst.type->id != VT_BSTRING) {
-		f = NEW_TYPE_FAILURE(ctx.function_name(), op_pc);
+		f = FAIL_TYPE(ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
 		f->exit_code = 1;
 		return;
@@ -541,15 +541,19 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 			*dst.data.str += out.str();
 			break;
 		case VT_VOID:
-			f = NEW_TYPE_FAILURE(ctx.function_name(), op_pc);
+			f = FAIL_TYPE(ctx.function_name(), op_pc);
 			f->debug << "cannot append void to string";
 			cerr << f->debug_msg() << endl;
+			qbrt_value::fail(dst, f);
+			ctx.worker().current->cfstate = CFS_FAILED;
 			break;
 		default:
-			f = NEW_TYPE_FAILURE(ctx.function_name(), op_pc);
+			f = FAIL_TYPE(ctx.function_name(), op_pc);
 			f->debug << "stracc source type is not supported: "
 				<< (int) src.type->id;
 			cerr << f->debug_msg() << endl;
+			qbrt_value::fail(dst, f);
+			ctx.worker().current->cfstate = CFS_FAILED;
 			break;
 	}
 }
@@ -739,11 +743,18 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 		case VT_CFUNCTION:
 			ccall(w, res, *f.data.cfunc);
 			break;
+		case VT_FAILURE:
+			fail = DUPE_FAILURE(*f.data.failure
+					, w.current->function_call().name()
+					, w.current->pc);
+			qbrt_value::fail(res, fail);
+			break;
 		default:
-			cerr <<"Unknown function type: "<< (int)f.type->id
-				<< endl;
-			fail = new Failure("Unknown function type");
-			qbrt_value::fail(f, fail);
+			fail = FAIL_TYPE(w.current->function_call().name()
+					, w.current->pc);
+			fail->debug << "Unknown function type: "
+				<< (int)f.type->id;
+			qbrt_value::fail(res, fail);
 			return;
 	}
 }
@@ -978,6 +989,8 @@ void core_open(OpContext &ctx, qbrt_value &out)
 {
 	const qbrt_value &filename(ctx.srcvalue(PRIMARY_REG(0)));
 	const qbrt_value &mode(ctx.srcvalue(PRIMARY_REG(0)));
+	// these type checks should be done automatically...
+	// once types are working.
 	if (filename.type->id != VT_BSTRING) {
 		cerr << "first argument to open is not a string\n";
 		cerr << "argument is type: " << (int)filename.type->id << endl;
@@ -1018,27 +1031,6 @@ void core_write(OpContext &ctx, qbrt_value &out)
 		exit(2);
 	}
 	ctx.io(stream.data.stream->write(*text.data.str));
-}
-
-char * read_function_data(FILE *f, uint32_t data_size)
-{
-	char *fdata = new char[data_size];
-	fread(fdata, 1, data_size, f);
-	return fdata;
-}
-
-char * read_string_data(FILE *f, uint32_t data_size)
-{
-	char *fdata = new char[data_size];
-	fread(fdata, 1, data_size, f);
-	return fdata;
-}
-
-uint32_t * read_string_info(FILE *f, uint32_t string_count)
-{
-	uint32_t *string_index = new uint32_t[string_count];
-	fread(string_index, sizeof(uint32_t), string_count, f);
-	return string_index;
 }
 
 void iopush(Worker &w)
