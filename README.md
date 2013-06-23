@@ -24,6 +24,12 @@ return
 end.
 ```
 
+### Documentation
+
+* [Instruction Set Reference](DOCS/instruction_set.md)
+* [Registers](DOCS/registers.md)
+* [Core Modules](DOCS/core_modules.md)
+
 ## Features
 
 Why might you find qbrt interesting? Well first, it probably helps
