@@ -56,11 +56,11 @@ qbrt_value & get_special_reg(CodeFrame &f, reg_t reg)
 {
 	qbrt_value *special = 0;
 	switch (reg) {
-		case 0:
+		case REG_RESULT:
 			special = &f.function_call().result;
 			break;
 		default:
-			cout << "dunno that register";
+			cout << "dunno that special register";
 			break;
 	}
 	return *special;
@@ -761,7 +761,7 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 
 void core_print(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(0);
+	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
 	if (! val) {
 		cout << "no param for print\n";
 		return;
