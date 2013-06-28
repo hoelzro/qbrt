@@ -225,16 +225,38 @@ bool ResourceLess::operator() (const AsmResource *a, const AsmResource *b) const
 
 void RegAlloc::alloc(AsmReg &reg)
 {
-	switch (reg.type) {
-		case '%':
-		case 'v':
-		case 'r':
-			// these register types are preallocated
-			return;
-	}
 	if (reg.idx >= 0) {
 		return;
 	}
+	switch (reg.type) {
+		case '%':
+			alloc_arg(reg);
+			break;
+		case '$':
+			alloc_reg(reg);
+			break;
+		case 'c':
+		case 's':
+			// these register types are preallocated
+			return;
+	}
+}
+
+void RegAlloc::alloc_arg(AsmReg &reg)
+{
+	CountMap::const_iterator it(registry.find(reg.name));
+	if (it != registry.end()) {
+		reg.idx = it->second;
+		return;
+	}
+	istringstream name(reg.name);
+	int reg_idx;
+	name >> reg_idx;
+	registry[reg.name] = reg.idx = reg_idx;
+}
+
+void RegAlloc::alloc_reg(AsmReg &reg)
+{
 	CountMap::const_iterator it(registry.find(reg.name));
 	if (it != registry.end()) {
 		reg.idx = it->second;
@@ -251,20 +273,42 @@ AsmReg::operator reg_t () const
 	switch (type) {
 		case '%':
 		case '$':
-			if (ext >= 0) {
-				id = SECONDARY_REG(idx, ext);
-			} else {
+			if (ext < 0) {
 				id = PRIMARY_REG(idx);
+			} else {
+				id = SECONDARY_REG(idx, ext);
 			}
 			break;
-		case 'v':
-			id = CONST_REG_VOID;
-			break;
-		case 'r':
-			id = SPECIAL_REG_RESULT;
+		case 'c':
+		case 's':
+			id = specialid;
 			break;
 	}
 	return id;
+}
+
+ostream & operator << (ostream &o, const AsmReg &r)
+{
+	switch (r.type) {
+		case '%':
+		case '$':
+			if (r.ext < 0) {
+				o << r.type << (int) r.idx;
+			} else {
+				o << r.type << (int) r.idx
+					<< '.' << (int) r.ext;
+			}
+			break;
+		case 'c':
+		case 's':
+			o << r.type << r.specialid;
+			break;
+		default:
+			cerr << "Unknown register type code: "
+				<< r.type << endl;
+			break;
+	}
+	return o;
 }
 
 AsmReg * AsmReg::parse_arg(const std::string &t)
@@ -272,7 +316,7 @@ AsmReg * AsmReg::parse_arg(const std::string &t)
 	istringstream in(t);
 	char typecode(in.get()); // should be '%'
 	AsmReg *r = new AsmReg(typecode);
-	in >> r->idx;
+	in >> r->name;
 	return r;
 }
 
@@ -310,14 +354,11 @@ int AsmReg::parse_regext(const std::string &ext)
 	return ext_idx;
 }
 
-AsmReg * AsmReg::create_void()
+AsmReg * AsmReg::create_special(uint16_t id)
 {
-	return new AsmReg('v');
-}
-
-AsmReg * AsmReg::create_result()
-{
-	return new AsmReg('r');
+	AsmReg *r = new AsmReg('s');
+	r->specialid = SPECIAL_REG(id);
+	return r;
 }
 
 

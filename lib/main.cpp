@@ -10,6 +10,7 @@
 #include "qbrt/map.h"
 #include "qbrt/vector.h"
 #include "qbrt/module.h"
+#include "instruction/schedule.h"
 
 #include <vector>
 #include <stack>
@@ -474,6 +475,7 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 		cerr << "cannot find module: " << modname << endl;
 		exit(1);
 	}
+	Failure *fail;
 	Function qbrt(mod->fetch_function(fname));
 	qbrt_value &dst(ctx.dstvalue(i.reg));
 	c_function cf = NULL;
@@ -486,6 +488,11 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 		} else {
 			cerr << "could not find function: " << modname
 				<<" "<< fname << endl;
+			fail = FAIL_NOFUNCTION(ctx.function_name(), ctx.pc());
+			fail->debug << "could not find function: " << modname
+				<<'.'<< fname;
+			qbrt_value::fail(dst, fail);
+			ctx.worker().current->cfstate = CFS_FAILED;
 		}
 	}
 	ctx.pc() += lfunc_instruction::SIZE;
@@ -510,6 +517,28 @@ void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
 	qbrt_value &dst(ctx.dstvalue(i.reg));
 	qbrt_value::f(dst, new function_value(qbrt));
 	ctx.pc() += lpfunc_instruction::SIZE;
+}
+
+void execute_newproc(OpContext &ctx, const newproc_instruction &i)
+{
+	Failure *f;
+	qbrt_value &pid(ctx.dstvalue(i.pid));
+	qbrt_value &func(ctx.dstvalue(i.func));
+
+	ctx.pc() += newproc_instruction::SIZE;
+
+	function_value *fval = func.data.f;
+	qbrt_value::set_void(func);
+	Worker &w(ctx.worker());
+
+	ProcessRoot *proc = new_process(w);
+	proc->call = new FunctionCall(*proc, *fval);
+	w.fresh->push_back(proc->call);
+}
+
+void execute_recv(OpContext &ctx, const recv_instruction &i)
+{
+	ctx.pc() += recv_instruction::SIZE;
 }
 
 void execute_stracc(OpContext &ctx, const stracc_instruction &i)
@@ -660,6 +689,8 @@ void init_executioners()
 	x[OP_LFUNC] = (executioner) execute_loadfunc;
 	x[OP_LCONTEXT] = (executioner) execute_lcontext;
 	x[OP_LPFUNC] = (executioner) execute_lpfunc;
+	x[OP_NEWPROC] = (executioner) execute_newproc;
+	x[OP_RECV] = (executioner) execute_recv;
 	x[OP_STRACC] = (executioner) execute_stracc;
 	x[OP_UNIMORPH] = (executioner) execute_unimorph;
 	x[OP_LOADOBJ] = (executioner) execute_loadobj;
@@ -722,7 +753,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
-	FunctionCall *call = new FunctionCall(w.current, res, *f);
+	FunctionCall *call = new FunctionCall(*w.current, res, *f);
 	w.current = call;
 }
 
@@ -939,6 +970,24 @@ void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 	qbrt_value::typ(out, t);
 }
 
+void core_send(OpContext &ctx, qbrt_value &out)
+{
+	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
+	if (! val) {
+		cerr << "no param for list empty\n";
+		return;
+	}
+	switch (val->type->id) {
+		case VT_LIST:
+			qbrt_value::b(out, empty(val->data.list));
+			break;
+		default:
+			cerr << "empty arg not a list: " << (int) val->type->id
+				<< endl;
+			break;
+	}
+}
+
 void list_empty(OpContext &ctx, qbrt_value &out)
 {
 	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
@@ -1127,7 +1176,7 @@ int main(int argc, const char **argv)
 	init_executioners();
 
 	Module *mod_core = new Module("core");
-	// add_c_function(*mod_core, "spawn", core_spawn);
+	add_c_function(*mod_core, "send", core_send);
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, "empty", list_empty);
@@ -1173,16 +1222,17 @@ int main(int argc, const char **argv)
 				, reverse(main_func->reg[1].data.list));
 	}
 
-	qbrt_value result_code;
-	qbrt_value::i(result_code, 0);
-	qbrt_value main_func_value;
-	qbrt_value::f(main_func_value, main_func);
-	call(w, result_code, main_func_value);
+	ProcessRoot *mainproc = new_process(w);
+	qbrt_value::i(mainproc->result, 0);
+	mainproc->call = new FunctionCall(*mainproc, *main_func);
+	w.current = mainproc->call;
+
 	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
 	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
 	qbrt_value::stream(*add_context(w.current, "stdin"), stream_stdin);
 	qbrt_value::stream(*add_context(w.current, "stdout"), stream_stdout);
+
 	gotowork(w);
 
-	return result_code.data.i;
+	return mainproc->result.data.i;
 }

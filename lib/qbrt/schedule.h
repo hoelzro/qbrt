@@ -4,6 +4,7 @@
 #include "qbrt/core.h"
 #include "qbrt/function.h"
 #include <set>
+#include <pthread.h>
 
 
 typedef uint8_t CodeFrameType;
@@ -24,29 +25,66 @@ typedef uint32_t WorkerID; // this should just be OS thread id?
 
 struct ParallelPath;
 struct FunctionCall;
+struct ProcessRoot;
 struct Module;
 struct Application;
+
+struct PipeValue
+{
+	qbrt_value *value;
+	PipeValue *next;
+	PipeValue *prev;
+};
+
+struct Pipe
+{
+public:
+	Pipe()
+	: head(NULL)
+	, tail(NULL)
+	, lock()
+	{
+		pthread_mutex_init(&lock, NULL);
+	}
+
+	void push(qbrt_value *);
+	void pop(qbrt_value *);
+
+private:
+	PipeValue *head;
+	PipeValue *tail;
+	pthread_mutex_t lock;
+};
 
 struct CodeFrame
 : public qbrt_value_index
 {
-	Worker *owner;
+	ProcessRoot &proc;
 	CodeFrame *parent;
 	std::set< CodeFrame * > fork;
-	std::map< std::string, qbrt_value > context_data;
 	StreamIO *io;
 	CodeFrameType cftype;
 	CodeFrameState cfstate;
 	int pc;
 
-	CodeFrame(CodeFrame *parent, CodeFrameType type)
-	: owner(NULL)
-	, parent(parent)
+	CodeFrame(CodeFrame &parent, CodeFrameType type)
+	: proc(parent.proc)
+	, parent(&parent)
 	, io(NULL)
 	, cftype(type)
 	, cfstate(CFS_READY)
 	, pc(0)
-	, node_context()
+	, frame_context()
+	{}
+
+	CodeFrame(ProcessRoot &proc, CodeFrameType type)
+	: proc(proc)
+	, parent(NULL)
+	, io(NULL)
+	, cftype(type)
+	, cfstate(CFS_READY)
+	, pc(0)
+	, frame_context()
 	{}
 
 	virtual FunctionCall & function_call() = 0;
@@ -65,7 +103,7 @@ struct CodeFrame
 	friend qbrt_value * add_context(CodeFrame *, const std::string &);
 
 private:
-	std::map< std::string, qbrt_value > node_context;
+	std::map< std::string, qbrt_value > frame_context;
 
 public:
 	typedef std::list< CodeFrame * > List;
@@ -80,7 +118,7 @@ struct FunctionCall
 	const Module *mod;
 	int regc;
 
-	FunctionCall(CodeFrame *parent, qbrt_value &result, function_value &func)
+	FunctionCall(CodeFrame &parent, qbrt_value &result, function_value &func)
 	: CodeFrame(parent, CFT_CALL)
 	, result(result)
 	, reg_data(func.reg)
@@ -88,6 +126,7 @@ struct FunctionCall
 	, mod(func.func.mod)
 	, regc(func.num_values())
 	{}
+	FunctionCall(ProcessRoot &, function_value &);
 
 	virtual void finish_frame(Worker &);
 
@@ -113,9 +152,9 @@ static inline const instruction & frame_instruction(const CodeFrame &f)
 struct ParallelPath
 : public CodeFrame
 {
-	ParallelPath(CodeFrame *parent)
+	ParallelPath(CodeFrame &parent)
 	: CodeFrame(parent, CFT_LOCAL_FORK)
-	, f_call(parent->function_call())
+	, f_call(parent.function_call())
 	{}
 	FunctionCall & function_call() { return f_call; }
 	const FunctionCall & function_call() const { return f_call; }
@@ -132,11 +171,26 @@ private:
 
 static inline ParallelPath * fork_frame(CodeFrame &src)
 {
-	ParallelPath *pp = new ParallelPath(&src);
+	ParallelPath *pp = new ParallelPath(src);
 	src.fork.insert(pp);
 	return pp;
 }
 
+struct ProcessRoot
+{
+	Worker &owner;
+	FunctionCall *call;
+	Pipe *recv;
+	qbrt_value result;
+	uint64_t pid;
+
+	ProcessRoot(Worker &owner, uint64_t pid)
+	: owner(owner)
+	, call(NULL)
+	, recv(NULL)
+	, pid(pid)
+	{}
+};
 
 
 /**
@@ -158,6 +212,7 @@ struct Worker
 {
 	Application &app;
 	std::map< std::string, Module * > module;
+	std::set< ProcessRoot * > process;
 	CodeFrame *current;
 	CodeFrame::List *fresh;
 	CodeFrame::List *stale;
@@ -166,9 +221,12 @@ struct Worker
 	int iocount;
 	WorkerID id;
 	TaskID next_taskid;
+	TaskID next_pid;
 
 	Worker(Application &, WorkerID);
 };
+
+ProcessRoot * new_process(Worker &);
 
 void findtask(Worker &);
 inline const Module * current_module(const Worker &w)

@@ -138,17 +138,16 @@ string pretty_reg(uint16_t r)
 {
 	ostringstream result;
 	if (REG_IS_PRIMARY(r)) {
-		result << "r";
-		result << (int) (r & 0x007f);
+		result << 'r' << REG_EXTRACT_PRIMARY(r);
 	} else if (REG_IS_SECONDARY(r)) {
-		result << "r";
-		result << (int) ((r & 0x7f00) >> 8);
-		result << ".r";
-		result << (int) (r & 0x7f);
+		result << 'r' << REG_EXTRACT_SECONDARY1(r)
+			<< '.' << REG_EXTRACT_SECONDARY2(r);
 	} else if (SPECIAL_REG_RESULT == r) {
 		result << "result";
 	} else if (CONST_REG_VOID == r) {
 		result << "void";
+	} else if (SPECIAL_REG_PID == r) {
+		result << "pid";
 	} else {
 		result << "wtf? " << r;
 	}

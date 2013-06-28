@@ -58,6 +58,7 @@ STRC	(\\.|[^\"])
 "void"		{
 		lex_token(TOKEN_VOID);
 	}
+"pid"	{ lex_token(TOKEN_PID); }
 
 {LABEL}		{
 		lex_token(TOKEN_LABEL);

@@ -20,6 +20,10 @@ struct RegAlloc
 	: counter(argc)
 	{}
 	void alloc(AsmReg &);
+
+// private-ish
+	void alloc_arg(AsmReg &);
+	void alloc_reg(AsmReg &);
 };
 
 
@@ -40,12 +44,14 @@ static inline ResourceSet::value_type asm_resource_pair(AsmResource *r)
 struct AsmReg
 {
 	std::string name;
-	int idx;
-	int ext;
+	reg_t specialid;
+	int8_t idx;
+	int8_t ext;
 	const char type;
 
 	AsmReg(char typec)
 	: name()
+	, specialid(0)
 	, idx(-1)
 	, ext(-1)
 	, type(typec)
@@ -53,14 +59,7 @@ struct AsmReg
 
 	operator reg_t () const;
 
-	friend std::ostream & operator << (std::ostream &o, const AsmReg &r)
-	{
-		o << r.type << r.idx;
-		if (r.ext < 0) {
-			o << '.' << r.ext;
-		}
-		return o;
-	}
+	friend std::ostream & operator << (std::ostream &, const AsmReg &);
 
 	static AsmReg * parse_arg(const std::string &arg);
 	static AsmReg * parse_reg(const std::string &reg);
@@ -69,8 +68,17 @@ struct AsmReg
 	static AsmReg * parse_extended_reg(const std::string &reg
 			, const std::string &ext);
 	static int parse_regext(const std::string &ext);
-	static AsmReg * create_void();
-	static AsmReg * create_result();
+	static inline AsmReg * create_void()
+	{
+		AsmReg *r = new AsmReg('c');
+		r->specialid = CONST_REG_VOID;
+		return r;
+	}
+	static AsmReg * create_special(uint16_t id);
+	static inline AsmReg * create_result()
+	{
+		return create_special(REG_RESULT);
+	}
 };
 
 struct AsmResource

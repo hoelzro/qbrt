@@ -1,4 +1,4 @@
-dfunc "ask_name" 2
+dfunc "ask_name" 3
 lfunc $0 "io" "write"
 ref $0.0 %1
 const $0.1 "Excuse me, what's your first name? "
@@ -6,7 +6,7 @@ call void $0
 lfunc $1 "io" "readline"
 ref $1.0 %0
 lfunc $2 "core" "send"
-copy $2.0 ppid
+copy $2.0 %2
 call $2.1 $1
 call void $2
 
@@ -27,6 +27,7 @@ dfunc "__main" 0
 lfunc $1 "" "ask_name"
 lcontext $1.0 #stdin
 lcontext $1.1 #stdout
+copy $1.2 pid
 newproc $5 $1
 const $0 "hello "
 const $1 " "

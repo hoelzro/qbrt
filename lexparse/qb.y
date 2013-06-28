@@ -237,6 +237,9 @@ reg(A) ::= REG(B). {
 reg(A) ::= PARAM(B). {
 	A = AsmReg::parse_arg(B->text);
 }
+reg(A) ::= PID. {
+	A = AsmReg::create_special(REG_PID);
+}
 reg(A) ::= RESULT. {
 	A = AsmReg::create_result();
 }

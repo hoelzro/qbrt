@@ -284,11 +284,9 @@ static inline const Type & value_type(const qbrt_value &v)
 
 #define REG_RESULT	0x000
 #define REG_PID		0x001
-#define REG_PPID	0x002
 
 #define SPECIAL_REG_RESULT	(SPECIAL_REG(REG_RESULT))
 #define SPECIAL_REG_PID		(SPECIAL_REG(REG_PID))
-#define SPECIAL_REG_PPID	(SPECIAL_REG(REG_PPID))
 
 #define REG_VOID	0x000 // void
 #define REG_FALSE	0x010 // false

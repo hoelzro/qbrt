@@ -7,11 +7,11 @@ using namespace std;
 qbrt_value * get_context(CodeFrame *f, const string &name)
 {
 	while (f) {
-		if (f->context_data.find(name) == f->context_data.end()) {
+		if (f->frame_context.find(name) == f->frame_context.end()) {
 			f = f->parent;
 			continue;
 		}
-		return &f->context_data[name];
+		return &f->frame_context[name];
 	}
 	return NULL;
 }
@@ -22,7 +22,7 @@ qbrt_value * add_context(CodeFrame *f, const string &name)
 	if (ctx) {
 		return ctx;
 	}
-	return &f->context_data[name];
+	return &f->frame_context[name];
 }
 
 void CodeFrame::io_pop()
@@ -33,6 +33,16 @@ void CodeFrame::io_pop()
 	delete io;
 	io = NULL;
 }
+
+
+FunctionCall::FunctionCall(ProcessRoot &proc, function_value &func)
+: CodeFrame(proc, CFT_CALL)
+, result(proc.result)
+, reg_data(func.reg)
+, resource(func.func.resource)
+, mod(func.func.mod)
+, regc(func.num_values())
+{}
 
 const char * FunctionCall::name() const
 {
@@ -67,6 +77,7 @@ Worker::Worker(Application &app, WorkerID id)
 : app(app)
 , module()
 , current(NULL)
+, process()
 , fresh(new CodeFrame::List())
 , stale(new CodeFrame::List())
 , drain()
@@ -74,11 +85,19 @@ Worker::Worker(Application &app, WorkerID id)
 , iocount(0)
 , id(id)
 , next_taskid(0)
+, next_pid(0)
 {
 	epfd = epoll_create(1);
 	if (epfd < 0) {
 		perror("epoll_create failure");
 	}
+}
+
+ProcessRoot * new_process(Worker &w)
+{
+	ProcessRoot *proc = new ProcessRoot(w, ++w.next_pid);
+	w.process.insert(proc);
+	return proc;
 }
 
 void findtask(Worker &w)
