@@ -1,4 +1,6 @@
 require './crake'
+require 'rubygems'
+require 'popen4'
 include Rake::DSL
 
 QBC = CTarget.new()
@@ -95,3 +97,40 @@ task :clean => [] do
 	sh "rm -f lib/qbparse.h lib/qbparse.c lib/qblex.c"
 end
 
+
+TestFiles = ['T/hello.uqb',
+	#'T/fork_hello.uqb',
+]
+
+def test_uqb(file)
+	passed = false
+	mod = file.chomp(File.extname(file))
+	sh "./qbc #{file}"
+	pid, stdin, stdout, stderr = Open4.popen4("./qbrt #{mod}")
+	status = Open4.popen4("./qbrt #{mod}") do |pid, stdin, stdout, stderr|
+		result = stdout.gets
+		if result == File.read("#{mod}.output")
+			passed = true
+		else
+			puts "result not matched"
+			puts result
+		end
+	end
+	return passed
+end
+
+task :T do
+	failures = []
+	TestFiles.each do |t|
+		if not test_uqb t
+			failures << t
+		end
+	end
+
+	if failures.empty?
+		puts "No failures"
+	else
+		puts "Failures:"
+		puts failures
+	end
+end
