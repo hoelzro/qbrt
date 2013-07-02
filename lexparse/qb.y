@@ -227,15 +227,31 @@ modsym(A) ::= STR(B) STR(C). {
 
 reg(A) ::= REG(B) REGEXT(C). {
 	A = AsmReg::parse_extended_reg(B->text, C->text);
+	if (A->type != '$') {
+		cerr << "secondary register is not $\n";
+		exit(1);
+	}
 }
 reg(A) ::= PARAM(B) REGEXT(C). {
 	A = AsmReg::parse_extended_arg(B->text, C->text);
+	if (A->type != '%') {
+		cerr << "secondary arg is not %%\n";
+		exit(1);
+	}
 }
 reg(A) ::= REG(B). {
 	A = AsmReg::parse_reg(B->text);
+	if (A->type != '$') {
+		cerr << "primary register is not $\n";
+		exit(1);
+	}
 }
 reg(A) ::= PARAM(B). {
 	A = AsmReg::parse_arg(B->text);
+	if (A->type != '%') {
+		cerr << "primary arg is not %: '" << B->text << "'\n";
+		exit(1);
+	}
 }
 reg(A) ::= PID. {
 	A = AsmReg::create_special(REG_PID);

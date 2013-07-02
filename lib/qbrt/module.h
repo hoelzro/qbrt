@@ -51,10 +51,10 @@ struct ObjectHeader
 		: qbrt_version(0)
 		, library_version(0)
 	{
-		magic[0] = 'b';
-		magic[1] = 'd';
-		magic[2] = 'z';
-		magic[3] = '\0';
+		magic[0] = 'q';
+		magic[1] = 'b';
+		magic[2] = 'r';
+		magic[3] = 't';
 		flags.raw = 0;
 		flags.f.application = 1;
 		flags.f.monolithic = 1;

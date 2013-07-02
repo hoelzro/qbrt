@@ -244,15 +244,15 @@ void RegAlloc::alloc(AsmReg &reg)
 
 void RegAlloc::alloc_arg(AsmReg &reg)
 {
-	CountMap::const_iterator it(registry.find(reg.name));
-	if (it != registry.end()) {
+	CountMap::const_iterator it(args.find(reg.name));
+	if (it != args.end()) {
 		reg.idx = it->second;
 		return;
 	}
 	istringstream name(reg.name);
 	int reg_idx;
 	name >> reg_idx;
-	registry[reg.name] = reg.idx = reg_idx;
+	args[reg.name] = reg.idx = reg_idx;
 }
 
 void RegAlloc::alloc_reg(AsmReg &reg)

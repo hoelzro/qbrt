@@ -13,6 +13,7 @@ struct RegAlloc
 {
 	typedef std::map< std::string, int > CountMap;
 
+	CountMap args;
 	CountMap registry;
 	int counter;
 

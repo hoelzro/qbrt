@@ -144,6 +144,11 @@ public:
 		} else if (REG_IS_SECONDARY(reg)) {
 			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
 			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
+			if (!qbrt_value::is_value_index(func.value(r1))) {
+				cerr << "cannot access secondary register: "
+					<< r1 << endl;
+				return *(qbrt_value *) NULL;
+			}
 			return func.value(r1).data.reg->value(r2);
 		}
 		cerr << "Unsupported ref register: " << reg << endl;
@@ -236,6 +241,11 @@ public:
 		} else if (REG_IS_SECONDARY(reg)) {
 			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
 			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
+			if (!qbrt_value::is_value_index(cfunc.value(r1))) {
+				cerr << "cannot access secondary register: "
+					<< r1 << endl;
+				return *(qbrt_value *) NULL;
+			}
 			return cfunc.value(r1).data.reg->value(r2);
 		}
 		cerr << "Unsupported ref register: " << reg << endl;
@@ -1099,6 +1109,7 @@ void iopop(Worker &w, CodeFrame *cf)
 	epoll_ctl(w.epfd, EPOLL_CTL_DEL, cf->io->fd, NULL);
 	--w.iocount;
 	cf->io_pop();
+	cf->cfstate = CFS_READY;
 	if (!w.current) {
 		w.current = cf;
 	} else {

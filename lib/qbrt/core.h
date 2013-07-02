@@ -192,6 +192,7 @@ struct qbrt_value
 		dst.type = &TYPE_FAILURE;
 		dst.data.failure = f;
 	}
+	static bool is_value_index(qbrt_value &);
 
 	~qbrt_value() {}
 };

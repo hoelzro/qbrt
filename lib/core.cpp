@@ -107,6 +107,14 @@ void qbrt_value::ref(qbrt_value &v, qbrt_value &ref)
 	v.data.ref = &ref;
 }
 
+bool qbrt_value::is_value_index(qbrt_value &val)
+{
+	if (!val.data.reg) {
+		return false;
+	}
+	return dynamic_cast< qbrt_value_index * >(val.data.reg);
+}
+
 template < typename T >
 int type_compare(T a, T b)
 {

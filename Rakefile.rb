@@ -99,7 +99,7 @@ end
 
 
 TestFiles = ['T/hello.uqb',
-	#'T/fork_hello.uqb',
+	'T/fork_hello.uqb',
 ]
 
 def test_uqb(file)
@@ -108,8 +108,15 @@ def test_uqb(file)
 	sh "./qbc #{file}"
 	pid, stdin, stdout, stderr = Open4.popen4("./qbrt #{mod}")
 	status = Open4.popen4("./qbrt #{mod}") do |pid, stdin, stdout, stderr|
+		modbase = mod.sub('T/', '')
+		input_file = "T/INPUT/#{modbase}"
+		output_file = "T/OUTPUT/#{modbase}"
+
+		if File.exists? input_file
+			stdin.write(File.read(input_file))
+		end
 		result = stdout.gets
-		if result == File.read("#{mod}.output")
+		if result == File.read(output_file)
 			passed = true
 		else
 			puts "result not matched"
