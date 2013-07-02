@@ -1,0 +1,24 @@
+a few ideas for what a debug visualiation of the call tree might look like
+
+
+c-+-+-*
+   \ \
+    \ *-
+     \
+      *
+
+c-c-c-c
+ \
+  *-c-c-c
+   \   \
+    \   *
+     \
+      *
+
+c-+-c-c............
+   \
+    *-c-c-+-c......
+     \     \
+      \     *......
+       \
+        *..........
