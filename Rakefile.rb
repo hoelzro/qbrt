@@ -100,6 +100,7 @@ end
 
 TestFiles = ['T/hello.uqb',
 	'T/fork_hello.uqb',
+	'T/newproc.uqb',
 ]
 
 def test_uqb(file)
@@ -115,12 +116,23 @@ def test_uqb(file)
 		if File.exists? input_file
 			stdin.write(File.read(input_file))
 		end
-		result = stdout.gets
-		if result == File.read(output_file)
-			passed = true
-		else
-			puts "result not matched"
-			puts result
+		n = 0
+		expected_output = File.open(output_file)
+		while true
+			actual = stdout.gets
+			expected = expected_output.gets
+			if actual == nil and expected == nil
+				passed = true
+				break
+			end
+			if expected != actual
+				puts "line mismatch:\n"
+				puts "-#{expected}"
+				puts "+#{actual}"
+			else
+				puts "x#{expected}"
+				puts "a#{actual}"
+			end
 		end
 	end
 	return passed

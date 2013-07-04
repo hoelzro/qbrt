@@ -30,7 +30,7 @@ lcontext $1.1 #stdout
 lfunc $4 "core" "pid"
 call $1.2 $4
 newproc $5 $1
-const $0 "hello "
+const $0 "\nHello "
 const $1 " "
 recv $2 $5
 stracc $0 $2
