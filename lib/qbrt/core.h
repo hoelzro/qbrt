@@ -192,6 +192,13 @@ struct qbrt_value
 		dst.type = &TYPE_FAILURE;
 		dst.data.failure = f;
 	}
+	static void copy(qbrt_value &dst, const qbrt_value &src);
+	static inline qbrt_value * dup(const qbrt_value &src)
+	{
+		qbrt_value *dst = new qbrt_value();
+		copy(*dst, src);
+		return dst;
+	}
 	static bool is_value_index(qbrt_value &);
 
 	~qbrt_value() {}

@@ -10,12 +10,12 @@ copy $2.0 %2
 call $2.1 $1
 call void $2
 
-const $0.1 "Thanks! What's your middle name? "
+const $0.1 "\nThanks! What's your middle name? "
 call void $0
 call $2.1 $1
 call void $2
 
-const $0.1 "And finally, what's your last name? "
+const $0.1 "\nAnd finally, what's your last name? "
 call void $0
 call $2.1 $1
 call void $2
@@ -27,7 +27,8 @@ dfunc "__main" 0
 lfunc $1 "" "ask_name"
 lcontext $1.0 #stdin
 lcontext $1.1 #stdout
-copy $1.2 pid
+lfunc $4 "core" "pid"
+call $1.2 $4
 newproc $5 $1
 const $0 "hello "
 const $1 " "

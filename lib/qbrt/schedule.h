@@ -4,6 +4,7 @@
 #include "qbrt/core.h"
 #include "qbrt/function.h"
 #include <set>
+#include <list>
 #include <pthread.h>
 
 
@@ -29,30 +30,22 @@ struct ProcessRoot;
 struct Module;
 struct Application;
 
-struct PipeValue
-{
-	qbrt_value *value;
-	PipeValue *next;
-	PipeValue *prev;
-};
 
 struct Pipe
 {
 public:
 	Pipe()
-	: head(NULL)
-	, tail(NULL)
-	, lock()
+	: lock()
 	{
 		pthread_mutex_init(&lock, NULL);
 	}
 
+	bool empty() const;
 	void push(qbrt_value *);
-	void pop(qbrt_value *);
+	qbrt_value * pop();
 
 private:
-	PipeValue *head;
-	PipeValue *tail;
+	std::list< qbrt_value * > data;
 	pthread_mutex_t lock;
 };
 
@@ -180,14 +173,14 @@ struct ProcessRoot
 {
 	Worker &owner;
 	FunctionCall *call;
-	Pipe *recv;
+	Pipe recv;
 	qbrt_value result;
 	uint64_t pid;
 
 	ProcessRoot(Worker &owner, uint64_t pid)
 	: owner(owner)
 	, call(NULL)
-	, recv(NULL)
+	, recv()
 	, pid(pid)
 	{}
 };
@@ -212,7 +205,7 @@ struct Worker
 {
 	Application &app;
 	std::map< std::string, Module * > module;
-	std::set< ProcessRoot * > process;
+	std::map< uint64_t, ProcessRoot * > process;
 	CodeFrame *current;
 	CodeFrame::List *fresh;
 	CodeFrame::List *stale;

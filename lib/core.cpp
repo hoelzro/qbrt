@@ -107,6 +107,30 @@ void qbrt_value::ref(qbrt_value &v, qbrt_value &ref)
 	v.data.ref = &ref;
 }
 
+void qbrt_value::copy(qbrt_value &dst, const qbrt_value &src)
+{
+	switch (src.type->id) {
+		case VT_VOID:
+			set_void(dst);
+			break;
+		case VT_INT:
+			qbrt_value::i(dst, src.data.i);
+			break;
+		case VT_BOOL:
+			qbrt_value::b(dst, src.data.b);
+			break;
+		case VT_FLOAT:
+			qbrt_value::f(dst, src.data.f);
+			break;
+		case VT_BSTRING:
+			qbrt_value::str(dst, *src.data.str);
+			break;
+		default:
+			cerr << "wtf you can't copy that!\n";
+			break;
+	}
+}
+
 bool qbrt_value::is_value_index(qbrt_value &val)
 {
 	if (!val.data.reg) {

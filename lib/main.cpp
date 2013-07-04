@@ -497,7 +497,7 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 			qbrt_value::cfunc(dst, new cfunction_value(cf));
 		} else {
 			cerr << "could not find function: " << modname
-				<<" "<< fname << endl;
+				<<"/"<< fname << endl;
 			fail = FAIL_NOFUNCTION(ctx.function_name(), ctx.pc());
 			fail->debug << "could not find function: " << modname
 				<<'.'<< fname;
@@ -544,10 +544,20 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 	ProcessRoot *proc = new_process(w);
 	proc->call = new FunctionCall(*proc, *fval);
 	w.fresh->push_back(proc->call);
+	qbrt_value::i(pid, proc->pid);
 }
 
 void execute_recv(OpContext &ctx, const recv_instruction &i)
 {
+	Worker &w(ctx.worker());
+	if (w.current->proc.recv.empty()) {
+		w.current->cfstate = CFS_PEERWAIT;
+		return;
+	}
+
+	qbrt_value &dst(ctx.dstvalue(i.dst));
+	qbrt_value *msg(w.current->proc.recv.pop());
+	dst = *msg;
 	ctx.pc() += recv_instruction::SIZE;
 }
 
@@ -980,22 +990,24 @@ void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 	qbrt_value::typ(out, t);
 }
 
+void core_pid(OpContext &ctx, qbrt_value &result)
+{
+	qbrt_value::i(result, ctx.worker().current->proc.pid);
+}
+
 void core_send(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
-	if (! val) {
-		cerr << "no param for list empty\n";
+	const qbrt_value &pid(ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &src(ctx.srcvalue(PRIMARY_REG(1)));
+
+	map< uint64_t, ProcessRoot * >::const_iterator it;
+	Worker &w(ctx.worker());
+	it = w.process.find(pid.data.i);
+	if (it == w.process.end()) {
+		cerr << "no process for pid: " << pid.data.i << endl;
 		return;
 	}
-	switch (val->type->id) {
-		case VT_LIST:
-			qbrt_value::b(out, empty(val->data.list));
-			break;
-		default:
-			cerr << "empty arg not a list: " << (int) val->type->id
-				<< endl;
-			break;
-	}
+	it->second->recv.push(qbrt_value::dup(src));
 }
 
 void list_empty(OpContext &ctx, qbrt_value &out)
@@ -1110,11 +1122,7 @@ void iopop(Worker &w, CodeFrame *cf)
 	--w.iocount;
 	cf->io_pop();
 	cf->cfstate = CFS_READY;
-	if (!w.current) {
-		w.current = cf;
-	} else {
-		w.fresh->push_back(cf);
-	}
+	w.stale->push_back(cf);
 }
 
 void iowork(Worker &w)
@@ -1149,9 +1157,10 @@ void gotowork(Worker &w)
 			iopush(w);
 		}
 		if (w.iocount > 0) {
-			do {
-				iowork(w);
-			} while (!w.current);
+			iowork(w);
+			if (!w.current) {
+				findtask(w);
+			}
 		}
 
 		switch (w.current->cfstate) {
@@ -1163,7 +1172,6 @@ void gotowork(Worker &w)
 			case CFS_PEERWAIT:
 				w.stale->push_back(w.current);
 				w.current = NULL;
-				findtask(w);
 				break;
 			case CFS_FAILED:
 			case CFS_COMPLETE:
@@ -1171,8 +1179,11 @@ void gotowork(Worker &w)
 				break;
 		}
 		if (!w.current) {
-			// nothing left to do. let's get out of here.
-			break;
+			findtask(w);
+			if (!w.current) {
+				// nothing left to do. let's get out of here.
+				break;
+			}
 		}
 	}
 }
@@ -1187,6 +1198,7 @@ int main(int argc, const char **argv)
 	init_executioners();
 
 	Module *mod_core = new Module("core");
+	add_c_function(*mod_core, "pid", core_pid);
 	add_c_function(*mod_core, "send", core_send);
 
 	Module *mod_list = new Module("list");
@@ -1202,7 +1214,7 @@ int main(int argc, const char **argv)
 
 	Application app;
 	Worker &w(new_worker(app));
-	load_module(w, "core", mod_list);
+	load_module(w, "core", mod_core);
 	load_module(w, "list", mod_list);
 	load_module(w, "io", mod_io);
 

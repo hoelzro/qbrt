@@ -4,6 +4,23 @@
 using namespace std;
 
 
+bool Pipe::empty() const
+{
+	return data.empty();
+}
+
+void Pipe::push(qbrt_value *val)
+{
+	data.push_back(val);
+}
+
+qbrt_value * Pipe::pop()
+{
+	qbrt_value *val = data.front();
+	data.pop_front();
+	return val;
+}
+
 qbrt_value * get_context(CodeFrame *f, const string &name)
 {
 	while (f) {
@@ -96,7 +113,7 @@ Worker::Worker(Application &app, WorkerID id)
 ProcessRoot * new_process(Worker &w)
 {
 	ProcessRoot *proc = new ProcessRoot(w, ++w.next_pid);
-	w.process.insert(proc);
+	w.process[proc->pid] = proc;
 	return proc;
 }
 
