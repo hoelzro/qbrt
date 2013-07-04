@@ -108,7 +108,7 @@ public:
 				->value(secondary);
 		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
-		} else {
+		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf src reg? " << reg << endl;
@@ -130,7 +130,7 @@ public:
 			return w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
-		} else {
+		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf dst reg? " << reg << endl;
@@ -204,7 +204,7 @@ public:
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no src result register for c functions\n";
 			return *(qbrt_value *) NULL;
-		} else {
+		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf src reg? " << reg << endl;
@@ -227,7 +227,7 @@ public:
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no dst result register for c functions\n";
 			return *(qbrt_value *) NULL;
-		} else {
+		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf dst reg? " << reg << endl;
