@@ -19,6 +19,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -1249,6 +1252,19 @@ int main(int argc, const char **argv)
 	qbrt_value::i(mainproc->result, 0);
 	mainproc->call = new FunctionCall(*mainproc, *main_func);
 	w.current = mainproc->call;
+
+	struct stat buf;
+	fstat(fileno(stdin), &buf);
+	// printf("mode is %o\n", buf.st_mode);
+	if (S_ISREG(buf.st_mode)) {
+		// cerr << "stdin is a regular file\n";
+	}
+	if (S_ISCHR(buf.st_mode)) {
+		// cerr << "stdin is a character device\n";
+	}
+	if (S_ISFIFO(buf.st_mode)) {
+		// cerr << "stdin is fifo\n";
+	}
 
 	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
 	Stream *stream_stdout = new Stream(fileno(stdout), stdout);

@@ -107,33 +107,15 @@ def test_uqb(file)
 	passed = false
 	mod = file.chomp(File.extname(file))
 	sh "./qbc #{file}"
-	pid, stdin, stdout, stderr = Open4.popen4("./qbrt #{mod}")
-	status = Open4.popen4("./qbrt #{mod}") do |pid, stdin, stdout, stderr|
-		modbase = mod.sub('T/', '')
-		input_file = "T/INPUT/#{modbase}"
-		output_file = "T/OUTPUT/#{modbase}"
-
-		if File.exists? input_file
-			stdin.write(File.read(input_file))
-		end
-		n = 0
-		expected_output = File.open(output_file)
-		while true
-			actual = stdout.gets
-			expected = expected_output.gets
-			if actual == nil and expected == nil
-				passed = true
-				break
-			end
-			if expected != actual
-				puts "line mismatch:\n"
-				puts "-#{expected}"
-				puts "+#{actual}"
-			else
-				puts "x#{expected}"
-				puts "a#{actual}"
-			end
-		end
+	modbase = mod.sub('T/', '')
+	output = `cat T/INPUT/#{modbase} | ./qbrt #{mod} 2>&1`
+	expected = File.read("T/OUTPUT/#{modbase}")
+	if (output != expected)
+		puts "Expected output:\n#{expected}..."
+		puts "Actual output:\n#{output}..."
+		passed = false
+	else
+		passed = true
 	end
 	return passed
 end
