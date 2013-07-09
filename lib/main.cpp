@@ -1152,6 +1152,13 @@ void gotowork(Worker &w)
 		inspect_call_frame(cerr, *w.task->cframe);
 		getline(cin, ready);
 		*/
+		if (!w.current) {
+			// never going to get out of this loop
+			// but ok for now. can find a new proc
+			// from the application later.
+			sched_yield();
+			continue;
+		}
 
 		const instruction &i(frame_instruction(*w.current));
 		execute_instruction(w, i);
@@ -1216,12 +1223,16 @@ int main(int argc, const char **argv)
 	add_c_function(*mod_io, "readline", core_readline);
 
 	Application app;
-	Worker &w(new_worker(app));
-	load_module(w, "core", mod_core);
-	load_module(w, "list", mod_list);
-	load_module(w, "io", mod_io);
+	Worker &w1(new_worker(app));
+	load_module(w1, "core", mod_core);
+	load_module(w1, "list", mod_list);
+	load_module(w1, "io", mod_io);
+	Worker &w2(new_worker(app));
+	load_module(w2, "core", mod_core);
+	load_module(w2, "list", mod_list);
+	load_module(w2, "io", mod_io);
 
-	const Module *main_module = load_module(w, objname);
+	const Module *main_module = load_module(w1, objname);
 	if (!main_module) {
 		return 1;
 	}
@@ -1248,10 +1259,10 @@ int main(int argc, const char **argv)
 				, reverse(main_func->reg[1].data.list));
 	}
 
-	ProcessRoot *mainproc = new_process(w);
+	ProcessRoot *mainproc = new_process(w1);
 	qbrt_value::i(mainproc->result, 0);
 	mainproc->call = new FunctionCall(*mainproc, *main_func);
-	w.current = mainproc->call;
+	w1.current = mainproc->call;
 
 	struct stat buf;
 	fstat(fileno(stdin), &buf);
@@ -1268,10 +1279,12 @@ int main(int argc, const char **argv)
 
 	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
 	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
-	qbrt_value::stream(*add_context(w.current, "stdin"), stream_stdin);
-	qbrt_value::stream(*add_context(w.current, "stdout"), stream_stdout);
+	qbrt_value::stream(*add_context(w1.current, "stdin"), stream_stdin);
+	qbrt_value::stream(*add_context(w1.current, "stdout"), stream_stdout);
 
-	gotowork(w);
+	gotowork(w1);
+	int tid = pthread_create(&w2.thread, &w2.thread_attr
+			, launch_worker, &w2);
 
 	return mainproc->result.data.i;
 }

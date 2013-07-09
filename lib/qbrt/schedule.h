@@ -206,6 +206,8 @@ struct Worker
 	Application &app;
 	std::map< std::string, Module * > module;
 	std::map< uint64_t, ProcessRoot * > process;
+	pthread_t thread;
+	pthread_attr_t thread_attr;
 	CodeFrame *current;
 	CodeFrame::List *fresh;
 	CodeFrame::List *stale;
@@ -229,6 +231,9 @@ inline const Module * current_module(const Worker &w)
 const Module * find_module(const Worker &, const std::string &modname);
 const Module * load_module(Worker &, const std::string &modname);
 void load_module(Worker &, const std::string &modname, Module *);
+
+void gotowork(Worker &);
+void * launch_worker(void *);
 
 
 struct Application

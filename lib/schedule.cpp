@@ -233,6 +233,14 @@ void load_module(Worker &w, const string &modname, Module *mod)
 	w.module[modname] = mod;
 }
 
+void * launch_worker(void *void_worker)
+{
+	Worker *w = static_cast< Worker * >(void_worker);
+	pthread_detach(w->thread);
+	gotowork(*w);
+	return NULL;
+}
+
 Worker & new_worker(Application &app)
 {
 	Worker *w = new Worker(app, app.next_workerid++);

@@ -31,6 +31,7 @@ QBRT.compile_files("lib/main.cpp", \
 		  "lib/module.cpp", \
 		  "lib/schedule.cpp")
 QBRT.obj_dir = 'o/qbrt'
+QBRT.link 'pthread'
 QBRT.debug!
 
 PROJECT = CProject.new()
