@@ -25,8 +25,6 @@
 
 using namespace std;
 
-#define MAX_EPOLL_EVENTS 16
-
 
 qbrt_value CONST_REGISTER[CONST_REG_COUNT];
 
@@ -731,7 +729,7 @@ void init_executioners()
 	x[OP_WAIT] = (executioner) execute_wait;
 }
 
-inline static void execute_instruction(Worker &w, const instruction &i)
+void execute_instruction(Worker &w, const instruction &i)
 {
 	uint8_t opcode(i.opcode());
 	executioner x = EXECUTIONER[opcode];
@@ -1107,97 +1105,6 @@ void core_write(OpContext &ctx, qbrt_value &out)
 	ctx.io(stream.data.stream->write(*text.data.str));
 }
 
-void iopush(Worker &w)
-{
-	// add this io
-	StreamIO &io(*w.current->io);
-	epoll_event ev;
-	ev.events = io.events;
-	ev.data.ptr = w.current;
-	epoll_ctl(w.epfd, EPOLL_CTL_ADD, io.fd, &ev);
-	++w.iocount;
-	w.current = NULL;
-}
-
-void iopop(Worker &w, CodeFrame *cf)
-{
-	epoll_ctl(w.epfd, EPOLL_CTL_DEL, cf->io->fd, NULL);
-	--w.iocount;
-	cf->io_pop();
-	cf->cfstate = CFS_READY;
-	w.stale->push_back(cf);
-}
-
-void iowork(Worker &w)
-{
-	epoll_event events[MAX_EPOLL_EVENTS];
-	int timeout(w.fresh->empty() && w.stale->empty() ? 100 : 0);
-	int fdcnt(epoll_wait(w.epfd, events, MAX_EPOLL_EVENTS, timeout));
-	if (fdcnt == -1) {
-		perror("epoll_wait");
-		return;
-	}
-	for (int i(0); i<fdcnt; ++i) {
-		CodeFrame *cf = static_cast< CodeFrame * >(events[i].data.ptr);
-		cf->io->handle();
-		iopop(w, cf);
-	}
-}
-
-void gotowork(Worker &w)
-{
-	for (;;) {
-		/*
-		string ready;
-		inspect_call_frame(cerr, *w.task->cframe);
-		getline(cin, ready);
-		*/
-		if (!w.current) {
-			// never going to get out of this loop
-			// but ok for now. can find a new proc
-			// from the application later.
-			sched_yield();
-			continue;
-		}
-
-		const instruction &i(frame_instruction(*w.current));
-		execute_instruction(w, i);
-
-		if (w.current->io) {
-			iopush(w);
-		}
-		if (w.iocount > 0) {
-			iowork(w);
-			if (!w.current) {
-				findtask(w);
-			}
-		}
-
-		switch (w.current->cfstate) {
-			case CFS_READY:
-				// continue as normal
-				break;
-			case CFS_IOWAIT:
-			case CFS_NEW:
-			case CFS_PEERWAIT:
-				w.stale->push_back(w.current);
-				w.current = NULL;
-				break;
-			case CFS_FAILED:
-			case CFS_COMPLETE:
-				w.current->finish_frame(w);
-				break;
-		}
-		if (!w.current) {
-			findtask(w);
-			if (!w.current) {
-				// nothing left to do. let's get out of here.
-				break;
-			}
-		}
-	}
-}
-
 int main(int argc, const char **argv)
 {
 	if (argc < 2) {
@@ -1223,14 +1130,11 @@ int main(int argc, const char **argv)
 	add_c_function(*mod_io, "readline", core_readline);
 
 	Application app;
+	load_module(app, "core", mod_core);
+	load_module(app, "list", mod_list);
+	load_module(app, "io", mod_io);
 	Worker &w1(new_worker(app));
-	load_module(w1, "core", mod_core);
-	load_module(w1, "list", mod_list);
-	load_module(w1, "io", mod_io);
 	Worker &w2(new_worker(app));
-	load_module(w2, "core", mod_core);
-	load_module(w2, "list", mod_list);
-	load_module(w2, "io", mod_io);
 
 	const Module *main_module = load_module(w1, objname);
 	if (!main_module) {
@@ -1282,9 +1186,12 @@ int main(int argc, const char **argv)
 	qbrt_value::stream(*add_context(w1.current, "stdin"), stream_stdin);
 	qbrt_value::stream(*add_context(w1.current, "stdout"), stream_stdout);
 
-	gotowork(w1);
-	int tid = pthread_create(&w2.thread, &w2.thread_attr
+	int tid1 = pthread_create(&w1.thread, &w1.thread_attr
+			, launch_worker, &w1);
+	int tid2 = pthread_create(&w2.thread, &w2.thread_attr
 			, launch_worker, &w2);
+
+	sleep(100);
 
 	return mainproc->result.data.i;
 }

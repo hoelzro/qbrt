@@ -29,6 +29,7 @@ struct FunctionCall;
 struct ProcessRoot;
 struct Module;
 struct Application;
+typedef std::map< std::string, Module * > ModuleMap;
 
 
 struct Pipe
@@ -204,7 +205,7 @@ struct ProcessRoot
 struct Worker
 {
 	Application &app;
-	std::map< std::string, Module * > module;
+	ModuleMap module;
 	std::map< uint64_t, ProcessRoot * > process;
 	pthread_t thread;
 	pthread_attr_t thread_attr;
@@ -239,13 +240,16 @@ void * launch_worker(void *);
 struct Application
 {
 	std::map< WorkerID, Worker * > worker;
+	ModuleMap module;
+	std::map< uint64_t, ProcessRoot * > process;
 	WorkerID next_workerid;
 
 	Application()
-	: next_workerid(0)
+	: next_workerid(1)
 	{}
 };
 
+void load_module(Application &, const std::string &modname, Module *);
 Worker & new_worker(Application &);
 
 #endif

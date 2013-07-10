@@ -1,7 +1,10 @@
 #include "qbrt/schedule.h"
 #include "qbrt/module.h"
+#include "qbrt/type.h"
 
 using namespace std;
+
+#define MAX_EPOLL_EVENTS 16
 
 
 bool Pipe::empty() const
@@ -94,6 +97,8 @@ Worker::Worker(Application &app, WorkerID id)
 : app(app)
 , module()
 , current(NULL)
+, thread()
+, thread_attr()
 , process()
 , fresh(new CodeFrame::List())
 , stale(new CodeFrame::List())
@@ -141,11 +146,13 @@ const Module * find_module(const Worker &w, const std::string &modname)
 		return current_module(w);
 	}
 
-	std::map< std::string, Module * >::const_iterator it(w.module.begin());
-	for (; it!=w.module.end(); ++it) {
-		if (modname == it->first) {
-			return it->second;
-		}
+	ModuleMap::const_iterator it(w.module.find(modname));
+	if (it != w.module.end()) {
+		return it->second;
+	}
+	it = w.app.module.find(modname);
+	if (it != w.app.module.end()) {
+		return it->second;
 	}
 	return NULL;
 }
@@ -223,6 +230,16 @@ Function find_overridden_function(Worker &w, const Function &func)
 
 const Module * load_module(Worker &w, const string &objname)
 {
+	ModuleMap::const_iterator it;
+	it = w.module.find(objname);
+	if (it != w.module.end()) {
+		return it->second;
+	}
+	it = w.app.module.find(objname);
+	if (it != w.app.module.end()) {
+		w.module[objname] = it->second;
+		return it->second;
+	}
 	Module *mod = load_module(objname);
 	w.module[objname] = mod;
 	return mod;
@@ -233,12 +250,114 @@ void load_module(Worker &w, const string &modname, Module *mod)
 	w.module[modname] = mod;
 }
 
+void iopush(Worker &w)
+{
+	// add this io
+	StreamIO &io(*w.current->io);
+	epoll_event ev;
+	ev.events = io.events;
+	ev.data.ptr = w.current;
+	epoll_ctl(w.epfd, EPOLL_CTL_ADD, io.fd, &ev);
+	++w.iocount;
+	w.current = NULL;
+}
+
+void iopop(Worker &w, CodeFrame *cf)
+{
+	epoll_ctl(w.epfd, EPOLL_CTL_DEL, cf->io->fd, NULL);
+	--w.iocount;
+	cf->io_pop();
+	cf->cfstate = CFS_READY;
+	w.stale->push_back(cf);
+}
+
+void iowork(Worker &w)
+{
+	epoll_event events[MAX_EPOLL_EVENTS];
+	int timeout(w.fresh->empty() && w.stale->empty() ? 100 : 0);
+	int fdcnt(epoll_wait(w.epfd, events, MAX_EPOLL_EVENTS, timeout));
+	if (fdcnt == -1) {
+		perror("epoll_wait");
+		return;
+	}
+	for (int i(0); i<fdcnt; ++i) {
+		CodeFrame *cf = static_cast< CodeFrame * >(events[i].data.ptr);
+		cf->io->handle();
+		iopop(w, cf);
+	}
+}
+
+void execute_instruction(Worker &, const instruction &);
+
+void gotowork(Worker &w)
+{
+	for (;;) {
+		/*
+		string ready;
+		inspect_call_frame(cerr, *w.task->cframe);
+		getline(cin, ready);
+		*/
+		if (!w.current) {
+			// never going to get out of this loop
+			// but ok for now. can find a new proc
+			// from the application later.
+			timespec qtp;
+			qtp.tv_sec = 0;
+			qtp.tv_nsec = 2000;
+			nanosleep(&qtp, NULL);
+			sched_yield();
+			continue;
+		}
+
+		const instruction &i(frame_instruction(*w.current));
+		execute_instruction(w, i);
+
+		if (w.current->io) {
+			iopush(w);
+		}
+		if (w.iocount > 0) {
+			iowork(w);
+			if (!w.current) {
+				findtask(w);
+			}
+		}
+
+		switch (w.current->cfstate) {
+			case CFS_READY:
+				// continue as normal
+				break;
+			case CFS_IOWAIT:
+			case CFS_NEW:
+			case CFS_PEERWAIT:
+				w.stale->push_back(w.current);
+				w.current = NULL;
+				break;
+			case CFS_FAILED:
+			case CFS_COMPLETE:
+				w.current->finish_frame(w);
+				break;
+		}
+		if (!w.current) {
+			findtask(w);
+			if (!w.current) {
+				// nothing left to do. let's get out of here.
+				break;
+			}
+		}
+	}
+}
+
 void * launch_worker(void *void_worker)
 {
 	Worker *w = static_cast< Worker * >(void_worker);
 	pthread_detach(w->thread);
 	gotowork(*w);
 	return NULL;
+}
+
+void load_module(Application &app, const string &modname, Module *mod)
+{
+	app.module[modname] = mod;
 }
 
 Worker & new_worker(Application &app)
