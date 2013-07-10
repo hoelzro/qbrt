@@ -1133,10 +1133,10 @@ int main(int argc, const char **argv)
 	load_module(app, "core", mod_core);
 	load_module(app, "list", mod_list);
 	load_module(app, "io", mod_io);
+	Worker &w0(new_worker(app));
 	Worker &w1(new_worker(app));
-	Worker &w2(new_worker(app));
 
-	const Module *main_module = load_module(w1, objname);
+	const Module *main_module = load_module(w0, objname);
 	if (!main_module) {
 		return 1;
 	}
@@ -1163,10 +1163,10 @@ int main(int argc, const char **argv)
 				, reverse(main_func->reg[1].data.list));
 	}
 
-	ProcessRoot *mainproc = new_process(w1);
+	ProcessRoot *mainproc = new_process(w0);
 	qbrt_value::i(mainproc->result, 0);
 	mainproc->call = new FunctionCall(*mainproc, *main_func);
-	w1.current = mainproc->call;
+	w0.current = mainproc->call;
 
 	struct stat buf;
 	fstat(fileno(stdin), &buf);
@@ -1183,13 +1183,13 @@ int main(int argc, const char **argv)
 
 	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
 	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
-	qbrt_value::stream(*add_context(w1.current, "stdin"), stream_stdin);
-	qbrt_value::stream(*add_context(w1.current, "stdout"), stream_stdout);
+	qbrt_value::stream(*add_context(w0.current, "stdin"), stream_stdin);
+	qbrt_value::stream(*add_context(w0.current, "stdout"), stream_stdout);
 
-	int tid1 = pthread_create(&w1.thread, &w1.thread_attr
+	int tid1 = pthread_create(&w0.thread, &w0.thread_attr
+			, launch_worker, &w0);
+	int tid2 = pthread_create(&w1.thread, &w1.thread_attr
 			, launch_worker, &w1);
-	int tid2 = pthread_create(&w2.thread, &w2.thread_attr
-			, launch_worker, &w2);
 
 	sleep(100);
 
