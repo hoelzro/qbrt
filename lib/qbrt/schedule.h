@@ -220,6 +220,8 @@ struct Worker
 	TaskID next_pid;
 
 	Worker(Application &, WorkerID);
+
+	bool empty() const;
 };
 
 ProcessRoot * new_process(Worker &);
@@ -239,7 +241,8 @@ void * launch_worker(void *);
 
 struct Application
 {
-	std::map< WorkerID, Worker * > worker;
+	typedef std::map< WorkerID, Worker * > WorkerMap;
+	WorkerMap worker;
 	ModuleMap module;
 	std::map< uint64_t, ProcessRoot * > process;
 	WorkerID next_workerid;
@@ -251,5 +254,6 @@ struct Application
 
 void load_module(Application &, const std::string &modname, Module *);
 Worker & new_worker(Application &);
+void application_loop(Application &);
 
 #endif

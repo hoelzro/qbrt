@@ -1190,7 +1190,7 @@ int main(int argc, const char **argv)
 	int tid2 = pthread_create(&w1.thread, &w1.thread_attr
 			, launch_worker, &w1);
 
-	sleep(100);
+	application_loop(app);
 
 	return mainproc->result.data.i;
 }

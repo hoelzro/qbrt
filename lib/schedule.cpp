@@ -115,6 +115,14 @@ Worker::Worker(Application &app, WorkerID id)
 	}
 }
 
+bool Worker::empty() const
+{
+	bool empty = !current
+		&& (!fresh || fresh->empty())
+		&& (!stale || stale->empty());
+	return empty;
+}
+
 ProcessRoot * new_process(Worker &w)
 {
 	ProcessRoot *proc = new ProcessRoot(w, ++w.next_pid);
@@ -365,4 +373,27 @@ Worker & new_worker(Application &app)
 	Worker *w = new Worker(app, app.next_workerid++);
 	app.worker[w->id] = w;
 	return *w;
+}
+
+void application_loop(Application &app)
+{
+	timespec qtp;
+	qtp.tv_sec = 0;
+	qtp.tv_nsec = 1000000;
+
+	Application::WorkerMap::iterator it;
+	for (;;) {
+		bool all_empty(true);
+		for (it=app.worker.begin(); it!=app.worker.end(); ++it) {
+			if (!it->second->empty()) {
+				all_empty = false;
+				break;
+			}
+		}
+		if (all_empty) {
+			break;
+		} else {
+			nanosleep(&qtp, NULL);
+		}
+	}
 }
