@@ -1085,8 +1085,7 @@ void core_readline(OpContext &ctx, qbrt_value &out)
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
 	}
-	qbrt_value::str(out, "");
-	ctx.io(stream.data.stream->readline(*out.data.str));
+	ctx.io(stream.data.stream->readline(out));
 }
 
 void core_write(OpContext &ctx, qbrt_value &out)

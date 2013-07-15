@@ -57,9 +57,9 @@ struct StreamReadline
 : public StreamIO
 {
 	FILE *file;
-	std::string &dst;
+	qbrt_value &dst;
 
-	StreamReadline(int fd, FILE *f, std::string &dest)
+	StreamReadline(int fd, FILE *f, qbrt_value &dest)
 	: StreamIO(fd, EPOLLIN)
 	, file(f)
 	, dst(dest)
@@ -91,7 +91,7 @@ struct Stream
 	, file(file)
 	{}
 
-	StreamIO * readline(std::string &dst)
+	StreamIO * readline(qbrt_value &dst)
 	{
 		return new StreamReadline(fd, file, dst);
 	}

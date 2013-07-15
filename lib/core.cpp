@@ -245,7 +245,7 @@ void StreamReadline::handle()
 	if (line[len-1] == '\n') {
 		line[len-1] = '\0';
 	}
-	dst = line;
+	qbrt_value::str(dst, line);
 	free(line);
 }
 
