@@ -27,6 +27,7 @@ typedef uint32_t WorkerID; // this should just be OS thread id?
 struct ParallelPath;
 struct FunctionCall;
 struct ProcessRoot;
+struct StreamIO;
 struct Module;
 struct Application;
 typedef std::map< std::string, const Module * > ModuleMap;

@@ -10,6 +10,7 @@
 #include "qbrt/map.h"
 #include "qbrt/vector.h"
 #include "qbrt/module.h"
+#include "io.h"
 #include "instruction/schedule.h"
 
 #include <vector>
@@ -1080,17 +1081,17 @@ void core_open(OpContext &ctx, qbrt_value &out)
 	}
 	FILE *f = fopen(filename.data.str->c_str(), mode.data.str->c_str());
 	int fd = fileno(f);
-	qbrt_value::stream(out, new Stream(fd, f));
+	qbrt_value::stream(out, new FileStream(fd, f));
 }
 
-void core_readline(OpContext &ctx, qbrt_value &out)
+void core_getline(OpContext &ctx, qbrt_value &out)
 {
 	qbrt_value &stream(ctx.dstvalue(PRIMARY_REG(0)));
 	if (stream.type->id != VT_STREAM) {
-		cerr << "first argument to write is not a stream\n";
+		cerr << "first argument to getline is not a stream\n";
 		exit(2);
 	}
-	ctx.io(stream.data.stream->readline(out));
+	ctx.io(stream.data.stream->getline(out));
 }
 
 void core_write(OpContext &ctx, qbrt_value &out)
@@ -1132,7 +1133,7 @@ int main(int argc, const char **argv)
 	add_c_function(*mod_io, "print", core_print);
 	add_c_function(*mod_io, "open", core_open);
 	add_c_function(*mod_io, "write", core_write);
-	add_c_function(*mod_io, "readline", core_readline);
+	add_c_function(*mod_io, "getline", core_getline);
 
 	Application app;
 	load_module(app, "core", mod_core);
@@ -1168,8 +1169,25 @@ int main(int argc, const char **argv)
 				, reverse(main_func->reg[1].data.list));
 	}
 
-	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
-	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
+	Stream *stream_stdin = NULL;
+	Stream *stream_stdout = NULL;
+	struct stat buf;
+	fstat(fileno(stdin), &buf);
+	// printf("mode is %o\n", buf.st_mode);
+	if (S_ISREG(buf.st_mode)) {
+		// cerr << "stdin is a regular file\n";
+		stream_stdin = new FileStream(fileno(stdin), stdin);
+		stream_stdout = new FileStream(fileno(stdout), stdout);
+	} else if (S_ISCHR(buf.st_mode)) {
+		// cerr << "stdin is a character device\n";
+		stream_stdin = new FileStream(fileno(stdin), stdin);
+		stream_stdout = new FileStream(fileno(stdout), stdout);
+	} else if (S_ISFIFO(buf.st_mode)) {
+		// cerr << "stdin is fifo\n";
+		stream_stdin = new ByteStream(fileno(stdin), stdin);
+		stream_stdout = new ByteStream(fileno(stdout), stdout);
+	}
+
 
 	qbrt_value result;
 	qbrt_value::i(result, 0);
@@ -1177,19 +1195,6 @@ int main(int argc, const char **argv)
 	qbrt_value::stream(*add_context(main_call, "stdin"), stream_stdin);
 	qbrt_value::stream(*add_context(main_call, "stdout"), stream_stdout);
 	ProcessRoot *main_proc = new_process(app, main_call);
-
-	struct stat buf;
-	fstat(fileno(stdin), &buf);
-	// printf("mode is %o\n", buf.st_mode);
-	if (S_ISREG(buf.st_mode)) {
-		// cerr << "stdin is a regular file\n";
-	}
-	if (S_ISCHR(buf.st_mode)) {
-		// cerr << "stdin is a character device\n";
-	}
-	if (S_ISFIFO(buf.st_mode)) {
-		// cerr << "stdin is fifo\n";
-	}
 
 	int tid1 = pthread_create(&w0.thread, &w0.thread_attr
 			, launch_worker, &w0);

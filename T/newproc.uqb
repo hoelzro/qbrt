@@ -3,7 +3,7 @@ lfunc $0 "io" "write"
 ref $0.0 %1
 const $0.1 "Excuse me, what's your first name? "
 call void $0
-lfunc $1 "io" "readline"
+lfunc $1 "io" "getline"
 ref $1.0 %0
 lfunc $2 "core" "send"
 copy $2.0 %2

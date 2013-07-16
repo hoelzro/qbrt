@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include <unistd.h>
 #include "qbrt/arithmetic.h"
 #include "qbrt/function.h"
 #include "qbrt/logic.h"
@@ -232,34 +231,4 @@ uint8_t isize(uint8_t opcode)
 		exit(1);
 	}
 	return sz;
-}
-
-
-void StreamReadline::handle()
-{
-	char *line = NULL;
-	size_t n(0);
-	size_t len(getline(&line, &n, file));
-	// get rid of that lame newline
-	// I will probably need to undue this later
-	if (line[len-1] == '\n') {
-		line[len-1] = '\0';
-	}
-	qbrt_value::str(dst, line);
-	free(line);
-}
-
-void StreamWrite::handle()
-{
-	size_t result(write(fd, src.c_str(), src.size()));
-	if (result < 0) {
-		cerr << "failure of some kind\n";
-	}
-}
-
-size_t Stream::read(std::string &result)
-{
-	char buffer[1024];
-	fgets(buffer, sizeof(buffer), file);
-	result = buffer;
 }

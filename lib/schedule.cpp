@@ -1,6 +1,6 @@
 #include "qbrt/schedule.h"
 #include "qbrt/module.h"
-#include "qbrt/type.h"
+#include "io.h"
 
 using namespace std;
 
@@ -261,14 +261,14 @@ void iopush(Worker &w)
 	epoll_event ev;
 	ev.events = io.events;
 	ev.data.ptr = w.current;
-	epoll_ctl(w.epfd, EPOLL_CTL_ADD, io.fd, &ev);
+	epoll_ctl(w.epfd, EPOLL_CTL_ADD, io.stream->fd, &ev);
 	++w.iocount;
 	w.current = NULL;
 }
 
 void iopop(Worker &w, CodeFrame *cf)
 {
-	epoll_ctl(w.epfd, EPOLL_CTL_DEL, cf->io->fd, NULL);
+	epoll_ctl(w.epfd, EPOLL_CTL_DEL, cf->io->stream->fd, NULL);
 	--w.iocount;
 	cf->io_pop();
 	cf->cfstate = CFS_READY;

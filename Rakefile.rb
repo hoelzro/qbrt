@@ -28,6 +28,7 @@ QBRT.name = 'qbrt'
 QBRT.include 'lib'
 QBRT.compile_files("lib/main.cpp", \
 		  "lib/core.cpp", \
+		  "lib/io.cpp", \
 		  "lib/module.cpp", \
 		  "lib/schedule.cpp")
 QBRT.obj_dir = 'o/qbrt'
