@@ -1,0 +1,31 @@
+dfunc "print_wid" 0
+lfunc $1 "io" "print"
+const $1.0 "worker: "
+call void $1
+
+lfunc $0 "core" "wid"
+call $1.0 $0
+call void $1
+
+const $1.0 "\n"
+call void $1
+return
+end.
+
+
+dfunc "__main" 0
+lfunc $1 "io" "print"
+const $1.0 "main:\n"
+call void $1
+
+lfunc $0 "" "print_wid"
+call void $0
+
+const $1.0 "\nchildren:\n"
+call void $1
+newproc void $0
+newproc void $0
+newproc void $0
+
+return
+end.

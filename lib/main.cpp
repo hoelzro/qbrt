@@ -996,6 +996,12 @@ void core_pid(OpContext &ctx, qbrt_value &result)
 	qbrt_value::i(result, ctx.worker().current->proc.pid);
 }
 
+/** Return the worker ID to a result */
+void core_wid(OpContext &ctx, qbrt_value &result)
+{
+	qbrt_value::i(result, ctx.worker().id);
+}
+
 void core_send(OpContext &ctx, qbrt_value &out)
 {
 	const qbrt_value &pid(ctx.srcvalue(PRIMARY_REG(0)));
@@ -1116,6 +1122,7 @@ int main(int argc, const char **argv)
 	Module *mod_core = new Module("core");
 	add_c_function(*mod_core, "pid", core_pid);
 	add_c_function(*mod_core, "send", core_send);
+	add_c_function(*mod_core, "wid", core_wid);
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, "empty", list_empty);
