@@ -3,6 +3,13 @@ lfunc $1 "io" "print"
 const $1.0 "worker: "
 call void $1
 
+lfunc $0 "core" "pid"
+call $1.0 $0
+call void $1
+
+const $1.0 "@"
+call void $1
+
 lfunc $0 "core" "wid"
 call $1.0 $0
 call void $1
