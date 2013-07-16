@@ -29,16 +29,16 @@ struct FunctionCall;
 struct ProcessRoot;
 struct Module;
 struct Application;
-typedef std::map< std::string, Module * > ModuleMap;
+typedef std::map< std::string, const Module * > ModuleMap;
 
 
 struct Pipe
 {
 public:
 	Pipe()
-	: lock()
+	: pipe_lock()
 	{
-		pthread_mutex_init(&lock, NULL);
+		pthread_spin_init(&pipe_lock, PTHREAD_PROCESS_PRIVATE);
 	}
 
 	bool empty() const;
@@ -47,13 +47,13 @@ public:
 
 private:
 	std::list< qbrt_value * > data;
-	pthread_mutex_t lock;
+	pthread_spinlock_t pipe_lock;
 };
 
 struct CodeFrame
 : public qbrt_value_index
 {
-	ProcessRoot &proc;
+	ProcessRoot *proc;
 	CodeFrame *parent;
 	std::set< CodeFrame * > fork;
 	StreamIO *io;
@@ -71,8 +71,8 @@ struct CodeFrame
 	, frame_context()
 	{}
 
-	CodeFrame(ProcessRoot &proc, CodeFrameType type)
-	: proc(proc)
+	CodeFrame(CodeFrameType type)
+	: proc(NULL)
 	, parent(NULL)
 	, io(NULL)
 	, cftype(type)
@@ -106,21 +106,29 @@ public:
 struct FunctionCall
 : public CodeFrame
 {
-	qbrt_value &result;
+	qbrt_value *result;
 	qbrt_value *reg_data;
 	const FunctionResource *resource;
 	const Module *mod;
 	int regc;
 
-	FunctionCall(CodeFrame &parent, qbrt_value &result, function_value &func)
-	: CodeFrame(parent, CFT_CALL)
-	, result(result)
+	FunctionCall(qbrt_value &result, function_value &func)
+	: CodeFrame(CFT_CALL)
+	, result(&result)
 	, reg_data(func.reg)
 	, resource(func.func.resource)
 	, mod(func.func.mod)
 	, regc(func.num_values())
 	{}
-	FunctionCall(ProcessRoot &, function_value &);
+	FunctionCall(CodeFrame &parent, qbrt_value &result, function_value &func)
+	: CodeFrame(parent, CFT_CALL)
+	, result(&result)
+	, reg_data(func.reg)
+	, resource(func.func.resource)
+	, mod(func.func.mod)
+	, regc(func.num_values())
+	{}
+	FunctionCall(function_value &func);
 
 	virtual void finish_frame(Worker &);
 
@@ -172,18 +180,20 @@ static inline ParallelPath * fork_frame(CodeFrame &src)
 
 struct ProcessRoot
 {
-	Worker &owner;
+	Worker *owner;
 	FunctionCall *call;
 	Pipe recv;
 	qbrt_value result;
 	uint64_t pid;
 
-	ProcessRoot(Worker &owner, uint64_t pid)
-	: owner(owner)
-	, call(NULL)
+	ProcessRoot(uint64_t pid, FunctionCall *call)
+	: owner(NULL)
+	, call(call)
 	, recv()
 	, pid(pid)
 	{}
+
+	typedef std::map< uint64_t, ProcessRoot * > Map;
 };
 
 
@@ -206,7 +216,7 @@ struct Worker
 {
 	Application &app;
 	ModuleMap module;
-	std::map< uint64_t, ProcessRoot * > process;
+	ProcessRoot::Map process;
 	pthread_t thread;
 	pthread_attr_t thread_attr;
 	CodeFrame *current;
@@ -224,8 +234,6 @@ struct Worker
 	bool empty() const;
 };
 
-ProcessRoot * new_process(Worker &);
-
 void findtask(Worker &);
 inline const Module * current_module(const Worker &w)
 {
@@ -233,7 +241,6 @@ inline const Module * current_module(const Worker &w)
 }
 const Module * find_module(const Worker &, const std::string &modname);
 const Module * load_module(Worker &, const std::string &modname);
-void load_module(Worker &, const std::string &modname, Module *);
 
 void gotowork(Worker &);
 void * launch_worker(void *);
@@ -244,16 +251,26 @@ struct Application
 	typedef std::map< WorkerID, Worker * > WorkerMap;
 	WorkerMap worker;
 	ModuleMap module;
-	std::map< uint64_t, ProcessRoot * > process;
+	ProcessRoot::Map newproc;
+	ProcessRoot::Map recv;
+	pthread_spinlock_t application_lock;
 	WorkerID next_workerid;
+	uint64_t pid_count;
 
-	Application()
-	: next_workerid(1)
-	{}
+	Application();
+	~Application();
+
+private:
+	// don't use this. that doesn't make any sense at all.
+	// it's only here to enforce the point.
+	Application(const Application &);
 };
 
-void load_module(Application &, const std::string &modname, Module *);
+const Module * find_app_module(Application &, const std::string &modname);
+const Module * load_module(Application &, const std::string &modname);
+void load_module(Application &, const std::string &modname, const Module *);
 Worker & new_worker(Application &);
+ProcessRoot * new_process(Application &, FunctionCall *);
 void application_loop(Application &);
 
 #endif

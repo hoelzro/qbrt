@@ -55,9 +55,9 @@ void CodeFrame::io_pop()
 }
 
 
-FunctionCall::FunctionCall(ProcessRoot &proc, function_value &func)
-: CodeFrame(proc, CFT_CALL)
-, result(proc.result)
+FunctionCall::FunctionCall(function_value &func)
+: CodeFrame(CFT_CALL)
+, result(NULL)
 , reg_data(func.reg)
 , resource(func.func.resource)
 , mod(func.func.mod)
@@ -123,13 +123,6 @@ bool Worker::empty() const
 	return empty;
 }
 
-ProcessRoot * new_process(Worker &w)
-{
-	ProcessRoot *proc = new ProcessRoot(w, ++w.next_pid);
-	w.process[proc->pid] = proc;
-	return proc;
-}
-
 void findtask(Worker &w)
 {
 	if (w.fresh->empty()) {
@@ -169,7 +162,7 @@ Function find_override(Worker &w, const char * protocol_mod
 		, const char *protocol_name, const Type &t
 		, const char *funcname)
 {
-	std::map< std::string, Module * >::const_iterator it;
+	std::map< std::string, const Module * >::const_iterator it;
 	it = w.module.begin();
 	for (; it!=w.module.end(); ++it) {
 		Function f(it->second->fetch_override(protocol_mod
@@ -243,19 +236,22 @@ const Module * load_module(Worker &w, const string &objname)
 	if (it != w.module.end()) {
 		return it->second;
 	}
-	it = w.app.module.find(objname);
-	if (it != w.app.module.end()) {
-		w.module[objname] = it->second;
-		return it->second;
+	const Module *mod = find_app_module(w.app, objname);
+	if (mod) {
+		w.module[objname] = mod;
+		return mod;
 	}
-	Module *mod = load_module(objname);
+	mod = load_module(objname);
 	w.module[objname] = mod;
+	load_module(w.app, objname, mod);
 	return mod;
 }
 
-void load_module(Worker &w, const string &modname, Module *mod)
+static void assign_process(Worker &w, ProcessRoot *proc)
 {
-	w.module[modname] = mod;
+	proc->owner = &w;
+	w.process[proc->pid] = proc;
+	w.stale->push_back(proc->call);
 }
 
 void iopush(Worker &w)
@@ -314,6 +310,7 @@ void gotowork(Worker &w)
 			qtp.tv_nsec = 2000;
 			nanosleep(&qtp, NULL);
 			sched_yield();
+			findtask(w);
 			continue;
 		}
 
@@ -363,9 +360,56 @@ void * launch_worker(void *void_worker)
 	return NULL;
 }
 
-void load_module(Application &app, const string &modname, Module *mod)
+
+/// Application
+
+Application::Application()
+: next_workerid(1)
+, pid_count(0)
+{
+	pthread_spin_init(&application_lock, PTHREAD_PROCESS_PRIVATE);
+}
+
+Application::~Application()
+{
+	pthread_spin_destroy(&application_lock);
+}
+
+const Module * find_app_module(Application &app, const string &modname)
+{
+	ModuleMap::iterator it;
+	it = app.module.find(modname);
+	if (it == app.module.end()) {
+		return NULL;
+	}
+	return it->second;
+}
+
+const Module * load_module(Application &app, const string &modname)
+{
+	const Module *mod = find_app_module(app, modname);
+	if (mod) {
+		return mod;
+	}
+	mod = load_module(modname);
+	app.module[modname] = mod;
+	return mod;
+}
+
+void load_module(Application &app, const string &modname, const Module *mod)
 {
 	app.module[modname] = mod;
+}
+
+ProcessRoot * new_process(Application &app, FunctionCall *call)
+{
+	pthread_spin_lock(&app.application_lock);
+	ProcessRoot *proc = new ProcessRoot(++app.pid_count, call);
+	call->proc = proc;
+	app.newproc[proc->pid] = proc;
+	app.recv[proc->pid] = proc;
+	pthread_spin_unlock(&app.application_lock);
+	return proc;
 }
 
 Worker & new_worker(Application &app)
@@ -375,14 +419,34 @@ Worker & new_worker(Application &app)
 	return *w;
 }
 
+void cycle_distributor(Application::WorkerMap::iterator &it, Application &app)
+{
+	++it;
+	if (it == app.worker.end()) {
+		it = app.worker.begin();
+	}
+}
+
+void distribute_work(Application::WorkerMap::iterator &it, Application &app)
+{
+	while (!app.newproc.empty() && it != app.worker.end()) {
+		ProcessRoot::Map::iterator proc(app.newproc.begin());
+		assign_process(*it->second, proc->second);
+		app.newproc.erase(proc);
+		cycle_distributor(it, app);
+	}
+}
+
 void application_loop(Application &app)
 {
 	timespec qtp;
 	qtp.tv_sec = 0;
 	qtp.tv_nsec = 1000000;
 
+	Application::WorkerMap::iterator distributor(app.worker.begin());
 	Application::WorkerMap::iterator it;
 	for (;;) {
+		distribute_work(distributor, app);
 		bool all_empty(true);
 		for (it=app.worker.begin(); it!=app.worker.end(); ++it) {
 			if (!it->second->empty()) {

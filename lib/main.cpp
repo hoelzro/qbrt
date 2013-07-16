@@ -59,7 +59,7 @@ qbrt_value & get_special_reg(CodeFrame &f, reg_t reg)
 	qbrt_value *special = 0;
 	switch (reg) {
 		case REG_RESULT:
-			special = &f.function_call().result;
+			special = f.function_call().result;
 			break;
 		default:
 			cout << "dunno that special register";
@@ -108,7 +108,7 @@ public:
 			return follow_ref(func.value(primary)).data.reg
 				->value(secondary);
 		} else if (SPECIAL_REG_RESULT == reg) {
-			return func.result;
+			return *func.result;
 		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
@@ -130,7 +130,7 @@ public:
 		} else if (CONST_REG_VOID == reg) {
 			return w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
-			return func.result;
+			return *func.result;
 		} else if (REG_IS_CONST(reg)) {
 			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
@@ -542,22 +542,21 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 	qbrt_value::set_void(func);
 	Worker &w(ctx.worker());
 
-	ProcessRoot *proc = new_process(w);
-	proc->call = new FunctionCall(*proc, *fval);
-	w.fresh->push_back(proc->call);
+	FunctionCall *call = new FunctionCall(*fval);
+	ProcessRoot *proc = new_process(w.app, call);
 	qbrt_value::i(pid, proc->pid);
 }
 
 void execute_recv(OpContext &ctx, const recv_instruction &i)
 {
 	Worker &w(ctx.worker());
-	if (w.current->proc.recv.empty()) {
+	if (w.current->proc->recv.empty()) {
 		w.current->cfstate = CFS_PEERWAIT;
 		return;
 	}
 
 	qbrt_value &dst(ctx.dstvalue(i.dst));
-	qbrt_value *msg(w.current->proc.recv.pop());
+	qbrt_value *msg(w.current->proc->recv.pop());
 	dst = *msg;
 	ctx.pc() += recv_instruction::SIZE;
 }
@@ -863,7 +862,7 @@ ostream & inspect_call_frame(ostream &out, const CodeFrame &cf)
 	const instruction &i(frame_instruction(cf));
 	out << "pc: " << cf.pc << " => " << (int) i.opcode() << endl;
 	out << "result: ";
-	inspect(out, fc.result);
+	inspect(out, *fc.result);
 	out << endl;
 	inspect_value_index(out, cf);
 	return out;
@@ -993,7 +992,7 @@ void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 
 void core_pid(OpContext &ctx, qbrt_value &result)
 {
-	qbrt_value::i(result, ctx.worker().current->proc.pid);
+	qbrt_value::i(result, ctx.worker().current->proc->pid);
 }
 
 /** Return the worker ID to a result */
@@ -1142,7 +1141,7 @@ int main(int argc, const char **argv)
 	Worker &w0(new_worker(app));
 	Worker &w1(new_worker(app));
 
-	const Module *main_module = load_module(w0, objname);
+	const Module *main_module = load_module(app, objname);
 	if (!main_module) {
 		return 1;
 	}
@@ -1169,10 +1168,15 @@ int main(int argc, const char **argv)
 				, reverse(main_func->reg[1].data.list));
 	}
 
-	ProcessRoot *mainproc = new_process(w0);
-	qbrt_value::i(mainproc->result, 0);
-	mainproc->call = new FunctionCall(*mainproc, *main_func);
-	w0.current = mainproc->call;
+	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
+	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
+
+	qbrt_value result;
+	qbrt_value::i(result, 0);
+	FunctionCall *main_call = new FunctionCall(result, *main_func);
+	qbrt_value::stream(*add_context(main_call, "stdin"), stream_stdin);
+	qbrt_value::stream(*add_context(main_call, "stdout"), stream_stdout);
+	ProcessRoot *main_proc = new_process(app, main_call);
 
 	struct stat buf;
 	fstat(fileno(stdin), &buf);
@@ -1187,11 +1191,6 @@ int main(int argc, const char **argv)
 		// cerr << "stdin is fifo\n";
 	}
 
-	Stream *stream_stdin = new Stream(fileno(stdin), stdin);
-	Stream *stream_stdout = new Stream(fileno(stdout), stdout);
-	qbrt_value::stream(*add_context(w0.current, "stdin"), stream_stdin);
-	qbrt_value::stream(*add_context(w0.current, "stdout"), stream_stdout);
-
 	int tid1 = pthread_create(&w0.thread, &w0.thread_attr
 			, launch_worker, &w0);
 	int tid2 = pthread_create(&w1.thread, &w1.thread_attr
@@ -1199,5 +1198,5 @@ int main(int argc, const char **argv)
 
 	application_loop(app);
 
-	return mainproc->result.data.i;
+	return result.data.i;
 }
