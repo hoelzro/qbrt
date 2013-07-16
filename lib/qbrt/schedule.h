@@ -256,6 +256,7 @@ struct Application
 	pthread_spinlock_t application_lock;
 	WorkerID next_workerid;
 	uint64_t pid_count;
+	bool running;
 
 	Application();
 	~Application();

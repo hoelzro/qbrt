@@ -295,7 +295,7 @@ void execute_instruction(Worker &, const instruction &);
 
 void gotowork(Worker &w)
 {
-	for (;;) {
+	while (w.app.running) {
 		/*
 		string ready;
 		inspect_call_frame(cerr, *w.task->cframe);
@@ -342,13 +342,6 @@ void gotowork(Worker &w)
 				w.current->finish_frame(w);
 				break;
 		}
-		if (!w.current) {
-			findtask(w);
-			if (!w.current) {
-				// nothing left to do. let's get out of here.
-				break;
-			}
-		}
 	}
 }
 
@@ -366,6 +359,7 @@ void * launch_worker(void *void_worker)
 Application::Application()
 : next_workerid(1)
 , pid_count(0)
+, running(true)
 {
 	pthread_spin_init(&application_lock, PTHREAD_PROCESS_PRIVATE);
 }
@@ -455,6 +449,7 @@ void application_loop(Application &app)
 			}
 		}
 		if (all_empty) {
+			app.running = false;
 			break;
 		} else {
 			nanosleep(&qtp, NULL);
