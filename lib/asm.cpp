@@ -636,8 +636,6 @@ uint32_t AsmFunc::write(ostream &out) const
 	codeblock::const_iterator ci(code.begin());
 	for (; ci!=code.end(); ++ci) {
 		uint8_t isize(write_instruction(out, **ci));
-		cout << "opcode=" << (int) (*ci)->opcode();
-		cout << " isize=" << (int) isize << endl;
 		func_size += isize;
 	}
 	return func_size;
@@ -1059,7 +1057,6 @@ void fork_stmt::generate_code(AsmFunc &f)
 	}
 	asm_jump(f, "postfork", new fork_instruction(0, *dst));
 	::generate_codeblock(f, *code);
-	asm_instruction(f, new return_instruction);
 	label_next(f, "postfork");
 }
 

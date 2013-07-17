@@ -76,6 +76,7 @@ sub_block(A) ::= stmt(B). {
 func_block(A) ::= dfunc_stmt(B) block(C). {
 	B->code = C;
 	A = B;
+	A->code->push_back(new return_stmt());
 }
 dfunc_stmt(A) ::= DFUNC STR(B) INT(C). {
 	A = new dfunc_stmt(B->strval(), C->intval());
@@ -128,6 +129,7 @@ dpolymorph_stmt(A) ::= DPOLYMORPH modsym(B). {
 fork_block(A) ::= fork_stmt(B) block(C). {
 	A = B;
 	A->code = C;
+	A->code->push_back(new return_stmt());
 }
 fork_stmt(A) ::= FORK reg(B). {
 	A = new fork_stmt(B);

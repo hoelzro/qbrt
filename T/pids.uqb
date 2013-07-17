@@ -16,7 +16,6 @@ call void $1
 
 const $1.0 "\n"
 call void $1
-return
 end.
 
 
@@ -37,5 +36,4 @@ newproc void $0
 newproc void $0
 newproc void $0
 
-return
 end.

@@ -25,5 +25,4 @@ idiv $1.0 $0.0 $4
 call void $1
 call void $2
 
-return
 end.

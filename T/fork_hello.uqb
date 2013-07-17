@@ -6,7 +6,6 @@ call void $0
 lfunc $1 "io" "getline"
 ref $1.0 %0
 call result $1
-return
 end.
 
 
@@ -26,6 +25,5 @@ lfunc $4 "io" "write"
 lcontext $4.0 #stdout
 ref $4.1 $0
 call result $4
-return
 end.
 

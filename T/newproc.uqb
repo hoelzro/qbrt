@@ -19,7 +19,6 @@ const $0.1 "\nAnd finally, what's your last name? "
 call void $0
 call $2.1 $1
 call void $2
-return
 end.
 
 
@@ -46,5 +45,4 @@ lfunc $2 "io" "write"
 lcontext $2.0 #stdout
 ref $2.1 $0
 call result $2
-return
 end.
