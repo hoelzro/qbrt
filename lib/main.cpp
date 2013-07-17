@@ -1007,14 +1007,21 @@ void core_send(OpContext &ctx, qbrt_value &out)
 	const qbrt_value &pid(ctx.srcvalue(PRIMARY_REG(0)));
 	const qbrt_value &src(ctx.srcvalue(PRIMARY_REG(1)));
 
+	// check this worker first, to avoid any locking drama
+	// when they're both on the same worker
 	map< uint64_t, ProcessRoot * >::const_iterator it;
 	Worker &w(ctx.worker());
 	it = w.process.find(pid.data.i);
-	if (it == w.process.end()) {
-		cerr << "no process for pid: " << pid.data.i << endl;
+	if (it != w.process.end()) {
+		it->second->recv.push(qbrt_value::dup(src));
 		return;
 	}
-	it->second->recv.push(qbrt_value::dup(src));
+
+	bool success(send_msg(w.app, pid.data.i, src));
+	if (!success) {
+		cerr << "no process for pid " << pid.data.i << " on worker "
+			<< w.id << endl;
+	}
 }
 
 void list_empty(OpContext &ctx, qbrt_value &out)

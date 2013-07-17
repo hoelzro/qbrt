@@ -395,6 +395,16 @@ void load_module(Application &app, const string &modname, const Module *mod)
 	app.module[modname] = mod;
 }
 
+bool send_msg(Application &app, uint64_t pid, const qbrt_value &src)
+{
+	ProcessRoot::Map::iterator it(app.recv.find(pid));
+	if (it == app.recv.end()) {
+		return false;
+	}
+	it->second->recv.push(qbrt_value::dup(src));
+	return true;
+}
+
 ProcessRoot * new_process(Application &app, FunctionCall *call)
 {
 	pthread_spin_lock(&app.application_lock);
