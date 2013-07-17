@@ -187,7 +187,6 @@ string pretty_reg(uint16_t r)
 
 void init_instruction_sizes()
 {
-	INSTRUCTION_SIZE[OP_ADDI] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CALL] = call_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RETURN] = return_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CFAILURE] = cfailure_instruction::SIZE;
@@ -195,6 +194,7 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_CONSTS] = consts_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTHASH] = consthash_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_FORK] = fork_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IADD] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IDIV] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IMULT] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_ISUB] = binaryop_instruction::SIZE;

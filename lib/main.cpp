@@ -282,7 +282,7 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 	const qbrt_value &b(ctx.srcvalue(i.b));
 	qbrt_value &result(ctx.dstvalue(i.result));
 	switch (i.opcode()) {
-		case OP_ADDI:
+		case OP_IADD:
 			qbrt_value::i(result, a.data.i + b.data.i);
 			break;
 		case OP_ISUB:
@@ -703,7 +703,7 @@ void init_executioners()
 	x[OP_CONSTI] = (executioner) execute_consti;
 	x[OP_CONSTS] = (executioner) execute_consts;
 	x[OP_CONSTHASH] = (executioner) execute_consthash;
-	x[OP_ADDI] = (executioner) execute_binaryop;
+	x[OP_IADD] = (executioner) execute_binaryop;
 	x[OP_IDIV] = (executioner) execute_divide;
 	x[OP_IMULT] = (executioner) execute_binaryop;
 	x[OP_ISUB] = (executioner) execute_binaryop;

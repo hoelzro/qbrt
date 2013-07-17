@@ -72,7 +72,6 @@ STRC	(\\.|[^\"])
 		lex_token(TOKEN_INT);
 	}
 
-"addi"		{ lex_token(TOKEN_ADDI); }
 "brf"		{ lex_token(TOKEN_BRF); }
 "brt"		{ lex_token(TOKEN_BRT); }
 "brne"		{ lex_token(TOKEN_BRNE); }
@@ -88,6 +87,7 @@ STRC	(\\.|[^\"])
 "fork"		{ lex_token(TOKEN_FORK); }
 "morphtype"	{ lex_token(TOKEN_MORPHTYPE); }
 "goto"		{ lex_token(TOKEN_GOTO); }
+"iadd"		{ lex_token(TOKEN_IADD); }
 "idiv"		{ lex_token(TOKEN_IDIV); }
 "imult"		{ lex_token(TOKEN_IMULT); }
 "isub"		{ lex_token(TOKEN_ISUB); }

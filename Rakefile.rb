@@ -101,6 +101,7 @@ end
 
 
 TestFiles = ['T/hello.uqb',
+	'T/arithmetic.uqb',
 	'T/fork_hello.uqb',
 	'T/newproc.uqb',
 ]
@@ -110,7 +111,12 @@ def test_uqb(file)
 	mod = file.chomp(File.extname(file))
 	sh "./qbc #{file}"
 	modbase = mod.sub('T/', '')
-	output = `cat T/INPUT/#{modbase} | ./qbrt #{mod} 2>&1`
+	input_file = "T/INPUT/#{modbase}"
+	if File.exist? input_file
+		output = `cat #{input_file} | ./qbrt #{mod} 2>&1`
+	else
+		output = `./qbrt #{mod} 2>&1`
+	end
 	expected = File.read("T/OUTPUT/#{modbase}")
 	if (output != expected)
 		puts "Expected output:\n#{expected}..."

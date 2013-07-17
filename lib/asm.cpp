@@ -504,7 +504,7 @@ instruction_writer WRITER[NUM_OP_CODES] = {0};
 
 void init_writers()
 {
-	WRITER[OP_ADDI] = (instruction_writer) iwriter<binaryop_instruction>;
+	WRITER[OP_IADD] = (instruction_writer) iwriter<binaryop_instruction>;
 	WRITER[OP_CALL] = (instruction_writer) iwriter<call_instruction>;
 	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
 	WRITER[OP_CFAILURE] =
@@ -876,7 +876,7 @@ void binaryop_stmt::generate_code(AsmFunc &f)
 	uint8_t opcode(0);
 	switch (cmp) {
 		case 0x2b69: // +i
-			opcode = OP_ADDI;
+			opcode = OP_IADD;
 			break;
 		case 0x2d69: // -i
 			opcode = OP_ISUB;

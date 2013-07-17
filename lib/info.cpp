@@ -39,8 +39,8 @@ uint8_t print_binaryop_instruction(const binaryop_instruction &i)
 {
 	const char *opcode = "unknown";
 	switch (i.opcode()) {
-		case OP_ADDI:
-			opcode = "addi";
+		case OP_IADD:
+			opcode = "iadd";
 			break;
 		case OP_ISUB:
 			opcode = "isub";
@@ -267,9 +267,9 @@ instruction_printer PRINTER[NUM_OP_CODES] = {0};
 
 void set_printers()
 {
-	PRINTER[OP_ADDI] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
+	PRINTER[OP_IADD] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_IMULT] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_IDIV] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_ISUB] = (instruction_printer) print_binaryop_instruction;

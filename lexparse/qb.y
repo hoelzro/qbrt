@@ -136,9 +136,6 @@ fork_stmt(A) ::= FORK reg(B). {
 stmt(A) ::= fork_block(B). {
 	A = B;
 }
-stmt(A) ::= ADDI reg(B) reg(C) reg(D). {
-	A = new binaryop_stmt('+', 'i', B, C, D);
-}
 stmt(A) ::= BRF reg(C) LABEL(B). {
 	A = new brbool_stmt(false, C, B->label());
 }
@@ -174,6 +171,9 @@ stmt(A) ::= COPY reg(B) reg(C). {
 }
 stmt(A) ::= GOTO LABEL(B). {
 	A = new goto_stmt(B->label());
+}
+stmt(A) ::= IADD reg(B) reg(C) reg(D). {
+	A = new binaryop_stmt('+', 'i', B, C, D);
 }
 stmt(A) ::= IDIV reg(B) reg(C) reg(D). {
 	A = new binaryop_stmt('/', 'i', B, C, D);

@@ -252,7 +252,7 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_LT
 #define OP_LE
 #define OP_NOT
-#define OP_ADDI		0x30
+#define OP_IADD		0x30
 #define OP_ISUB		0x31
 #define OP_IMULT	0x32
 #define OP_IDIV		0x33

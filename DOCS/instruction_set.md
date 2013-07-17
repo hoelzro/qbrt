@@ -242,7 +242,7 @@ Arguments: &lt;result&gt; &lt;op1&gt; &lt;op2&gt;
 * **op1** the register with the first operand
 * **op2** the register with the second operand
 
-### addi
+### iadd
 
 Add 2 integers
 
@@ -250,7 +250,7 @@ Example:
 ```
 const $1 5
 const $2 7
-addi $0 $1 $2   // register $0 will contain integer 12
+iadd $0 $1 $2   // register $0 will contain integer 12
 ```
 
 ### isub
@@ -261,7 +261,7 @@ Example:
 ```
 const $1 9
 const $2 4
-addi $0 $1 $2   // register $0 will contain integer 5.
+isub $0 $1 $2   // register $0 will contain integer 5.
 ```
 
 ### imult
