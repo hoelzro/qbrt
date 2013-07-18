@@ -82,6 +82,7 @@ STRC	(\\.|[^\"])
 "const"		{ lex_token(TOKEN_CONST); }
 "copy"		{ lex_token(TOKEN_COPY); }
 "dfunc"		{ lex_token(TOKEN_DFUNC); }
+"dparam"	{ lex_token(TOKEN_DPARAM); }
 "dprotocol"	{ lex_token(TOKEN_DPROTOCOL); }
 "dpolymorph"	{ lex_token(TOKEN_DPOLYMORPH); }
 "fork"		{ lex_token(TOKEN_FORK); }

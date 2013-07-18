@@ -1159,6 +1159,12 @@ void dpolymorph_stmt::collect_resources(ResourceSet &rs)
 	collect_resource(rs, *this->polymorph);
 }
 
+void dparam_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, name);
+	collect_modsym(rs, *typname);
+}
+
 void goto_stmt::generate_code(AsmFunc &f)
 {
 	asm_jump(f, label.name, new goto_instruction(0));

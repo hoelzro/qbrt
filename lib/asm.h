@@ -502,11 +502,13 @@ struct dfunc_stmt
 {
 	dfunc_stmt(const std::string &fname, uint8_t arity)
 		: name(fname)
+		, params(NULL)
 		, code(NULL)
 		, arity(arity)
 		, func(NULL)
 	{}
 	AsmString name;
+	Stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;
 	uint8_t arity;
@@ -519,6 +521,23 @@ struct dfunc_stmt
 	void pretty(std::ostream &out) const
 	{
 		out << "dfunc " << name.value << "/" << (uint16_t) arity;
+	}
+};
+
+struct dparam_stmt
+: public Stmt
+{
+	dparam_stmt(const std::string &name, AsmModSym *type)
+	: name(name)
+	, typname(type)
+	{}
+	AsmString name;
+	AsmModSym *typname;
+
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &out) const
+	{
+		out << "dparam " << name.value << " " << *typname;
 	}
 };
 

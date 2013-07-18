@@ -1,0 +1,16 @@
+dfunc "strcat" 2
+dparam "a" "core" "String"
+dparam "b" "core" "String"
+copy result %0
+stracc result %1
+end.
+
+
+dfunc "__main" 0
+lfunc $0 "" "strcat"
+const $0.0 "hello "
+const $0.1 "world\n"
+lfunc $1 "io" "print"
+call $1.0 $0
+call void $1
+end.

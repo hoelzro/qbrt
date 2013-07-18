@@ -8,6 +8,8 @@
 %type stmt {Stmt *}
 %type func_block {dfunc_stmt *}
 %type dfunc_stmt {dfunc_stmt *}
+%type dparam_block {Stmt::List *}
+%type dparam_stmt {dparam_stmt *}
 %type fork_block {fork_stmt *}
 %type fork_stmt {fork_stmt *}
 %type block {Stmt::List *}
@@ -73,13 +75,29 @@ sub_block(A) ::= stmt(B). {
 	A->push_back(B);
 }
 
-func_block(A) ::= dfunc_stmt(B) block(C). {
+func_block(A) ::= dfunc_stmt(B) dparam_block(D) block(C). {
+	B->params = D;
 	B->code = C;
 	A = B;
 	A->code->push_back(new return_stmt());
 }
 dfunc_stmt(A) ::= DFUNC STR(B) INT(C). {
 	A = new dfunc_stmt(B->strval(), C->intval());
+}
+
+dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
+	if (!B) {
+		A = new Stmt::List();
+	} else {
+		A = B;
+	}
+	A->push_back(C);
+}
+dparam_block(A) ::= . {
+	A = NULL;
+}
+dparam_stmt(A) ::= DPARAM STR(B) modsym(C). {
+	A = new dparam_stmt(B->strval(), C);
 }
 
 func_list(A) ::= func_list(B) func_block(C). {
