@@ -8,7 +8,7 @@
 %type stmt {Stmt *}
 %type func_block {dfunc_stmt *}
 %type dfunc_stmt {dfunc_stmt *}
-%type dparam_block {Stmt::List *}
+%type dparam_block {dparam_stmt::List *}
 %type dparam_stmt {dparam_stmt *}
 %type fork_block {fork_stmt *}
 %type fork_stmt {fork_stmt *}
@@ -87,7 +87,7 @@ dfunc_stmt(A) ::= DFUNC STR(B) INT(C). {
 
 dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
 	if (!B) {
-		A = new Stmt::List();
+		A = new dparam_stmt::List();
 	} else {
 		A = B;
 	}

@@ -277,6 +277,22 @@ struct copy_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct dparam_stmt
+: public Stmt
+{
+	dparam_stmt(const std::string &name, AsmModSym *type)
+	: name(name)
+	, typname(type)
+	{}
+	AsmString name;
+	AsmModSym *typname;
+
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &) const;
+
+	typedef std::list< dparam_stmt * > List;
+};
+
 struct dfunc_stmt
 : public Stmt
 {
@@ -288,7 +304,7 @@ struct dfunc_stmt
 		, func(NULL)
 	{}
 	AsmString name;
-	Stmt::List *params;
+	dparam_stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;
 	uint8_t arity;
@@ -297,20 +313,6 @@ struct dfunc_stmt
 
 	void set_function_context(uint8_t, AsmResource *);
 	void allocate_registers(RegAlloc *);
-	void collect_resources(ResourceSet &);
-	void pretty(std::ostream &) const;
-};
-
-struct dparam_stmt
-: public Stmt
-{
-	dparam_stmt(const std::string &name, AsmModSym *type)
-	: name(name)
-	, typname(type)
-	{}
-	AsmString name;
-	AsmModSym *typname;
-
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
 };
