@@ -9,7 +9,9 @@ QBC.include 'lib'
 QBC.compile_files("lib/asm.cpp", \
 		  "lib/core.cpp", \
 		  "lib/qbparse.c", \
-		  "lib/qblex.c")
+		  "lib/qblex.c", \
+		  "lib/stmt.cpp", \
+		 )
 QBC.obj_dir = 'o/qbc'
 QBC.debug!
 QBCDEPS = ["o","o/qbc","o/qbc/lib","lib/qbparse.h","lib/qbparse.c"]

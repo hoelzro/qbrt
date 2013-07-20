@@ -1,6 +1,7 @@
 #ifndef QBRT_MODULE_H
 #define QBRT_MODULE_H
 
+#include "qbrt/resourcetype.h"
 #include <string>
 #include <fstream>
 #include <map>
@@ -11,14 +12,6 @@
 #include "string.h"
 #include "function.h"
 
-
-#define RESOURCE_STRING		0x01
-#define RESOURCE_MODSYM		0x02
-#define RESOURCE_HASHTAG	0x03
-#define RESOURCE_FUNCTION	0x80
-#define RESOURCE_TYPE		0x81
-#define RESOURCE_PROTOCOL	0x82
-#define RESOURCE_POLYMORPH	0x83
 
 struct Module;
 
