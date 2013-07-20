@@ -251,8 +251,13 @@ struct PolymorphArg
 	friend bool operator < (const PolymorphArg &, const PolymorphArg &);
 };
 
+struct ParamResource
+{
+	uint16_t name_idx;
+	uint16_t type_idx;
+};
 
-struct FunctionResource
+struct FunctionHeader
 {
 	uint16_t name_idx;
 	uint16_t doc_idx;
@@ -262,20 +267,17 @@ struct FunctionResource
 	uint8_t fcontext;
 	uint8_t argc;
 	uint8_t regc;
-	uint8_t code[];
+	uint8_t reserved;
+	ParamResource params[];
 
-	FunctionResource(uint16_t name, uint16_t doc, uint16_t file
-			, uint16_t line, uint8_t argc, uint8_t regc)
-		: name_idx(name)
-		, doc_idx(doc)
-		, file_idx(file)
-		, line_no(line)
-		, fcontext(PFC_NONE)
-		, argc(argc)
-		, regc(regc)
-	{}
+	/** Get the address for where code starts */
+	const uint8_t * code_address() const
+	{
+		return ((const uint8_t *) this)
+			+ SIZE + argc * sizeof(ParamResource);
+	}
 
-	static const uint16_t HEADER_SIZE = 13;
+	static const uint16_t SIZE = 14;
 };
 
 struct ProtocolResource
@@ -350,30 +352,33 @@ struct ContextStack
 
 struct Function
 {
-	const FunctionResource *resource;
+	const FunctionHeader *header;
+	const uint8_t *code;
 	const Module *mod;
 
-	Function(const FunctionResource *f, const Module *m)
-		: resource(f)
-		, mod(m)
+	Function(const FunctionHeader *h, const Module *m)
+	: header(h)
+	, code(h->code_address())
+	, mod(m)
 	{}
 	Function()
-		: resource(NULL)
-		, mod(NULL)
+	: header(NULL)
+	, code(NULL)
+	, mod(NULL)
 	{}
 
-	operator bool () const { return resource; }
-	bool operator ! () const { return ! resource; }
+	operator bool () const { return header; }
+	bool operator ! () const { return ! header; }
 
 	const char * name() const;
-	inline uint8_t argc() const { return resource->argc; }
-	inline uint8_t regc() const { return resource->regc; }
+	inline uint8_t argc() const { return header->argc; }
+	inline uint8_t regc() const { return header->regc; }
 	uint32_t code_offset() const;
 };
 
 static inline uint8_t regtotal(const Function &f)
 {
-	return f.resource->argc + f.resource->regc;
+	return f.header->argc + f.header->regc;
 }
 
 struct function_value

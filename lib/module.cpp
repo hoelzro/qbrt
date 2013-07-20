@@ -36,12 +36,12 @@ uint32_t ResourceTable::size(uint16_t i) const
 
 const char * Function::name() const
 {
-	return fetch_string(mod->resource, resource->name_idx);
+	return fetch_string(mod->resource, header->name_idx);
 }
 
 uint32_t Function::code_offset() const
 {
-	return resource->code - mod->resource.data
+	return code - mod->resource.data
 		+ ResourceTable::DATA_OFFSET;
 }
 
@@ -53,7 +53,7 @@ void add_c_function(Module &mod, const std::string &name, c_function f)
 Function Module::fetch_function(const std::string &name) const
 {
 	const ResourceTable &tbl(resource);
-	const FunctionResource *f;
+	const FunctionHeader *f;
 	const char *fname;
 	for (uint16_t i(0); i<tbl.resource_count; ++i) {
 		if (tbl.type(i) != RESOURCE_FUNCTION) {
@@ -123,7 +123,7 @@ const ProtocolResource * Module::fetch_protocol(const std::string &name) const
 
 struct ProtocolFunctionSearch
 {
-	typedef FunctionResource resource_t;
+	typedef FunctionHeader resource_t;
 	static const uint16_t resource_type_id = RESOURCE_FUNCTION;
 
 	/**
@@ -131,7 +131,7 @@ struct ProtocolFunctionSearch
 	 */
 	int compare(const ResourceTable &tbl, uint16_t i) const
 	{
-		const FunctionResource *f = tbl.ptr< FunctionResource >(i);
+		const FunctionHeader *f = tbl.ptr< FunctionHeader >(i);
 		uint8_t fct(PFC_TYPE(f->fcontext));
 		if (FCT_PROTOCOL < fct) {
 			return -1;
@@ -171,7 +171,7 @@ struct ProtocolFunctionSearch
 
 struct PolymorphFunctionSearch
 {
-	typedef FunctionResource resource_t;
+	typedef FunctionHeader resource_t;
 	static const uint16_t resource_type_id = RESOURCE_FUNCTION;
 
 	/**
@@ -179,7 +179,7 @@ struct PolymorphFunctionSearch
 	 */
 	int compare(const ResourceTable &tbl, uint16_t i) const
 	{
-		const FunctionResource *f = tbl.ptr< FunctionResource >(i);
+		const FunctionHeader *f = tbl.ptr< FunctionHeader >(i);
 		if (PFC_OVERRIDE < f->fcontext) {
 			cerr << "wtf is this fcontext? " << f->fcontext
 				<< endl;
@@ -262,7 +262,7 @@ struct PolymorphFunctionSearch
 Function Module::fetch_protocol_function(const std::string &protoname
 		, const std::string &fname) const
 {
-	const FunctionResource *f;
+	const FunctionHeader *f;
 	f = resource.find(ProtocolFunctionSearch(protoname, fname));
 	if (!f) {
 		return Function();
@@ -274,7 +274,7 @@ Function Module::fetch_override(const std::string &protomod
 		, const std::string &protoname, const Type &type
 		, const std::string &fname) const
 {
-	const FunctionResource *f;
+	const FunctionHeader *f;
 	PolymorphFunctionSearch query(protomod, protoname, fname, type);
 	f = resource.find(query);
 	if (!f) {

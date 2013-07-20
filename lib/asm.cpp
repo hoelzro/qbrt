@@ -538,7 +538,15 @@ uint32_t AsmFunc::write(ostream &out) const
 	out.put(this->fcontext());
 	out.put(argc);
 	out.put(regc);
-	uint32_t func_size(FunctionResource::HEADER_SIZE);
+	out.put('\0');
+	uint32_t func_size(FunctionHeader::SIZE);
+
+	AsmParamList::const_iterator pit(params.begin());
+	for (; pit!=params.end(); ++pit) {
+		out.write((const char *) (*pit)->name.index, 2);
+		out.write((const char *) (*pit)->type.index, 2);
+		func_size += 4;
+	}
 
 	codeblock::const_iterator ci(code.begin());
 	for (; ci!=code.end(); ++ci) {

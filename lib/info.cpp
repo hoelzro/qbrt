@@ -300,7 +300,7 @@ void set_printers()
 	PRINTER[OP_WAIT] = (instruction_printer) print_wait_instruction;
 }
 
-void print_function_header(const FunctionResource &f, const ResourceTable &tbl)
+void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 {
 	const char *fctx = fcontext_name(f.fcontext);
 	cout << "\n" << fctx << " function: ";
@@ -366,7 +366,7 @@ uint8_t print_instruction(const uint8_t *funcdata)
 	return p(i);
 }
 
-void print_function_code(const FunctionResource &f, uint32_t size
+void print_function_code(const FunctionHeader &f, uint32_t size
 		, const ResourceTable &tbl)
 {
 	if (f.fcontext == PFC_ABSTRACT) {
@@ -374,14 +374,24 @@ void print_function_code(const FunctionResource &f, uint32_t size
 		return;
 	}
 	uint32_t pc(0);
-	size -= FunctionResource::HEADER_SIZE;
+	size -= FunctionHeader::SIZE;
+	size -= f.argc * sizeof(ParamResource);
 		// ^ spread b/n function header and code
-	cout << "function size:" << size << endl;
+	if (f.argc > 0) {
+		cout << "args:\n";
+		for (int i(0); i<f.argc; ++i) {
+			const ParamResource &p(f.params[i]);
+			cout << '\t' << p.name_idx <<' '<< p.type_idx << endl;
+		}
+	}
+
+	cout << "code size:" << size << endl;
+	const uint8_t *code(f.code_address());
 	while (pc < size) {
 		cout << pc << ":\t";
 		cout.flush();
-		print_instruction(f.code + pc);
-		pc += isize(*(f.code + pc));
+		print_instruction(code + pc);
+		pc += isize(*(code + pc));
 	}
 }
 
@@ -393,8 +403,8 @@ void print_code(const ResourceTable &tbl)
 			continue;
 		}
 
-		const FunctionResource &f(
-				tbl.obj< FunctionResource >(i));
+		const FunctionHeader &f(
+				tbl.obj< FunctionHeader >(i));
 		print_function_header(f, tbl);
 		cout << "offset:" << tbl.offset(i) << "\n";
 		print_function_code(f, tbl.size(i), tbl);
@@ -428,7 +438,7 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 				break;
 		}
 	}
-	printf("\t%u str(%u) \"%s\"\n", index, str.length, o.str().c_str());
+	printf("\t% 2u str(%u) \"%s\"\n", index, str.length, o.str().c_str());
 }
 
 void print_modsym(const ResourceTable &tbl, uint16_t index)
@@ -441,7 +451,7 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 {
-	const FunctionResource &f(tbl.obj< FunctionResource >(i));
+	const FunctionHeader &f(tbl.obj< FunctionHeader >(i));
 	const char *modname = NULL;
 	const char *pname = NULL;
 	const ProtocolResource *proto = NULL;

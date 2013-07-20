@@ -6,6 +6,7 @@
 #include "qbrt/string.h"
 #include "instruction/schedule.h"
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -261,14 +262,42 @@ void copy_stmt::pretty(std::ostream &out) const
 	out << "copy " << *dst << " " << *src;
 }
 
+void dparam_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, name);
+	collect_modsym(rs, *type);
+}
+
+void dparam_stmt::pretty(std::ostream &out) const
+{
+	out << "dparam " << name.value << " " << *type;
+}
+
+uint8_t dparam_stmt::collect(AsmParamList &apl, dparam_stmt::List *stmts)
+{
+	if (!stmts || stmts->empty()) {
+		return 0;
+	}
+	dparam_stmt::List::const_iterator it(stmts->begin());
+	for (; it!=stmts->end(); ++it) {
+		apl.push_back(new AsmParam((*it)->name, *(*it)->type));
+	}
+	return stmts->size();
+}
+
 void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 {
 	AsmFunc *f = new AsmFunc(this->name);
-	f->argc = arity;
 	f->regc = 0;
 	f->stmts = code;
 	f->ctx = ctx;
 	f->ctx_type = afc;
+	uint8_t collected_argc(dparam_stmt::collect(f->params, params));
+	if (arity != collected_argc) {
+		cerr << "Argument count mismatch\n";
+		exit(1);
+	}
+	f->argc = collected_argc;
 	this->func = f;
 }
 
@@ -288,6 +317,10 @@ void dfunc_stmt::allocate_registers(RegAlloc *)
 void dfunc_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
+	if (params) {
+		// this should be safe right? :-P
+		::collect_resources(rs, *(Stmt::List *) params);
+	}
 	if (code) {
 		::collect_resources(rs, *code);
 	}
@@ -297,17 +330,6 @@ void dfunc_stmt::collect_resources(ResourceSet &rs)
 void dfunc_stmt::pretty(std::ostream &out) const
 {
 	out << "dfunc " << name.value << "/" << (uint16_t) arity;
-}
-
-void dparam_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_string(rs, name);
-	collect_modsym(rs, *typname);
-}
-
-void dparam_stmt::pretty(std::ostream &out) const
-{
-	out << "dparam " << name.value << " " << *typname;
 }
 
 void fork_stmt::allocate_registers(RegAlloc *ra)

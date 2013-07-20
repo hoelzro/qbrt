@@ -182,6 +182,17 @@ struct jump_data
 	{}
 };
 
+struct AsmParam
+{
+	AsmParam(const AsmString &name, const AsmModSym &typ)
+	: name(name)
+	, type(typ)
+	{}
+
+	const AsmString &name;
+	const AsmModSym &type;
+};
+
 struct AsmFunc
 : public AsmResource
 {
@@ -190,6 +201,7 @@ struct AsmFunc
 	label_map label;
 	std::list< jump_data > jump;
 	AsmResource *ctx;
+	AsmParamList params;
 	const AsmString &name;
 	AsmString doc;
 	AsmString filename;

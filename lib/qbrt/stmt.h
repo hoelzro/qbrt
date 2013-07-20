@@ -10,6 +10,7 @@
 class AsmFunc;
 class AsmLabel;
 class AsmModSym;
+class AsmParam;
 class AsmPolymorph;
 class AsmProtocol;
 class AsmReg;
@@ -17,6 +18,7 @@ class AsmResource;
 class AsmString;
 class RegAlloc;
 typedef std::list< AsmModSym * > AsmModSymList;
+typedef std::list< AsmParam * > AsmParamList;
 
 
 struct AsmResource
@@ -282,15 +284,17 @@ struct dparam_stmt
 {
 	dparam_stmt(const std::string &name, AsmModSym *type)
 	: name(name)
-	, typname(type)
+	, type(type)
 	{}
 	AsmString name;
-	AsmModSym *typname;
+	AsmModSym *type;
 
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
 
 	typedef std::list< dparam_stmt * > List;
+
+	static uint8_t collect(AsmParamList &, List *);
 };
 
 struct dfunc_stmt
