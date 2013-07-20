@@ -8,6 +8,7 @@ QBC.name = 'qbc'
 QBC.include 'lib'
 QBC.compile_files("lib/asm.cpp", \
 		  "lib/core.cpp", \
+		  "lib/instruction.cpp", \
 		  "lib/qbparse.c", \
 		  "lib/qblex.c", \
 		  "lib/stmt.cpp", \

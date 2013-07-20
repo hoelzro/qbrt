@@ -11,19 +11,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "qbrt/core.h"
-#include "qbrt/string.h"
-#include "qbrt/arithmetic.h"
-#include "qbrt/function.h"
-#include "qbrt/logic.h"
 #include "qbrt/module.h"
-#include "qbrt/list.h"
-#include "qbrt/tuple.h"
-#include "instruction/schedule.h"
+#include "instruction.h"
 #include "qbtoken.h"
 #include "qbparse.h"
 #include "asm.h"
 
 using namespace std;
+
 
 Stmt::List *parsed_stmts;
 uint16_t AsmResource::NULL_INDEX = 0;
@@ -36,11 +31,6 @@ struct ObjectBuilder
 	ResourceSet rs;
 };
 
-
-void asm_instruction(AsmFunc &f, instruction *i)
-{
-	f.code.push_back(i);
-}
 
 void asm_jump(AsmFunc &f, const string &lbl, jump_instruction *j)
 {
@@ -391,8 +381,6 @@ if (added) {
 }
 
 
-typedef uint8_t (*instruction_writer)(ostream &, const instruction &);
-
 int16_t count_jump_bytes(codeblock::const_iterator &it, int16_t jump_count
 		, int16_t jump_bytes)
 {
@@ -459,89 +447,6 @@ void measure_jumps(ResourceSet &rs)
 	}
 }
 
-template < typename I >
-uint8_t iwriter(ostream &out, const I &i)
-{
-	out.write((char *) &i, I::SIZE);
-	return I::SIZE;
-}
-
-#define DEFINE_IWRITER(i) \
-	template uint8_t iwriter< i##_instruction >(ostream & \
-			, const i##_instruction &);
-
-DEFINE_IWRITER(binaryop);
-DEFINE_IWRITER(consti);
-DEFINE_IWRITER(consts);
-DEFINE_IWRITER(consthash);
-DEFINE_IWRITER(call);
-DEFINE_IWRITER(fork);
-DEFINE_IWRITER(lfunc);
-DEFINE_IWRITER(lcontext);
-DEFINE_IWRITER(loadtype);
-DEFINE_IWRITER(loadobj);
-DEFINE_IWRITER(lpfunc);
-DEFINE_IWRITER(newproc);
-DEFINE_IWRITER(recv);
-DEFINE_IWRITER(stracc);
-DEFINE_IWRITER(unimorph);
-DEFINE_IWRITER(move);
-DEFINE_IWRITER(ref);
-DEFINE_IWRITER(copy);
-DEFINE_IWRITER(return);
-DEFINE_IWRITER(goto);
-DEFINE_IWRITER(brbool);
-DEFINE_IWRITER(brcmp);
-DEFINE_IWRITER(breq);
-DEFINE_IWRITER(brfail);
-DEFINE_IWRITER(ctuple);
-DEFINE_IWRITER(stuple);
-DEFINE_IWRITER(clist);
-DEFINE_IWRITER(cons);
-
-instruction_writer WRITER[NUM_OP_CODES] = {0};
-
-void init_writers()
-{
-	WRITER[OP_IADD] = (instruction_writer) iwriter<binaryop_instruction>;
-	WRITER[OP_CALL] = (instruction_writer) iwriter<call_instruction>;
-	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
-	WRITER[OP_CFAILURE] =
-		(instruction_writer) iwriter<cfailure_instruction>;
-	WRITER[OP_CONSTI] = (instruction_writer) iwriter<consti_instruction>;
-	WRITER[OP_CONSTS] = (instruction_writer) iwriter<consts_instruction>;
-	WRITER[OP_CONSTHASH] =
-		(instruction_writer) iwriter<consthash_instruction>;
-	WRITER[OP_LCONTEXT] = (instruction_writer)iwriter<lcontext_instruction>;
-	WRITER[OP_FORK] = (instruction_writer) iwriter<fork_instruction>;
-	WRITER[OP_IDIV] = (instruction_writer) iwriter<binaryop_instruction>;
-	WRITER[OP_IMULT] = (instruction_writer) iwriter<binaryop_instruction>;
-	WRITER[OP_ISUB] = (instruction_writer) iwriter<binaryop_instruction>;
-	WRITER[OP_LFUNC] = (instruction_writer)iwriter<lfunc_instruction>;
-	WRITER[OP_LOADTYPE] = (instruction_writer)iwriter<loadtype_instruction>;
-	WRITER[OP_LOADOBJ] = (instruction_writer)iwriter<loadobj_instruction>;
-	WRITER[OP_LPFUNC] = (instruction_writer)iwriter<lpfunc_instruction>;
-	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
-	WRITER[OP_RECV] = (instruction_writer)iwriter<recv_instruction>;
-	WRITER[OP_STRACC] = (instruction_writer)iwriter<stracc_instruction>;
-	WRITER[OP_UNIMORPH] = (instruction_writer)iwriter<unimorph_instruction>;
-	WRITER[OP_MOVE] = (instruction_writer) iwriter<move_instruction>;
-	WRITER[OP_REF] = (instruction_writer) iwriter<ref_instruction>;
-	WRITER[OP_COPY] = (instruction_writer) iwriter<copy_instruction>;
-	WRITER[OP_GOTO] = (instruction_writer) iwriter<goto_instruction>;
-	WRITER[OP_BRF] = (instruction_writer) iwriter<brbool_instruction>;
-	WRITER[OP_BRT] = (instruction_writer) iwriter<brbool_instruction>;
-	WRITER[OP_BRNE] = (instruction_writer) iwriter<brcmp_instruction>;
-	WRITER[OP_BREQ] = (instruction_writer) iwriter<breq_instruction>;
-	WRITER[OP_BRFAIL] = (instruction_writer) iwriter<brfail_instruction>;
-	WRITER[OP_BRNFAIL] = (instruction_writer) iwriter<brfail_instruction>;
-	WRITER[OP_CTUPLE] = (instruction_writer) iwriter<ctuple_instruction>;
-	WRITER[OP_STUPLE] = (instruction_writer) iwriter<stuple_instruction>;
-	WRITER[OP_CLIST] = (instruction_writer) iwriter<clist_instruction>;
-	WRITER[OP_CONS] = (instruction_writer) iwriter<cons_instruction>;
-	WRITER[OP_WAIT] = (instruction_writer) iwriter<wait_instruction>;
-}
-
 map< string, uint16_t > CONSTNUM;
 map< string, uint16_t > CONSTSTR;
 map< string, uint16_t > CONSTKEY;
@@ -570,16 +475,6 @@ void init_constant_registers()
 	CONSTKEY["false"] = REG_FALSE;
 	CONSTKEY["true"] = REG_TRUE;
 	CONSTKEY["void"] = REG_VOID;
-}
-
-uint8_t write_instruction(ostream &out, const instruction &i)
-{
-	instruction_writer w = WRITER[i.opcode()];
-	if (!w) {
-		cerr << "instruction writer is null for: " << (int) i.opcode()
-			<< endl;
-	}
-	return w(out, i);
 }
 
 /**
@@ -940,22 +835,6 @@ struct LoadObjStatement
 	}
 };
 
-void ref_stmt::allocate_registers(RegAlloc *rc)
-{
-	rc->alloc(*dst);
-	rc->alloc(*src);
-}
-
-void ref_stmt::generate_code(AsmFunc &f)
-{
-	asm_instruction(f, new ref_instruction(*dst, *src));
-}
-
-void return_stmt::generate_code(AsmFunc &f)
-{
-	asm_instruction(f, new return_instruction);
-}
-
 struct StupleStatement
 {
 	StupleStatement(uint16_t tup, uint16_t idx, uint16_t data)
@@ -993,37 +872,9 @@ void print_statements(ostream &out, const Stmt::List &stmts)
 	out << stmts.size() << " functions\n";
 }
 
-instruction * asm_instruction(const Stmt &s)
+void asm_instruction(AsmFunc &f, instruction *i)
 {
-	instruction *i = 0;
-	jump_instruction *j = 0;
-	const ClistStatement *clist;
-	const ConsStatement *cons;
-	const LoadTypeStatement *ltype;
-	const LoadObjStatement *lobj;
-	const StupleStatement *stup;
-	uint16_t modsym;
-	if (clist = dynamic_cast<const ClistStatement*>(&s)) {
-		i = new clist_instruction(clist->dst);
-	} else if (cons = dynamic_cast<const ConsStatement*>(&s)) {
-		i = new cons_instruction(cons->head, cons->item);
-	} else if (ltype = dynamic_cast<const LoadTypeStatement*>(&s)) {
-		uint16_t modstr(0); // add_string(acc, ltype->modname));
-		uint16_t typestr(0); // add_string(acc, ltype->type));
-		i = new loadtype_instruction(ltype->dst, modstr, typestr);
-	} else if (lobj = dynamic_cast<const LoadObjStatement*>(&s)) {
-		uint16_t modstr(0); // add_string(acc, lobj->modname));
-		i = new loadobj_instruction(modstr);
-	} else if (stup = dynamic_cast<const StupleStatement*>(&s)) {
-		i = new stuple_instruction(stup->tup, stup->idx, stup->data);
-	}
-	if (!i) {
-		cerr << "null instruction for: ";
-		s.pretty(cerr);
-		cerr << endl;
-		return NULL;
-	}
-	return i;
+	f.code.push_back(i);
 }
 
 Stmt::List * parse(istream &in)

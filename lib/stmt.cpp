@@ -545,9 +545,25 @@ void recv_stmt::pretty(std::ostream &out) const
 	out << "recv " << *dst <<' '<< *tube;
 }
 
+void ref_stmt::allocate_registers(RegAlloc *rc)
+{
+	rc->alloc(*dst);
+	rc->alloc(*src);
+}
+
+void ref_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new ref_instruction(*dst, *src));
+}
+
 void ref_stmt::pretty(std::ostream &out) const
 {
 	out << "ref " << *dst << " " << *src;
+}
+
+void return_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new return_instruction);
 }
 
 void return_stmt::pretty(std::ostream &out) const
