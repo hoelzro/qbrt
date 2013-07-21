@@ -59,14 +59,14 @@ FunctionCall::FunctionCall(function_value &func)
 : CodeFrame(CFT_CALL)
 , result(NULL)
 , reg_data(func.reg)
-, resource(func.func.resource)
+, header(func.func.header)
 , mod(func.func.mod)
 , regc(func.num_values())
 {}
 
 const char * FunctionCall::name() const
 {
-	return fetch_string(mod->resource, resource->name_idx);
+	return fetch_string(mod->resource, header->name_idx);
 }
 
 void FunctionCall::finish_frame(Worker &w)
@@ -176,15 +176,15 @@ Function find_override(Worker &w, const char * protocol_mod
 
 const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
 {
-	if (f.resource->fcontext == PFC_NONE) {
+	if (f.header->fcontext == PFC_NONE) {
 		cerr << "No function protocol for no context\n";
 		return NULL;
 	}
 
-	int fct(PFC_TYPE(f.resource->fcontext));
+	int fct(PFC_TYPE(f.header->fcontext));
 	const ResourceTable &res(f.mod->resource);
 	const ProtocolResource *proto;
-	uint16_t ctx(f.resource->context_idx);
+	uint16_t ctx(f.header->context_idx);
 	if (fct == FCT_POLYMORPH) {
 		const PolymorphResource *poly;
 		poly = res.ptr< PolymorphResource >(ctx);
@@ -205,14 +205,14 @@ const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
 
 Function find_overridden_function(Worker &w, const Function &func)
 {
-	if (func.resource->fcontext != PFC_OVERRIDE) {
+	if (func.header->fcontext != PFC_OVERRIDE) {
 		return Function();
 	}
 
 	const ResourceTable &res(func.mod->resource);
 	const ProtocolResource *proto;
 
-	uint16_t polymorph_index(func.resource->context_idx);
+	uint16_t polymorph_index(func.header->context_idx);
 	const PolymorphResource *poly;
 	poly = res.ptr< PolymorphResource >(polymorph_index);
 

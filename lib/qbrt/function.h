@@ -271,7 +271,7 @@ struct FunctionHeader
 	ParamResource params[];
 
 	/** Get the address for where code starts */
-	const uint8_t * code_address() const
+	const uint8_t * code() const
 	{
 		return ((const uint8_t *) this)
 			+ SIZE + argc * sizeof(ParamResource);
@@ -358,7 +358,7 @@ struct Function
 
 	Function(const FunctionHeader *h, const Module *m)
 	: header(h)
-	, code(h->code_address())
+	, code(h->code())
 	, mod(m)
 	{}
 	Function()

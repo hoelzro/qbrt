@@ -1,4 +1,6 @@
 dfunc "ask_name" 2
+dparam "in" "io" "Stream"
+dparam "out" "io" "Stream"
 lfunc $0 "io" "write"
 ref $0.0 %1
 const $0.1 "Excuse me, what's your name? "

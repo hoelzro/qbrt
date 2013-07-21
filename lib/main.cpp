@@ -620,7 +620,7 @@ void execute_unimorph(OpContext &ctx, const unimorph_instruction &i)
 	const ResourceTable &resource(ctx.resource());
 	function_value &funcval(*funcreg.data.f);
 	Function func(funcval.func);
-	int pfc_type(PFC_TYPE(func.resource->fcontext));
+	int pfc_type(PFC_TYPE(func.header->fcontext));
 
 	if (pfc_type == FCT_TRADITIONAL) {
 		cerr << "You can't morph a traditional function\n";
@@ -631,7 +631,7 @@ void execute_unimorph(OpContext &ctx, const unimorph_instruction &i)
 	proto = find_function_protocol(worker, func);
 
 	const char *protosym = fetch_string(resource, proto->name_idx);
-	const char *funcname = fetch_string(resource, func.resource->name_idx);
+	const char *funcname = fetch_string(resource, func.header->name_idx);
 	Function override(find_override(worker, "", protosym, valtype
 				, funcname));
 	if (override) {
@@ -756,10 +756,10 @@ void override_function(Worker &w, function_value &f)
 	const Function &oldf(f.func);
 
 	const ProtocolResource *proto;
-	proto = resource.ptr< ProtocolResource >(oldf.resource->context_idx);
+	proto = resource.ptr< ProtocolResource >(oldf.header->context_idx);
 
 	const char *protosym = fetch_string(resource, proto->name_idx);
-	const char *funcname = fetch_string(resource, oldf.resource->name_idx);
+	const char *funcname = fetch_string(resource, oldf.header->name_idx);
 	Function override(mod.fetch_override("", protosym, TYPE_VOID
 				, funcname));
 	if (override) {
@@ -850,8 +850,8 @@ ostream & inspect_function(ostream &out, const Function &f)
 	out << "function " << f.name() << "/" << (int) f.argc()
 		<< '+' << (int) f.regc() << endl;
 	out << "module: " << f.mod->name << endl;
-	out << "name/context/fcontext: " << f.resource->name_idx << '/'
-		<< f.resource->context_idx << '/' << (int) f.resource->fcontext
+	out << "name/context/fcontext: " << f.header->name_idx << '/'
+		<< f.header->context_idx << '/' << (int) f.header->fcontext
 		<< endl;
 	return out;
 }

@@ -386,7 +386,7 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 	}
 
 	cout << "code size:" << size << endl;
-	const uint8_t *code(f.code_address());
+	const uint8_t *code(f.code());
 	while (pc < size) {
 		cout << pc << ":\t";
 		cout.flush();

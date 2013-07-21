@@ -109,7 +109,7 @@ struct FunctionCall
 {
 	qbrt_value *result;
 	qbrt_value *reg_data;
-	const FunctionResource *resource;
+	const FunctionHeader *header;
 	const Module *mod;
 	int regc;
 
@@ -117,7 +117,7 @@ struct FunctionCall
 	: CodeFrame(CFT_CALL)
 	, result(&result)
 	, reg_data(func.reg)
-	, resource(func.func.resource)
+	, header(func.func.header)
 	, mod(func.func.mod)
 	, regc(func.num_values())
 	{}
@@ -125,7 +125,7 @@ struct FunctionCall
 	: CodeFrame(parent, CFT_CALL)
 	, result(&result)
 	, reg_data(func.reg)
-	, resource(func.func.resource)
+	, header(func.func.header)
 	, mod(func.func.mod)
 	, regc(func.num_values())
 	{}
@@ -149,7 +149,7 @@ qbrt_value & CodeFrame::reg(uint8_t i)
 
 static inline const instruction & frame_instruction(const CodeFrame &f)
 {
-	return *(const instruction *) (f.function_call().resource->code + f.pc);
+	return *(const instruction *) (f.function_call().header->code() + f.pc);
 }
 
 struct ParallelPath
