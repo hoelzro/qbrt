@@ -202,6 +202,7 @@ struct Module
 	std::string name;
 	ObjectHeader header;
 	ResourceTable resource;
+	std::map< std::string, const Type * > types;
 	std::map< std::string, c_function > cfunction;
 
 	const void * fetch_resource(const std::string &name) const;
@@ -253,6 +254,7 @@ Function find_override(Worker &, const char *protocol_mod
 		, const char *funcname);
 
 
+void add_type(Module &, const std::string &name, const Type &);
 void add_c_function(Module &, const std::string &name, c_function);
 
 bool open_qb(std::ifstream &lib, const std::string &qbname);

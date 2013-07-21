@@ -45,6 +45,11 @@ uint32_t Function::code_offset() const
 		+ ResourceTable::DATA_OFFSET;
 }
 
+void add_type(Module &mod, const std::string &name, const Type &t)
+{
+	mod.types[name] = &t;
+}
+
 void add_c_function(Module &mod, const std::string &name, c_function f)
 {
 	mod.cfunction[name] = f;

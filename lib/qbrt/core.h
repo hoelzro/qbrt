@@ -47,6 +47,7 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 #define VT_STREAM	0x0e
 #define VT_HASHTAG	0x0f
 #define VT_PROMISE	0x10
+#define VT_SET		0x11
 #define VT_FAILURE	0xff
 
 extern Type TYPE_VOID;

@@ -1155,6 +1155,9 @@ int main(int argc, const char **argv)
 	add_c_function(*mod_core, "pid", core_pid);
 	add_c_function(*mod_core, "send", core_send);
 	add_c_function(*mod_core, "wid", core_wid);
+	add_type(*mod_core, "Int", TYPE_INT);
+	add_type(*mod_core, "String", TYPE_BSTRING);
+	add_type(*mod_core, "ByteString", TYPE_BSTRING);
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, "empty", list_empty);
