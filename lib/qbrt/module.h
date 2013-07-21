@@ -203,7 +203,6 @@ struct Module
 	ObjectHeader header;
 	ResourceTable resource;
 	std::map< std::string, c_function > cfunction;
-	std::map< std::string, qbrt_value > globals;
 
 	const void * fetch_resource(const std::string &name) const;
 	Function fetch_function(const std::string &name) const;
@@ -242,8 +241,6 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 {
 	return tbl.obj< ModSym >(i);
 }
-
-qbrt_value * find_global(Module &, const char *name);
 
 /**
  * Given a function object, find the associated ProtocolResource

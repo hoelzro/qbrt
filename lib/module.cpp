@@ -81,16 +81,6 @@ const Type * Module::fetch_struct(const std::string &type) const
 	return new Type(name, structname, s->field_count);
 }
 
-qbrt_value * find_global(Module &mod, const char *name)
-{
-	map< string, qbrt_value >::iterator it;
-	it = mod.globals.find(name);
-	if (it == mod.globals.end()) {
-		return NULL;
-	}
-	return &it->second;
-}
-
 struct ProtocolSearch
 {
 	typedef ProtocolResource resource_t;
