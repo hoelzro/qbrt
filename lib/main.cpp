@@ -774,8 +774,33 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
+
 	FunctionCall *call = new FunctionCall(*w.current, res, *f);
 	w.current = call;
+
+	WorkerOpContext ctx(w);
+	const ResourceTable &resource(w.current->function_call().mod->resource);
+	// check arguments
+	for (uint16_t i(0); i<f->func.header->argc; ++i) {
+		const qbrt_value *val(&ctx.srcvalue(PRIMARY_REG(i)));
+		if (!val) {
+			cerr << "wtf null value?\n";
+		}
+		const Type *valtype = val->type;
+		const ParamResource &param(f->func.header->params[i]);
+		const char *name = fetch_string(resource, param.name_idx);
+		const ModSym &type(fetch_modsym(resource, param.type_idx));
+		const char *type_mod = fetch_string(resource, type.mod_name);
+		const char *type_name = fetch_string(resource, type.sym_name);
+		if (valtype->module != type_mod || valtype->name != type_name) {
+			cerr << "Type Mismatch: parameter " << name << '/' << i
+				<< " expected to be " << type_mod << ':'
+				<< type_name << ", instead received "
+				<< valtype->module << ':' << valtype->name
+				<< endl;
+			exit(1);
+		}
+	}
 }
 
 void ccall(Worker &w, qbrt_value &res, cfunction_value &f)
