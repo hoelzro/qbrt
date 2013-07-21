@@ -13,27 +13,64 @@
 
 using namespace std;
 
+static string PRIMITIVE_MODULE[256];
 static string PRIMITIVE_NAME[256];
 uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
 
+static void init_primitive_modules()
+{
+	PRIMITIVE_MODULE[VT_VOID] = "core";
+	PRIMITIVE_MODULE[VT_INT] = "core";
+	PRIMITIVE_MODULE[VT_BOOL] = "core";
+	PRIMITIVE_MODULE[VT_FLOAT] = "core";
+	PRIMITIVE_MODULE[VT_FUNCTION] = "core";
+	PRIMITIVE_MODULE[VT_CFUNCTION] = "core";
+	PRIMITIVE_MODULE[VT_BSTRING] = "core";
+	PRIMITIVE_MODULE[VT_HASHTAG] = "core";
+	PRIMITIVE_MODULE[VT_REF] = "core";
+	PRIMITIVE_MODULE[VT_TUPLE] = "Tuple";
+	PRIMITIVE_MODULE[VT_LIST] = "list";
+	PRIMITIVE_MODULE[VT_MAP] = "Map";
+	PRIMITIVE_MODULE[VT_VECTOR] = "Vector";
+	PRIMITIVE_MODULE[VT_STREAM] = "io";
+	PRIMITIVE_MODULE[VT_PROMISE] = "core";
+	PRIMITIVE_MODULE[VT_KIND] = "core";
+	PRIMITIVE_MODULE[VT_FAILURE] = "core";
+}
+
 static void init_primitive_names()
 {
-	PRIMITIVE_NAME[VT_VOID] = "void";
-	PRIMITIVE_NAME[VT_INT] = "int";
-	PRIMITIVE_NAME[VT_BOOL] = "bool";
-	PRIMITIVE_NAME[VT_FLOAT] = "float";
-	PRIMITIVE_NAME[VT_FUNCTION] = "function";
-	PRIMITIVE_NAME[VT_CFUNCTION] = "function";
-	PRIMITIVE_NAME[VT_BSTRING] = "bstring";
-	PRIMITIVE_NAME[VT_HASHTAG] = "hashtag";
-	PRIMITIVE_NAME[VT_REF] = "ref";
-	PRIMITIVE_NAME[VT_TUPLE] = "tuple";
-	PRIMITIVE_NAME[VT_LIST] = "list";
-	PRIMITIVE_NAME[VT_MAP] = "map";
-	PRIMITIVE_NAME[VT_VECTOR] = "vector";
-	PRIMITIVE_NAME[VT_PROMISE] = "promise";
-	PRIMITIVE_NAME[VT_KIND] = "kind";
-	PRIMITIVE_NAME[VT_FAILURE] = "failure";
+	PRIMITIVE_NAME[VT_VOID] = "Void";
+	PRIMITIVE_NAME[VT_INT] = "Int";
+	PRIMITIVE_NAME[VT_BOOL] = "Bool";
+	PRIMITIVE_NAME[VT_FLOAT] = "Float";
+	PRIMITIVE_NAME[VT_FUNCTION] = "Function";
+	PRIMITIVE_NAME[VT_CFUNCTION] = "Function";
+	PRIMITIVE_NAME[VT_BSTRING] = "String";
+	PRIMITIVE_NAME[VT_HASHTAG] = "HashTag";
+	PRIMITIVE_NAME[VT_REF] = "Ref";
+	PRIMITIVE_NAME[VT_TUPLE] = "Tuple";
+	PRIMITIVE_NAME[VT_LIST] = "List";
+	PRIMITIVE_NAME[VT_MAP] = "Map";
+	PRIMITIVE_NAME[VT_VECTOR] = "Vector";
+	PRIMITIVE_NAME[VT_STREAM] = "Stream";
+	PRIMITIVE_NAME[VT_PROMISE] = "Promise";
+	PRIMITIVE_NAME[VT_KIND] = "Kind";
+	PRIMITIVE_NAME[VT_FAILURE] = "Failure";
+}
+
+static const string & get_primitive_module(uint8_t id)
+{
+	static bool initialized(false);
+	if (!initialized) {
+		init_primitive_modules();
+		initialized = true;
+	}
+	const string &mod(PRIMITIVE_MODULE[id]);
+	if (mod.empty()) {
+		cerr << "empty module for primitive type: " << (int) id << endl;
+	}
+	return mod;
 }
 
 static const std::string & get_primitive_name(uint8_t id)
@@ -43,11 +80,15 @@ static const std::string & get_primitive_name(uint8_t id)
 		init_primitive_names();
 		initialized = true;
 	}
-	return PRIMITIVE_NAME[id];
+	const string &name(PRIMITIVE_NAME[id]);
+	if (name.empty()) {
+		cerr << "empty name for primitive type: " << (int) id << endl;
+	}
+	return name;
 }
 
 Type::Type(uint8_t id)
-	: module("qbrt")
+	: module(get_primitive_module(id))
 	, name(get_primitive_name(id))
 	, id(id)
 {}
