@@ -131,7 +131,7 @@ def test_uqb(file)
 	return passed
 end
 
-task :T do
+task :T => ['qbc', 'qbrt'] do
 	failures = []
 	TestFiles.each do |t|
 		if not test_uqb t

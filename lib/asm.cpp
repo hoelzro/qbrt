@@ -362,22 +362,14 @@ bool collect_resource(ResourceSet &rs, AsmResource &res)
 
 bool collect_string(ResourceSet &rs, AsmString &str)
 {
-	bool result(collect_resource(rs, str));
-if (result) {
-  cout << "collect_string(" << str.value << ")\n";
-}
-	return result;
+	return collect_resource(rs, str);
 }
 
 bool collect_modsym(ResourceSet &rs, AsmModSym &modsym)
 {
 	collect_string(rs, modsym.module);
 	collect_string(rs, modsym.symbol);
-	bool added(collect_resource(rs, modsym));
-if (added) {
-  cout << "collect_modsym(" << modsym.module.value << ',' << modsym.symbol.value << ")\n";
-}
-	return added;
+	return collect_resource(rs, modsym);
 }
 
 
@@ -875,11 +867,6 @@ void print_function(ostream &out, const AsmFunc &func)
 		<< " statements";
 }
 
-void print_statements(ostream &out, const Stmt::List &stmts)
-{
-	out << stmts.size() << " functions\n";
-}
-
 void asm_instruction(AsmFunc &f, instruction *i)
 {
 	f.code.push_back(i);
@@ -1007,12 +994,8 @@ int main(int argc, const char **argv)
 
 	cout << "---\n";
 	Stmt::List *stmts = parse(*in);
-	cout << "---\n";
-	print_statements(cout, *stmts);
-	cout << "---\n";
 	set_function_context(*stmts, FCT_TRADITIONAL, NULL);
 	allocate_registers(*stmts, NULL);
-	cout << "---\n";
 	collect_resources(obj.rs, *stmts);
 	index_resources(obj.rs);
 	print_resources(obj.rs);
