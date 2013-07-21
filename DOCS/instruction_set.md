@@ -110,7 +110,7 @@ Arguments: &lt;result&gt; &lt;function&gt;
 
 ### fork
 
-Fork is an interesting instruction. It breaks execution into two
+Fork is a fun instruction. It breaks execution into two
 paths so that a value can be determined asynchronously. In the main
 path, the value being determined is set as a promise and the main
 path should wait on this register before using it. The second path
@@ -138,6 +138,50 @@ fork $0            // put a promise in $0
 const $3 4
 wait $0            // wait here until $0 is set
 imult $4 $0 $3     // $4 now contains 2 * 3 * 4, or 24
+```
+
+### newproc
+
+Launch a new process that executes the given function. Communication to
+and from the new process should happen via message passing using
+the send function and recv instruction.
+
+Arguments:
+
+* **pid** the register where the pid of the new process should be stored
+* **function** the function to
+
+Example:
+```
+lfunc $0 "" "foo"
+newproc $2 $0	// create a new process executing foo()
+
+lfunc $4 "core" "send"
+copy $4.0 $2
+const $4.1 "hello"
+call void $4
+
+lfunc $3 "io" "print"
+recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
+call void $3	// print the value received from function foo()
+```
+
+### recv
+
+Look for a message on the process's inbound message queue.
+
+Arguments:
+
+* **dest** the register to store the incoming value
+* **remote_pid** vestigial and will soon be removed
+
+Example:
+```
+lfunc $3 "io" "print"
+lfunc $0 "" "foo"
+newproc $2 $0	// create a new process executing foo()
+recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
+call void $3	// print the value received from function foo()
 ```
 
 ### wait
