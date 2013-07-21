@@ -30,6 +30,8 @@ end.
 * [Registers](DOCS/registers.md)
 * [Core Modules](DOCS/core_modules.md)
 
+Run integration tests in T/ with ```rake T```.
+
 ## Features
 
 Why might you find qbrt interesting? Well first, it probably helps
