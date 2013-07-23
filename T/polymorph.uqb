@@ -1,0 +1,52 @@
+module proto_test
+
+protocol "ProtoShow" "T"
+
+protoabstract "ProtoShow" "abs" 2
+dparam "a" "ProtoShow" "T"
+dparam "b" "core" "Int"
+end.
+
+protofunc "ProtoShow" "fshow" 1
+dparam "val" "ProtoShow" "T"
+lfunc $0 "io" "print"
+const $0.0 "\nexecute default ProtoShow.fshow\n"
+call void $0
+end.
+
+
+
+bind "" "ProtoShow"
+bindtype "core" "String"
+end.
+
+bindfunc "" "ProtoShow" "fshow" 1
+dparam "val" "core" "String"
+lfunc $0 "io" "print"
+const $0.0 "\nexecute String version of ProtoShow.fshow\n"
+call void $0
+end.
+
+
+bind "" "ProtoShow"
+bindtype "core" "Int"
+end.
+
+bindfunc "" "ProtoShow" "fshow" 1
+dparam "val" "core" "Int"
+lfunc $0 "io" "print"
+const $0.0 "\nexecute Int version of ProtoShow.fshow\n"
+call void $0
+end.
+
+
+
+dfunc "__main" 1
+dparam "argc" "core" "Int"
+dparam "argv" "core" "List"
+lfunc $2 "" "fshow"
+const $2.0 18
+call void $2
+const $2.0 "tacos"
+call void $2
+end.
