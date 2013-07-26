@@ -4,6 +4,7 @@
 %type top_list {Stmt::List *}
 %type top_stmt {Stmt *}
 %type modsym {AsmModSym *}
+%type modtype {AsmModSym *}
 %type reg {AsmReg *}
 %type stmt {Stmt *}
 %type func_block {dfunc_stmt *}
@@ -15,12 +16,15 @@
 %type block {Stmt::List *}
 %type sub_block {Stmt::List *}
 %type func_list {Stmt::List *}
-%type protocol_block {dprotocol_stmt *}
-%type dprotocol_stmt {dprotocol_stmt *}
-%type polymorph_block {dpolymorph_stmt *}
-%type dpolymorph_stmt {dpolymorph_stmt *}
-%type morphtype_stmt {morphtype_stmt *}
-%type morphtype_list {Stmt::List *}
+%type protocol_stmt {protocol_stmt *}
+%type protoabstract_block {dfunc_stmt *}
+%type protoabstract_stmt {dfunc_stmt *}
+%type protofunc_block {dfunc_stmt *}
+%type protofunc_stmt {dfunc_stmt *}
+%type bind_block {bind_stmt *}
+%type bind_stmt {bind_stmt *}
+%type bindtype_block {bindtype_stmt::List *}
+%type bindtype_stmt {bindtype_stmt *}
 
 
 %include {
@@ -56,9 +60,15 @@ top_list(A) ::= top_stmt(B). {
 	A->push_back(B);
 }
 
+top_stmt(A) ::= MODULE MODNAME. {
+	cerr << "whoops, module declarations are not implemented yet\n";
+	A = NULL;
+}
 top_stmt(A) ::= func_block(B). { A = B; }
-top_stmt(A) ::= protocol_block(B). { A = B; }
-top_stmt(A) ::= polymorph_block(B). { A = B; }
+top_stmt(A) ::= protocol_stmt(B). { A = B; }
+top_stmt(A) ::= protoabstract_block(B). { A = B; }
+top_stmt(A) ::= protofunc_block(B). { A = B; }
+top_stmt(A) ::= bind_block(B). { A = B; }
 
 block(A) ::= sub_block(B) END. {
 	A = B;
@@ -81,8 +91,8 @@ func_block(A) ::= dfunc_stmt(B) dparam_block(D) block(C). {
 	A = B;
 	A->code->push_back(new return_stmt());
 }
-dfunc_stmt(A) ::= DFUNC STR(B) INT(C). {
-	A = new dfunc_stmt(B->strval(), C->intval());
+dfunc_stmt(A) ::= FUNC ID(B). {
+	A = new dfunc_stmt(B->text);
 }
 
 dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
@@ -111,38 +121,48 @@ func_list(A) ::= func_list(B) func_block(C). {
 func_list ::= . {
 	cerr << "end of function list" << endl;
 }
-protocol_block(A) ::= dprotocol_stmt(B) func_list(C) ENDPROTOCOL. {
-	A = B;
-	A->functions = C;
-}
-dprotocol_stmt(A) ::= DPROTOCOL STR(B) INT(C). {
-	A = new dprotocol_stmt(B->strval(), C->intval());
+
+protocol_stmt(A) ::= PROTOCOL TYPENAME(B) TYPENAME(C). {
+	A = new protocol_stmt(B->text, C->text);
 }
 
-morphtype_list(A) ::= morphtype_list(B) morphtype_stmt(C). {
-	A = B ? B : new Stmt::List();
-	if (C) {
-		A->push_back(C);
-	} else {
-		cerr << "null morphtype block\n";
-	}
+protoabstract_stmt(A) ::= PROTOABSTRACT TYPENAME(B) ID(C). {
+	A = new dfunc_stmt(B->text, C->text);
 }
-morphtype_list ::= . {
-	cout << "end of morphtype list" << endl;
-}
-morphtype_stmt(A) ::= MORPHTYPE modsym(B). {
-	A = new morphtype_stmt(B);
-	B = NULL;
-}
-polymorph_block(A) ::= dpolymorph_stmt(B) morphtype_list(C) func_list(D) ENDPOLYMORPH. {
+protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
 	A = B;
-	A->morph_stmts = C;
+	A->params = C;
+}
+
+protofunc_stmt(A) ::= PROTOFUNC TYPENAME(B) ID(C). {
+	A = new dfunc_stmt(B->text, C->text);
+}
+protofunc_block(A) ::= protofunc_stmt(B) dparam_block(C) block(D). {
+	A = B;
+	A->params = C;
+	A->code = D;
+}
+
+bind_stmt(A) ::= BIND modtype(B). {
+	A = new bind_stmt(B);
+}
+bindtype_stmt(A) ::= BINDTYPE modtype(B). {
+	A = new bindtype_stmt(B);
+}
+bindtype_block(A) ::= bindtype_stmt(B). {
+	A = new bindtype_stmt::List();
+	A->push_back(B);
+}
+bindtype_block(A) ::= bindtype_block(B) bindtype_stmt(C). {
+	A = B;
+	A->push_back(C);
+}
+bind_block(A) ::= bind_stmt(B) bindtype_block(C) func_list(D) END. {
+	A = B;
+	A->params = C;
 	A->functions = D;
 }
-dpolymorph_stmt(A) ::= DPOLYMORPH modsym(B). {
-	A = new dpolymorph_stmt(B);
-	B = NULL;
-}
+
 
 fork_block(A) ::= fork_stmt(B) block(C). {
 	A = B;
@@ -239,6 +259,13 @@ stmt(A) ::= REF reg(B) reg(C). {
 }
 stmt(A) ::= RETURN. {
 	A = new return_stmt();
+}
+
+modtype(A) ::= MODNAME(B) TYPENAME(C). {
+	A = new AsmModSym(B->text, C->text);
+}
+modtype(A) ::= CURRENTMOD(B) TYPENAME(C). {
+	A = new AsmModSym(B->text, C->text);
 }
 
 modsym(A) ::= STR(B) STR(C). {

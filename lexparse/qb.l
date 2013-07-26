@@ -26,8 +26,10 @@ REG	\$[0-9]+
 REGEXT	[0-9]+
 LABEL	@[a-zA-Z0-9_]+
 HASHTAG	#[a-zA-Z0-9_]+
-UNOP	[a-z_]+
 STRC	(\\.|[^\"])
+ID	[a-z_][a-z_0-9]*
+MODNAME	({ID}\/)*
+TYPENAME	[A-Z][a-zA-Z0-9_]*
 
 %x STR
 
@@ -72,6 +74,8 @@ STRC	(\\.|[^\"])
 		lex_token(TOKEN_INT);
 	}
 
+"bind"		{ lex_token(TOKEN_BIND); }
+"bindtype"	{ lex_token(TOKEN_BINDTYPE); }
 "brf"		{ lex_token(TOKEN_BRF); }
 "brt"		{ lex_token(TOKEN_BRT); }
 "brne"		{ lex_token(TOKEN_BRNE); }
@@ -81,12 +85,9 @@ STRC	(\\.|[^\"])
 "cfailure"	{ lex_token(TOKEN_CFAILURE); }
 "const"		{ lex_token(TOKEN_CONST); }
 "copy"		{ lex_token(TOKEN_COPY); }
-"dfunc"		{ lex_token(TOKEN_DFUNC); }
 "dparam"	{ lex_token(TOKEN_DPARAM); }
-"dprotocol"	{ lex_token(TOKEN_DPROTOCOL); }
-"dpolymorph"	{ lex_token(TOKEN_DPOLYMORPH); }
 "fork"		{ lex_token(TOKEN_FORK); }
-"morphtype"	{ lex_token(TOKEN_MORPHTYPE); }
+"func"		{ lex_token(TOKEN_FUNC); }
 "goto"		{ lex_token(TOKEN_GOTO); }
 "iadd"		{ lex_token(TOKEN_IADD); }
 "idiv"		{ lex_token(TOKEN_IDIV); }
@@ -95,7 +96,11 @@ STRC	(\\.|[^\"])
 "lcontext"	{ lex_token(TOKEN_LCONTEXT); }
 "lfunc"		{ lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ lex_token(TOKEN_LPFUNC); }
+"module"	{ lex_token(TOKEN_MODULE); }
 "newproc"	{ lex_token(TOKEN_NEWPROC); }
+"protocol"	{ lex_token(TOKEN_PROTOCOL); }
+"protoabstract"	{ lex_token(TOKEN_PROTOABSTRACT); }
+"protofunc"	{ lex_token(TOKEN_PROTOFUNC); }
 "recv"		{ lex_token(TOKEN_RECV); }
 "stracc"	{ lex_token(TOKEN_STRACC); }
 "unimorph"	{ lex_token(TOKEN_UNIMORPH); }
@@ -109,8 +114,20 @@ STRC	(\\.|[^\"])
 
 
 "end."		{ lex_token(TOKEN_END); }
-".protocol"	{ lex_token(TOKEN_ENDPROTOCOL); }
-".polymorph"	{ lex_token(TOKEN_ENDPOLYMORPH); }
+
+{ID}	{
+		lex_token(TOKEN_ID);
+	}
+".\/"		{
+	lex_token(TOKEN_CURRENTMOD);
+}
+{MODNAME}	{
+		lex_token(TOKEN_MODNAME);
+	}
+{TYPENAME}	{
+		lex_token(TOKEN_TYPENAME);
+	}
+
 
 [ \t]	{
 	/* eat whitespace */

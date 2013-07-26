@@ -130,6 +130,37 @@ struct binaryop_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct bindtype_stmt
+: public Stmt
+{
+	bindtype_stmt(AsmModSym *type)
+	: bindtype(type)
+	{}
+
+	AsmModSym *bindtype;
+
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &) const;
+};
+
+struct bind_stmt
+: public Stmt
+{
+	bind_stmt(AsmModSym *protocol)
+	: protocol(protocol)
+	, params(NULL)
+	, polymorph(NULL)
+	{}
+
+	AsmModSym *protocol;
+	bindtype_stmt::List *params;
+	Stmt::List *functions;
+	AsmPolymorph *polymorph;
+
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &) const;
+};
+
 struct brbool_stmt
 : public Stmt
 {
@@ -300,20 +331,27 @@ struct dparam_stmt
 struct dfunc_stmt
 : public Stmt
 {
-	dfunc_stmt(const std::string &fname, uint8_t arity)
+	dfunc_stmt(const std::string &fname)
 		: name(fname)
 		, params(NULL)
 		, code(NULL)
-		, arity(arity)
+		, func(NULL)
+	{}
+	dfunc_stmt(const std::string &protoname, const std::string &fname)
+		: name(fname)
+		, protocol_name(protoname)
+		, params(NULL)
+		, code(NULL)
 		, func(NULL)
 	{}
 	AsmString name;
+	AsmString protocol_name;
 	dparam_stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;
-	uint8_t arity;
 
 	bool has_code() const { return code && !code->empty(); }
+	uint16_t argc() const { return params ? params->size() : 0; }
 
 	void set_function_context(uint8_t, AsmResource *);
 	void allocate_registers(RegAlloc *);
@@ -321,21 +359,19 @@ struct dfunc_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct dprotocol_stmt
+struct protocol_stmt
 : public Stmt
 {
-	dprotocol_stmt(const std::string &protoname, uint8_t arity)
-		: name(protoname)
-		, arity(arity)
+	protocol_stmt(const std::string &protoname, const std::string &typevar)
+	: name(protoname)
+	, typevar(typevar)
 	{}
 
 	AsmString name;
-	Stmt::List *functions;
+	AsmString typevar;
 	AsmProtocol *protocol;
-	uint8_t arity;
 
 	void set_function_context(uint8_t, AsmResource *);
-	void allocate_registers(RegAlloc *);
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
 };
@@ -349,6 +385,7 @@ struct dpolymorph_stmt
 	, functions(NULL)
 	, morph_types(NULL)
 	{}
+
 	AsmModSym *protocol;
 	Stmt::List *morph_stmts;
 	Stmt::List *functions;

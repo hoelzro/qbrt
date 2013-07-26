@@ -137,6 +137,27 @@ void binaryop_stmt::pretty(std::ostream &out) const
 			<<' '<< *a <<' '<< *b;
 }
 
+void bind_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_modsym(rs, *protocol);
+	// collect_resource(rs, *this->polymorph);
+}
+
+void bind_stmt::pretty(std::ostream &out) const
+{
+	out << "bind " << *protocol;
+}
+
+void bindtype_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_modsym(rs, *bindtype);
+}
+
+void bindtype_stmt::pretty(std::ostream &out) const
+{
+	out << "bindtype " << *bindtype;
+}
+
 brcmp_stmt * brcmp_stmt::ne(AsmReg *a, AsmReg *b, const std::string &lbl)
 {
 	return new brcmp_stmt(OP_BRNE, a, b, lbl);
@@ -293,10 +314,6 @@ void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 	f->ctx = ctx;
 	f->ctx_type = afc;
 	uint8_t collected_argc(dparam_stmt::collect(f->params, params));
-	if (arity != collected_argc) {
-		cerr << "Argument count mismatch\n";
-		exit(1);
-	}
 	f->argc = collected_argc;
 	this->func = f;
 }
@@ -329,7 +346,7 @@ void dfunc_stmt::collect_resources(ResourceSet &rs)
 
 void dfunc_stmt::pretty(std::ostream &out) const
 {
-	out << "dfunc " << name.value << "/" << (uint16_t) arity;
+	out << "func " << name.value << "/" << argc();
 }
 
 void fork_stmt::allocate_registers(RegAlloc *ra)
@@ -357,39 +374,34 @@ void fork_stmt::generate_code(AsmFunc &f)
 	label_next(f, "postfork");
 }
 
-void dprotocol_stmt::allocate_registers(RegAlloc *alloc)
-{
-	if (!functions) {
-		return;
-	}
-	Stmt::List::iterator it(functions->begin());
-	for (; it!=functions->end(); ++it) {
-		(*it)->allocate_registers(alloc);
-	}
-}
-
-void dprotocol_stmt::set_function_context(uint8_t, AsmResource *)
+void protocol_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	this->protocol = new AsmProtocol(name);
-	this->protocol->argc = arity;
-
-	::set_function_context(*functions, FCT_PROTOCOL, this->protocol);
 }
 
-void dprotocol_stmt::collect_resources(ResourceSet &rs)
+void protocol_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
-	if (functions) {
-		// :: prefix makes this call global func, not recurse
-		::collect_resources(rs, *functions);
-	}
-	collect_resource(rs, *this->protocol);
+	collect_string(rs, typevar);
 }
 
-void dprotocol_stmt::pretty(std::ostream &out) const
+void protocol_stmt::pretty(std::ostream &out) const
 {
-	out << "dprotocol " << name.value << "/" << (uint16_t) arity;
+	out << "protocol " << name.value << " " << typevar.value;
 }
+
+/*
+void protoabstract_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, protoname);
+	collect_string(rs, funcname);
+}
+
+void protoabstract_stmt::pretty(std::ostream &out) const
+{
+	out << "protoabstract " << protoname.value << " " << funcname.value;
+}
+*/
 
 void dpolymorph_stmt::allocate_registers(RegAlloc *alloc)
 {
