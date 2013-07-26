@@ -115,14 +115,14 @@ TYPENAME	[A-Z][a-zA-Z0-9_]*
 
 "end."		{ lex_token(TOKEN_END); }
 
-{ID}	{
-		lex_token(TOKEN_ID);
-	}
 ".\/"		{
 	lex_token(TOKEN_CURRENTMOD);
 }
 {MODNAME}	{
 		lex_token(TOKEN_MODNAME);
+	}
+{ID}	{
+		lex_token(TOKEN_ID);
 	}
 {TYPENAME}	{
 		lex_token(TOKEN_TYPENAME);

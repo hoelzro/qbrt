@@ -106,8 +106,11 @@ dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
 dparam_block(A) ::= . {
 	A = NULL;
 }
-dparam_stmt(A) ::= DPARAM STR(B) modsym(C). {
+dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
 	A = new dparam_stmt(B->strval(), C);
+}
+dparam_stmt(A) ::= DPARAM ID(B) TYPENAME(C) TYPENAME(D). {
+	A = new dparam_stmt(B->strval(), new AsmModSym(C->text, D->text));
 }
 
 func_list(A) ::= func_list(B) func_block(C). {
@@ -268,8 +271,11 @@ modtype(A) ::= CURRENTMOD(B) TYPENAME(C). {
 	A = new AsmModSym(B->text, C->text);
 }
 
-modsym(A) ::= STR(B) STR(C). {
-	A = new AsmModSym(B->strval(), C->strval());
+modsym(A) ::= MODNAME(B) ID(C). {
+	A = new AsmModSym(B->text, C->text);
+}
+modsym(A) ::= CURRENTMOD(B) ID(C). {
+	A = new AsmModSym(B->text, C->text);
 }
 
 reg(A) ::= REG(B) REGEXT(C). {
