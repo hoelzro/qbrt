@@ -26,8 +26,7 @@ union ObjectFlags
 	uint64_t raw;
 	struct {
 		uint64_t application : 1;
-		uint64_t monolithic : 1;
-		uint64_t reserved : 62;
+		uint64_t reserved : 63;
 	} f;
 };
 
@@ -50,7 +49,6 @@ struct ObjectHeader
 		magic[3] = 't';
 		flags.raw = 0;
 		flags.f.application = 1;
-		flags.f.monolithic = 1;
 		memset(library_name, '\0', sizeof(library_name));
 		memset(library_iteration, '\0', sizeof(library_iteration));
 	}
