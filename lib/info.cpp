@@ -326,10 +326,10 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 
 	const char *fname = fetch_string(tbl, f.name_idx);
 	if (module && *module) {
-		cout << module << '.';
+		cout << module;
 	}
 	if (pname && *pname) {
-		cout << pname << ".";
+		cout << pname << " ";
 	}
 	if (!(fname && *fname)) {
 		cout << "fname is null?\n";
@@ -347,7 +347,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 			typesym = fetch_string(tbl, ms->sym_name);
 			cout << ' ';
 			if (typemod && *typemod) {
-				cout << typemod <<'.';
+				cout << typemod;
 			}
 			cout << typesym;
 		}
@@ -483,12 +483,12 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 			break;
 	}
 	if (modname && *modname) {
-		printf("%s.", modname);
+		printf("%s", modname);
 	}
 	if (pname && *pname) {
-		printf("%s.", pname);
+		printf("%s", pname);
 	}
-	printf("%s/%d\n", fname, f.argc);
+	printf(" %s/%d\n", fname, f.argc);
 }
 
 void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
@@ -502,19 +502,19 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const PolymorphResource &poly(tbl.obj< PolymorphResource >(i));
 	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx));
-	const char *modname(fetch_string(tbl, protoname.sym_name));
+	const char *modname(fetch_string(tbl, protoname.mod_name));
 	const char *symname(fetch_string(tbl, protoname.sym_name));
 	printf("\t%u polymorph ", i);
 	if (modname && *modname) {
 		printf(modname);
 	}
-	printf(".%s", symname);
+	printf("%s", symname);
 
 	for (uint16_t i(0); i<poly.type_count; ++i) {
 		const ModSym &type(fetch_modsym(tbl, poly.type[i]));
 		const char *modname(fetch_string(tbl, type.mod_name));
 		const char *symname(fetch_string(tbl, type.sym_name));
-		printf(" %s.%s", modname, symname);
+		printf(" %s%s", modname, symname);
 	}
 	printf("\n");
 }

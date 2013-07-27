@@ -153,10 +153,12 @@ struct bind_stmt
 	{}
 
 	AsmModSym *protocol;
-	bindtype_stmt::List *params;
+	std::list< bindtype_stmt * > *params;
 	Stmt::List *functions;
 	AsmPolymorph *polymorph;
 
+	void set_function_context(uint8_t, AsmResource *);
+	void allocate_registers(RegAlloc *);
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
 };

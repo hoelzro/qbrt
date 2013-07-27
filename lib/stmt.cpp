@@ -137,10 +137,42 @@ void binaryop_stmt::pretty(std::ostream &out) const
 			<<' '<< *a <<' '<< *b;
 }
 
+void bind_stmt::set_function_context(uint8_t, AsmResource *)
+{
+	this->polymorph = new AsmPolymorph(*protocol);
+	list< bindtype_stmt * >::const_iterator it(params->begin());
+	for (; it!=params->end(); ++it) {
+		this->polymorph->type.push_back((*it)->bindtype);
+	}
+
+	if (functions) {
+		::set_function_context(*functions, FCT_POLYMORPH, polymorph);
+	}
+}
+
+void bind_stmt::allocate_registers(RegAlloc *alloc)
+{
+	if (!functions) {
+		return;
+	}
+	Stmt::List::iterator it(functions->begin());
+	for (; it!=functions->end(); ++it) {
+		(*it)->allocate_registers(alloc);
+	}
+}
+
 void bind_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_modsym(rs, *protocol);
-	// collect_resource(rs, *this->polymorph);
+
+	if (this->functions) {
+		::collect_resources(rs, *functions);
+	}
+	AsmModSymList::iterator it(this->polymorph->type.begin());
+	for (; it!=polymorph->type.end(); ++it) {
+		collect_modsym(rs, **it);
+	}
+	collect_resource(rs, *this->polymorph);
 }
 
 void bind_stmt::pretty(std::ostream &out) const
@@ -377,6 +409,7 @@ void fork_stmt::generate_code(AsmFunc &f)
 void protocol_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	this->protocol = new AsmProtocol(name);
+	this->protocol->argc = 1;
 
 	::set_function_context(*functions, FCT_PROTOCOL, this->protocol);
 }
@@ -407,22 +440,6 @@ void protocol_stmt::pretty(std::ostream &out) const
 {
 	out << "protocol " << name.value << " " << typevar.value;
 }
-
-/*
-void dpolymorph_stmt::set_function_context(uint8_t, AsmResource *)
-{
-	Stmt::List::iterator it(morph_stmts->begin());
-	this->morph_types = new AsmModSymList();
-	morphtype_stmt *mt;
-	for (; it!=morph_stmts->end(); ++it) {
-		mt = dynamic_cast< morphtype_stmt * >(*it);
-		this->morph_types->push_back(mt->type);
-	}
-
-	this->polymorph = new AsmPolymorph(*protocol);
-	this->polymorph->type = *this->morph_types;
-}
-*/
 
 void fork_stmt::pretty(std::ostream &out) const
 {

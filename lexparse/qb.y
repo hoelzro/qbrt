@@ -25,7 +25,7 @@
 %type protofunc_list {Stmt::List *}
 %type bind_block {bind_stmt *}
 %type bind_stmt {bind_stmt *}
-%type bindtype_block {bindtype_stmt::List *}
+%type bindtype_block {list< bindtype_stmt * > *}
 %type bindtype_stmt {bindtype_stmt *}
 
 
@@ -168,7 +168,7 @@ bindtype_stmt(A) ::= BINDTYPE modtype(B). {
 	A = new bindtype_stmt(B);
 }
 bindtype_block(A) ::= bindtype_stmt(B). {
-	A = new bindtype_stmt::List();
+	A = new list< bindtype_stmt * >();
 	A->push_back(B);
 }
 bindtype_block(A) ::= bindtype_block(B) bindtype_stmt(C). {

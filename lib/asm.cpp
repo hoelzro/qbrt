@@ -598,7 +598,7 @@ uint32_t AsmPolymorph::write(ostream &out) const
 std::ostream & AsmPolymorph::pretty(std::ostream &o) const
 {
 	o << "polymorph:" << protocol.module.value
-		<< "." << protocol.symbol.value;
+		<< protocol.symbol.value;
 	return o;
 }
 

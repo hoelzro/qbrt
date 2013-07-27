@@ -794,7 +794,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		const char *type_name = fetch_string(resource, type.sym_name);
 		if (valtype->module != type_mod || valtype->name != type_name) {
 			cerr << "Type Mismatch: parameter " << name << '/' << i
-				<< " expected to be " << type_mod << ':'
+				<< " expected to be " << type_mod
 				<< type_name << ", instead received "
 				<< valtype->module << ':' << valtype->name
 				<< endl;
