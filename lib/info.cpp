@@ -381,7 +381,12 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 		cout << "args:\n";
 		for (int i(0); i<f.argc; ++i) {
 			const ParamResource &p(f.params[i]);
-			cout << '\t' << p.name_idx <<' '<< p.type_idx << endl;
+			const char *name = fetch_string(tbl, p.name_idx);
+			const ModSym &type = fetch_modsym(tbl, p.type_idx);
+			const char *typemod = fetch_string(tbl, type.mod_name);
+			const char *typesym = fetch_string(tbl, type.sym_name);
+			cout << '\t' << name <<' '
+				<< typemod << typesym << endl;
 		}
 	}
 
@@ -446,7 +451,7 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	const ModSym &modsym(tbl.obj< ModSym >(index));
 	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
 	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
-	printf("\t%u modsym(%s:%s)\n", index, mod.value, sym.value);
+	printf("\t%u modsym(%s%s)\n", index, mod.value, sym.value);
 }
 
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
@@ -457,9 +462,17 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ProtocolResource *proto = NULL;
 	const PolymorphResource *poly = NULL;
 	const ModSym *proto_ms = NULL;
+	const char *fname = fetch_string(tbl, f.name_idx);
+	const char *fctx = fcontext_name(f.fcontext);
+	printf("\t%u %s function ", i, fctx);
+
 	switch (PFC_TYPE(f.fcontext)) {
 		case FCT_PROTOCOL:
 			proto = tbl.ptr< ProtocolResource >(f.context_idx);
+			if (!proto) {
+				cerr << "null protocol for function " << fname << endl;
+				return;
+			}
 			pname = fetch_string(tbl, proto->name_idx);
 			break;
 		case FCT_POLYMORPH:
@@ -469,9 +482,6 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 			pname = fetch_string(tbl, proto_ms->sym_name);
 			break;
 	}
-	const char *fname = fetch_string(tbl, f.name_idx);
-	const char *fctx = fcontext_name(f.fcontext);
-	printf("\t%u %s function ", i, fctx);
 	if (modname && *modname) {
 		printf("%s.", modname);
 	}

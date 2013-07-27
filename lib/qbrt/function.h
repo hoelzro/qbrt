@@ -3,17 +3,12 @@
 
 #include "qbrt/core.h"
 #include "qbrt/type.h"
+#include "qbrt/resourcetype.h"
 #include <set>
 #include <stack>
 #include <iostream>
 #include <sstream>
 
-
-#define PFC_NULL	0b000
-#define PFC_NONE	0b001
-#define PFC_ABSTRACT	0b010
-#define PFC_DEFAULT	0b011
-#define PFC_OVERRIDE	0b111
 
 #define PFC_MASK_HAS_CODE 0b001
 #define PFC_MASK_PROTOCOL 0b010
@@ -438,6 +433,8 @@ static inline const char * fcontext_name(int fc) {
 			return "default protocol";
 		case PFC_OVERRIDE:
 			return "polymorph";
+		case PFC_NULL:
+			return "null_fcontext";
 	}
 	return "wtf_is_that_fcontext";
 }

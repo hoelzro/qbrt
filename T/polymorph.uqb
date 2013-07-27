@@ -1,18 +1,19 @@
 
 protocol ProtoShow T
 
-protoabstract ProtoShow abs
-dparam a ProtoShow T
+protoabstract ProtoShow abstrakt
+dparam a ./_ProtoShow_T
 dparam b core/Int
 end.
 
 protofunc ProtoShow fshow
-dparam val ProtoShow T
+dparam val ./_ProtoShow_T
 lfunc $0 io/print
 const $0.0 "\nexecute default ProtoShow.fshow\n"
 call void $0
 end.
 
+end.
 
 
 bind ./ProtoShow

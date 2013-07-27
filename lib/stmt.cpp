@@ -377,33 +377,11 @@ void fork_stmt::generate_code(AsmFunc &f)
 void protocol_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	this->protocol = new AsmProtocol(name);
+
+	::set_function_context(*functions, FCT_PROTOCOL, this->protocol);
 }
 
-void protocol_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_string(rs, name);
-	collect_string(rs, typevar);
-}
-
-void protocol_stmt::pretty(std::ostream &out) const
-{
-	out << "protocol " << name.value << " " << typevar.value;
-}
-
-/*
-void protoabstract_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_string(rs, protoname);
-	collect_string(rs, funcname);
-}
-
-void protoabstract_stmt::pretty(std::ostream &out) const
-{
-	out << "protoabstract " << protoname.value << " " << funcname.value;
-}
-*/
-
-void dpolymorph_stmt::allocate_registers(RegAlloc *alloc)
+void protocol_stmt::allocate_registers(RegAlloc *alloc)
 {
 	if (!functions) {
 		return;
@@ -414,6 +392,23 @@ void dpolymorph_stmt::allocate_registers(RegAlloc *alloc)
 	}
 }
 
+void protocol_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, name);
+	collect_string(rs, typevar);
+
+	if (this->functions) {
+		::collect_resources(rs, *functions);
+	}
+	collect_resource(rs, *this->protocol);
+}
+
+void protocol_stmt::pretty(std::ostream &out) const
+{
+	out << "protocol " << name.value << " " << typevar.value;
+}
+
+/*
 void dpolymorph_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	Stmt::List::iterator it(morph_stmts->begin());
@@ -426,37 +421,8 @@ void dpolymorph_stmt::set_function_context(uint8_t, AsmResource *)
 
 	this->polymorph = new AsmPolymorph(*protocol);
 	this->polymorph->type = *this->morph_types;
-
-	::set_function_context(*functions, FCT_POLYMORPH, this->polymorph);
 }
-
-void dpolymorph_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_modsym(rs, *protocol);
-	if (this->morph_stmts) {
-		::collect_resources(rs, *morph_stmts);
-	}
-	if (this->functions) {
-		::collect_resources(rs, *functions);
-	}
-
-	collect_resource(rs, *this->polymorph);
-}
-
-void dpolymorph_stmt::pretty(std::ostream &out) const
-{
-	out << "dpolymorph " << *protocol;
-}
-
-void morphtype_stmt::pretty(std::ostream &out) const
-{
-	out << "morphtype " << *type;
-}
-
-void morphtype_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_modsym(rs, *type);
-}
+*/
 
 void fork_stmt::pretty(std::ostream &out) const
 {

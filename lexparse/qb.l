@@ -29,7 +29,7 @@ HASHTAG	#[a-zA-Z0-9_]+
 STRC	(\\.|[^\"])
 ID	[a-z_][a-z_0-9]*
 MODNAME	({ID}\/)*
-TYPENAME	[A-Z][a-zA-Z0-9_]*
+TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 
 %x STR
 

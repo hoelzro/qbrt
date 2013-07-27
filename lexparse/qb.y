@@ -16,11 +16,13 @@
 %type block {Stmt::List *}
 %type sub_block {Stmt::List *}
 %type func_list {Stmt::List *}
+%type protocol_block {protocol_stmt *}
 %type protocol_stmt {protocol_stmt *}
 %type protoabstract_block {dfunc_stmt *}
 %type protoabstract_stmt {dfunc_stmt *}
 %type protofunc_block {dfunc_stmt *}
 %type protofunc_stmt {dfunc_stmt *}
+%type protofunc_list {Stmt::List *}
 %type bind_block {bind_stmt *}
 %type bind_stmt {bind_stmt *}
 %type bindtype_block {bindtype_stmt::List *}
@@ -65,9 +67,7 @@ top_stmt(A) ::= MODULE MODNAME. {
 	A = NULL;
 }
 top_stmt(A) ::= func_block(B). { A = B; }
-top_stmt(A) ::= protocol_stmt(B). { A = B; }
-top_stmt(A) ::= protoabstract_block(B). { A = B; }
-top_stmt(A) ::= protofunc_block(B). { A = B; }
+top_stmt(A) ::= protocol_block(B). { A = B; }
 top_stmt(A) ::= bind_block(B). { A = B; }
 
 block(A) ::= sub_block(B) END. {
@@ -107,10 +107,8 @@ dparam_block(A) ::= . {
 	A = NULL;
 }
 dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
+cerr << "found modtype dparam\n";
 	A = new dparam_stmt(B->strval(), C);
-}
-dparam_stmt(A) ::= DPARAM ID(B) TYPENAME(C) TYPENAME(D). {
-	A = new dparam_stmt(B->strval(), new AsmModSym(C->text, D->text));
 }
 
 func_list(A) ::= func_list(B) func_block(C). {
@@ -128,9 +126,26 @@ func_list ::= . {
 protocol_stmt(A) ::= PROTOCOL TYPENAME(B) TYPENAME(C). {
 	A = new protocol_stmt(B->text, C->text);
 }
+protocol_block(A) ::= protocol_stmt(B) protofunc_list(C) END. {
+	A = B;
+	A->functions = C;
+}
+
+protofunc_list(A) ::= . {
+	A = new Stmt::List();
+}
+protofunc_list(A) ::= protofunc_list(B) protoabstract_block(C). {
+	A = B;
+	A->push_back(C);
+}
+protofunc_list(A) ::= protofunc_list(B) protofunc_block(C). {
+	A = B;
+	A->push_back(C);
+}
 
 protoabstract_stmt(A) ::= PROTOABSTRACT TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text);
+cerr << "found protoabstract: " << B->text <<' '<< C->text << endl;
+	A = new dfunc_stmt(B->text, C->text, true);
 }
 protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
 	A = B;
@@ -138,7 +153,7 @@ protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
 }
 
 protofunc_stmt(A) ::= PROTOFUNC TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text);
+	A = new dfunc_stmt(B->text, C->text, false);
 }
 protofunc_block(A) ::= protofunc_stmt(B) dparam_block(C) block(D). {
 	A = B;

@@ -142,7 +142,7 @@ void findtask(Worker &w)
 
 const Module * find_module(const Worker &w, const std::string &modname)
 {
-	if (modname.empty()) {
+	if (modname == "./") {
 		// if the module name is empty, return the current module
 		return current_module(w);
 	}

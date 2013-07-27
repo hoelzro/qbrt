@@ -9,4 +9,11 @@
 #define RESOURCE_PROTOCOL	0x82
 #define RESOURCE_POLYMORPH	0x83
 
+// Function Context Enums
+#define PFC_NULL	0b000
+#define PFC_NONE	0b001
+#define PFC_ABSTRACT	0b010
+#define PFC_DEFAULT	0b011
+#define PFC_OVERRIDE	0b111
+
 #endif

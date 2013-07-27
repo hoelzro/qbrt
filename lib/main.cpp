@@ -1151,7 +1151,7 @@ int main(int argc, const char **argv)
 	const char *objname = argv[1];
 	init_executioners();
 
-	Module *mod_core = new Module("core");
+	Module *mod_core = new Module("core/");
 	add_c_function(*mod_core, "pid", core_pid);
 	add_c_function(*mod_core, "send", core_send);
 	add_c_function(*mod_core, "wid", core_wid);
@@ -1159,12 +1159,12 @@ int main(int argc, const char **argv)
 	add_type(*mod_core, "String", TYPE_BSTRING);
 	add_type(*mod_core, "ByteString", TYPE_BSTRING);
 
-	Module *mod_list = new Module("list");
+	Module *mod_list = new Module("list/");
 	add_c_function(*mod_list, "empty", list_empty);
 	add_c_function(*mod_list, "head", list_head);
 	add_c_function(*mod_list, "pop", list_pop);
 
-	Module *mod_io = new Module("io");
+	Module *mod_io = new Module("io/");
 	add_c_function(*mod_io, "print", core_print);
 	add_c_function(*mod_io, "open", core_open);
 	add_c_function(*mod_io, "write", core_write);

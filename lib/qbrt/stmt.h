@@ -336,19 +336,22 @@ struct dfunc_stmt
 		, params(NULL)
 		, code(NULL)
 		, func(NULL)
+		, fcontext(PFC_NULL)
 	{}
-	dfunc_stmt(const std::string &protoname, const std::string &fname)
+	dfunc_stmt(const std::string &protoname, const std::string &fname, bool abstract)
 		: name(fname)
 		, protocol_name(protoname)
 		, params(NULL)
 		, code(NULL)
 		, func(NULL)
+		, fcontext(abstract ? PFC_ABSTRACT : PFC_DEFAULT)
 	{}
 	AsmString name;
 	AsmString protocol_name;
 	dparam_stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;
+	uint8_t fcontext;
 
 	bool has_code() const { return code && !code->empty(); }
 	uint16_t argc() const { return params ? params->size() : 0; }
@@ -365,50 +368,19 @@ struct protocol_stmt
 	protocol_stmt(const std::string &protoname, const std::string &typevar)
 	: name(protoname)
 	, typevar(typevar)
+	, functions(NULL)
+	, protocol(NULL)
 	{}
 
 	AsmString name;
 	AsmString typevar;
-	AsmProtocol *protocol;
-
-	void set_function_context(uint8_t, AsmResource *);
-	void collect_resources(ResourceSet &);
-	void pretty(std::ostream &) const;
-};
-
-struct dpolymorph_stmt
-: public Stmt
-{
-	dpolymorph_stmt(AsmModSym *protocol)
-	: protocol(protocol)
-	, morph_stmts(NULL)
-	, functions(NULL)
-	, morph_types(NULL)
-	{}
-
-	AsmModSym *protocol;
-	Stmt::List *morph_stmts;
 	Stmt::List *functions;
-	AsmModSymList *morph_types;
-	AsmPolymorph *polymorph;
+	AsmProtocol *protocol;
 
 	void set_function_context(uint8_t, AsmResource *);
 	void allocate_registers(RegAlloc *);
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
-};
-
-struct morphtype_stmt
-: public Stmt
-{
-	morphtype_stmt(AsmModSym *type)
-		: type(type)
-	{}
-	AsmModSym *type;
-	AsmModSym *asm_type;
-
-	void pretty(std::ostream &) const;
-	void collect_resources(ResourceSet &);
 };
 
 struct fork_stmt
