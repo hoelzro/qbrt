@@ -343,8 +343,11 @@ void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 	AsmFunc *f = new AsmFunc(this->name);
 	f->regc = 0;
 	f->stmts = code;
+	if (PFC_TYPE(this->fcontext) != FCT_PROTOCOL) {
+		fcontext = FCT_WITH_CODE(afc);
+	}
 	f->ctx = ctx;
-	f->ctx_type = afc;
+	f->fcontext = fcontext;
 	uint8_t collected_argc(dparam_stmt::collect(f->params, params));
 	f->argc = collected_argc;
 	this->func = f;

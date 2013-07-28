@@ -10,18 +10,6 @@
 #include <sstream>
 
 
-#define PFC_MASK_HAS_CODE 0b001
-#define PFC_MASK_PROTOCOL 0b010
-#define PFC_MASK_OVERRIDE 0b100
-
-// Function Context Types (does not include code bit)
-#define FCT_TRADITIONAL	0b000
-#define FCT_PROTOCOL	0b010
-#define FCT_POLYMORPH	0b110
-
-#define PFC_TYPE(pfc) (pfc & 0b110)
-#define FCT_WITH_CODE(fct) (fct | 0b001)
-
 
 struct call_instruction
 : public instruction

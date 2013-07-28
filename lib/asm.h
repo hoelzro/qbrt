@@ -208,14 +208,13 @@ struct AsmFunc
 	AsmString doc;
 	AsmString filename;
 	uint16_t line_no;
-	uint8_t ctx_type;
+	uint8_t fcontext;
 	uint8_t argc;
 	uint8_t regc;
 
 	AsmFunc(const AsmString &name);
 
 	bool has_code() const;
-	uint8_t fcontext() const;
 	virtual uint32_t write(std::ostream &) const;
 	virtual std::ostream & pretty(std::ostream &) const;
 };

@@ -500,7 +500,7 @@ AsmFunc::AsmFunc(const AsmString &name)
 	, name(name)
 	, doc()
 	, line_no(0)
-	, ctx_type(PFC_NULL)
+	, fcontext(PFC_NULL)
 	, argc(0)
 	, regc(0)
 {}
@@ -508,11 +508,6 @@ AsmFunc::AsmFunc(const AsmString &name)
 bool AsmFunc::has_code() const
 {
 	return !this->code.empty();
-}
-
-uint8_t AsmFunc::fcontext() const
-{
-	return this->has_code() ? FCT_WITH_CODE(ctx_type) : ctx_type;
 }
 
 uint32_t AsmFunc::write(ostream &out) const
@@ -527,7 +522,7 @@ uint32_t AsmFunc::write(ostream &out) const
 		uint16_t zero(0);
 		out.write((const char *) &zero, 2);
 	}
-	out.put(this->fcontext());
+	out.put(this->fcontext);
 	out.put(argc);
 	out.put(regc);
 	out.put('\0');
@@ -551,6 +546,20 @@ uint32_t AsmFunc::write(ostream &out) const
 ostream & AsmFunc::pretty(ostream &o) const
 {
 	o << "function:" << name.value;
+	switch (this->fcontext) {
+		case PFC_ABSTRACT:
+			o << " abstract of ";
+			this->ctx->pretty(o);
+			break;
+		case PFC_DEFAULT:
+			o << " default of ";
+			this->ctx->pretty(o);
+			break;
+		case PFC_OVERRIDE:
+			o << " binds ";
+			this->ctx->pretty(o);
+			break;
+	}
 	return o;
 }
 
@@ -602,6 +611,10 @@ std::ostream & AsmPolymorph::pretty(std::ostream &o) const
 {
 	o << "polymorph:" << protocol.module.value
 		<< protocol.symbol.value;
+	AsmModSymList::const_iterator it(type.begin());
+	for (; it!=type.end(); ++it) {
+		o << ' ' << (*it)->module.value << (*it)->symbol.value;
+	}
 	return o;
 }
 
