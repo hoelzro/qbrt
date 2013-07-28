@@ -247,6 +247,7 @@ struct FunctionHeader
 	uint16_t file_idx;
 	uint16_t line_no;
 	uint16_t context_idx;
+	uint16_t param_types_idx;
 	uint8_t fcontext;
 	uint8_t argc;
 	uint8_t regc;
@@ -260,7 +261,7 @@ struct FunctionHeader
 			+ SIZE + argc * sizeof(ParamResource);
 	}
 
-	static const uint16_t SIZE = 14;
+	static const uint16_t SIZE = 16;
 };
 
 struct ProtocolResource

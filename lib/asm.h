@@ -204,6 +204,7 @@ struct AsmFunc
 	std::list< jump_data > jump;
 	AsmResource *ctx;
 	AsmParamList params;
+	AsmString param_types;
 	const AsmString &name;
 	AsmString doc;
 	AsmString filename;

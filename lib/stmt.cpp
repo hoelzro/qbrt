@@ -326,16 +326,23 @@ void dparam_stmt::pretty(std::ostream &out) const
 	out << "dparam " << name.value << " " << *type;
 }
 
-uint8_t dparam_stmt::collect(AsmParamList &apl, dparam_stmt::List *stmts)
+void dparam_stmt::collect(AsmParamList &apl, string &param_types
+		, dparam_stmt::List *stmts)
 {
+	apl.clear();
+	param_types = "";
+
 	if (!stmts || stmts->empty()) {
-		return 0;
+		return;
 	}
+
 	dparam_stmt::List::const_iterator it(stmts->begin());
 	for (; it!=stmts->end(); ++it) {
 		apl.push_back(new AsmParam((*it)->name, *(*it)->type));
+		param_types += (*it)->type->module.value;
+		param_types += (*it)->type->symbol.value;
+		param_types += ';';
 	}
-	return stmts->size();
 }
 
 void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
@@ -348,8 +355,8 @@ void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 	}
 	f->ctx = ctx;
 	f->fcontext = fcontext;
-	uint8_t collected_argc(dparam_stmt::collect(f->params, params));
-	f->argc = collected_argc;
+	dparam_stmt::collect(f->params, f->param_types.value, params);
+	f->argc = params->size();
 	this->func = f;
 }
 
@@ -369,6 +376,7 @@ void dfunc_stmt::allocate_registers(RegAlloc *)
 void dfunc_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
+	collect_string(rs, this->func->param_types);
 	if (params) {
 		// this should be safe right? :-P
 		::collect_resources(rs, *(Stmt::List *) params);

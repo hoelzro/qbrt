@@ -327,7 +327,7 @@ struct dparam_stmt
 
 	typedef std::list< dparam_stmt * > List;
 
-	static uint8_t collect(AsmParamList &, List *);
+	static void collect(AsmParamList &, std::string &param_types, List *);
 };
 
 struct dfunc_stmt

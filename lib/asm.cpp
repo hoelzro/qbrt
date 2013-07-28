@@ -161,14 +161,61 @@ int AsmCmp< AsmPolymorph >::cmp(const AsmPolymorph &a, const AsmPolymorph &b)
 	return AsmCmp< AsmModSymList >::cmp(a.type, b.type);
 }
 
+/**
+ * Comparison order is:
+ *   function context
+ *   if traditional:
+ *     function name
+ *   if protocol
+ *     protocol name
+ *     function name
+ *   if polymorph
+ *     protocol module
+ *     protocol name
+ *     function name
+ *     function param types
+ */
 template <>
 int AsmCmp< AsmFunc >::cmp(const AsmFunc &a, const AsmFunc &b)
 {
-	int comparison(compare_asmptr< AsmResource >(a.ctx, b.ctx));
+	int fcta(PFC_TYPE(a.fcontext));
+	int fctb(PFC_TYPE(b.fcontext));
+	if (fcta < fctb) {
+		return -1;
+	} else if (fcta > fctb) {
+		return 1;
+	}
+	// function contexts are equal
+
+	int comparison;
+	switch (fcta) {
+		case FCT_TRADITIONAL:
+			return AsmCmp< AsmString >::cmp(a.name, b.name);
+		case FCT_PROTOCOL:
+			comparison = compare_asmptr<AsmResource>(a.ctx, b.ctx);
+			if (comparison) {
+				return comparison;
+			}
+			return AsmCmp< AsmString >::cmp(a.name, b.name);
+		case FCT_POLYMORPH:
+			// fall throgh and reset indentation
+			// everything else returned
+			break;
+	}
+
+	const AsmPolymorph *pa = dynamic_cast< const AsmPolymorph * >(a.ctx);
+	const AsmPolymorph *pb = dynamic_cast< const AsmPolymorph * >(b.ctx);
+	comparison = AsmCmp< AsmModSym >::cmp(pa->protocol, pb->protocol);
 	if (comparison) {
 		return comparison;
 	}
-	return AsmCmp< AsmString >::cmp(a.name, b.name);
+
+	comparison = AsmCmp< AsmString >::cmp(a.name, b.name);
+	if (comparison) {
+		return comparison;
+	}
+
+	return AsmCmp< AsmString >::cmp(a.param_types, b.param_types);
 }
 
 template < typename T >
@@ -523,6 +570,7 @@ uint32_t AsmFunc::write(ostream &out) const
 		uint16_t zero(0);
 		out.write((const char *) &zero, 2);
 	}
+	out.write((const char *) param_types.index, 2);
 	out.put(this->fcontext);
 	out.put(argc);
 	out.put(regc);
@@ -561,6 +609,7 @@ ostream & AsmFunc::pretty(ostream &o) const
 			this->ctx->pretty(o);
 			break;
 	}
+	o << " " << param_types.value;
 	return o;
 }
 
