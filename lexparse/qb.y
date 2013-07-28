@@ -38,6 +38,8 @@
 #include "asm.h"
 
 using namespace std;
+
+extern string g_current_module;
 }
 
 %syntax_error {
@@ -280,15 +282,15 @@ stmt(A) ::= RETURN. {
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
 	A = new AsmModSym(B->text, C->text);
 }
-modtype(A) ::= CURRENTMOD(B) TYPENAME(C). {
-	A = new AsmModSym(B->text, C->text);
+modtype(A) ::= CURRENTMOD TYPENAME(C). {
+	A = new AsmModSym(g_current_module, C->text);
 }
 
 modsym(A) ::= MODNAME(B) ID(C). {
 	A = new AsmModSym(B->text, C->text);
 }
-modsym(A) ::= CURRENTMOD(B) ID(C). {
-	A = new AsmModSym(B->text, C->text);
+modsym(A) ::= CURRENTMOD ID(C). {
+	A = new AsmModSym(g_current_module, C->text);
 }
 
 reg(A) ::= REG(B) REGEXT(C). {

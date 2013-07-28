@@ -22,6 +22,7 @@ using namespace std;
 
 Stmt::List *parsed_stmts;
 uint16_t AsmResource::NULL_INDEX = 0;
+string g_current_module;
 
 typedef std::list< ResourceInfo > ResourceIndex;
 
@@ -995,7 +996,9 @@ int main(int argc, const char **argv)
 		library_name = base_name;
 	} else {
 		out.open("a.qb", ios::binary | ios::out);
+		library_name = "a";
 	}
+	g_current_module = library_name +'/';
 
 	init_instruction_sizes();
 	init_writers();
