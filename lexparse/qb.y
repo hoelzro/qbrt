@@ -107,7 +107,6 @@ dparam_block(A) ::= . {
 	A = NULL;
 }
 dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
-cerr << "found modtype dparam\n";
 	A = new dparam_stmt(B->strval(), C);
 }
 
@@ -119,8 +118,8 @@ func_list(A) ::= func_list(B) func_block(C). {
 		cerr << "null function block\n";
 	}
 }
-func_list ::= . {
-	cerr << "end of function list" << endl;
+func_list(A) ::= . {
+	A = NULL;
 }
 
 protocol_stmt(A) ::= PROTOCOL TYPENAME(B) TYPENAME(C). {
@@ -144,7 +143,6 @@ protofunc_list(A) ::= protofunc_list(B) protofunc_block(C). {
 }
 
 protoabstract_stmt(A) ::= PROTOABSTRACT TYPENAME(B) ID(C). {
-cerr << "found protoabstract: " << B->text <<' '<< C->text << endl;
 	A = new dfunc_stmt(B->text, C->text, true);
 }
 protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
