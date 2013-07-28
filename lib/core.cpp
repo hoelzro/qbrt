@@ -19,23 +19,23 @@ uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
 
 static void init_primitive_modules()
 {
-	PRIMITIVE_MODULE[VT_VOID] = "core";
-	PRIMITIVE_MODULE[VT_INT] = "core";
-	PRIMITIVE_MODULE[VT_BOOL] = "core";
-	PRIMITIVE_MODULE[VT_FLOAT] = "core";
-	PRIMITIVE_MODULE[VT_FUNCTION] = "core";
-	PRIMITIVE_MODULE[VT_CFUNCTION] = "core";
-	PRIMITIVE_MODULE[VT_BSTRING] = "core";
-	PRIMITIVE_MODULE[VT_HASHTAG] = "core";
-	PRIMITIVE_MODULE[VT_REF] = "core";
+	PRIMITIVE_MODULE[VT_VOID] = "core/";
+	PRIMITIVE_MODULE[VT_INT] = "core/";
+	PRIMITIVE_MODULE[VT_BOOL] = "core/";
+	PRIMITIVE_MODULE[VT_FLOAT] = "core/";
+	PRIMITIVE_MODULE[VT_FUNCTION] = "core/";
+	PRIMITIVE_MODULE[VT_CFUNCTION] = "core/";
+	PRIMITIVE_MODULE[VT_BSTRING] = "core/";
+	PRIMITIVE_MODULE[VT_HASHTAG] = "core/";
+	PRIMITIVE_MODULE[VT_REF] = "core/";
 	PRIMITIVE_MODULE[VT_TUPLE] = "Tuple";
-	PRIMITIVE_MODULE[VT_LIST] = "list";
+	PRIMITIVE_MODULE[VT_LIST] = "list/";
 	PRIMITIVE_MODULE[VT_MAP] = "Map";
 	PRIMITIVE_MODULE[VT_VECTOR] = "Vector";
-	PRIMITIVE_MODULE[VT_STREAM] = "io";
-	PRIMITIVE_MODULE[VT_PROMISE] = "core";
-	PRIMITIVE_MODULE[VT_KIND] = "core";
-	PRIMITIVE_MODULE[VT_FAILURE] = "core";
+	PRIMITIVE_MODULE[VT_STREAM] = "io/";
+	PRIMITIVE_MODULE[VT_PROMISE] = "core/";
+	PRIMITIVE_MODULE[VT_KIND] = "core/";
+	PRIMITIVE_MODULE[VT_FAILURE] = "core/";
 }
 
 static void init_primitive_names()
@@ -272,4 +272,17 @@ uint8_t isize(uint8_t opcode)
 		exit(1);
 	}
 	return sz;
+}
+
+
+void load_function_param_types(string &paramstr, const function_value &func)
+{
+	paramstr = "";
+	for (int i(0); i<func.func.header->argc; ++i) {
+		const qbrt_value &val(func.value(i));
+		const Type *typ(val.type);
+		paramstr += typ->module;
+		paramstr += typ->name;
+		paramstr += ';';
+	}
 }

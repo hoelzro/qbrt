@@ -385,6 +385,9 @@ struct function_value
 	const qbrt_value & value(uint8_t r) const { return reg[r]; }
 };
 
+void load_function_param_types(std::string &typestr, const function_value &);
+
+
 struct cfunction_value
 : public qbrt_value_index
 {
