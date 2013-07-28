@@ -1,5 +1,5 @@
 
-protocol ProtoShow T
+protocol ProtoShow _ProtoShow_T
 
 protoabstract ProtoShow abstrakt
 dparam a ./_ProtoShow_T

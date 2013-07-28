@@ -571,6 +571,9 @@ uint32_t AsmProtocol::write(ostream &out) const
 
 	uint32_t proto_size(10);
 
+	out.write((const char *) typevar->index, 2);
+	proto_size += 2;
+
 	return proto_size;
 }
 

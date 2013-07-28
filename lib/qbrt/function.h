@@ -289,6 +289,11 @@ struct ProtocolResource
 	inline uint16_t func_count() const
 	{ return endian_swap(arg_func_count) & 0x03ff; }
 
+	inline uint16_t typevar_idx(uint16_t i) const
+	{
+		return (&arg_func_count)[i+1];
+	}
+
 	static const uint16_t SIZE = 10;
 };
 

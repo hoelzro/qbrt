@@ -97,7 +97,7 @@ struct AsmModSym
 	friend inline std::ostream & operator << (
 			std::ostream &o, const AsmModSym &ms)
 	{
-		o << "modsym:" << ms.module.value << "." << ms.symbol.value;
+		o << "modsym:" << ms.module.value << ms.symbol.value;
 		return o;
 	}
 
@@ -113,12 +113,14 @@ struct AsmProtocol
 	const AsmString &name;
 	AsmString doc;
 	AsmString filename;
+	AsmString *typevar;
 	uint16_t line_no;
 	uint16_t argc;
 
 	AsmProtocol(const AsmString &name)
 		: AsmResource(RESOURCE_PROTOCOL)
 		, name(name)
+		, typevar(NULL)
 		, line_no(0)
 		, argc(0)
 	{}

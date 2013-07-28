@@ -410,6 +410,7 @@ void protocol_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	this->protocol = new AsmProtocol(name);
 	this->protocol->argc = 1;
+	this->protocol->typevar = &typevar;
 
 	::set_function_context(*functions, FCT_PROTOCOL, this->protocol);
 }

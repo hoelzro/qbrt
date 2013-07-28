@@ -495,7 +495,11 @@ void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const ProtocolResource &p(tbl.obj< ProtocolResource >(i));
 	const StringResource &pname(tbl.obj< StringResource >(p.name_idx));
-	printf("\t%u protocol %s/%u\n", i, pname.value, p.argc());
+	printf("\t%u protocol %s/%u", i, pname.value, p.argc());
+
+	const StringResource &prototype(
+			tbl.obj< StringResource >(p.typevar_idx(0)));
+	printf(" %s\n", prototype.value);
 }
 
 void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
