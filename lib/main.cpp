@@ -713,21 +713,34 @@ void execute_instruction(Worker &w, const instruction &i)
 	//inspect_call_frame(cerr, *w.task->cframe);
 }
 
-void override_function(Worker &w, function_value &f)
+void override_function(Worker &w, function_value &funcval)
 {
-	const Module &mod(*current_module(w));
+	Function func(funcval.func);
+	int pfc_type(PFC_TYPE(func.header->fcontext));
+
+	if (pfc_type == FCT_TRADITIONAL) {
+		return;
+	}
+
+	string param_types;
+	load_function_param_types(param_types, funcval);
+
 	const ResourceTable &resource(w.current->function_call().mod->resource);
-	const Function &oldf(f.func);
 
 	const ProtocolResource *proto;
-	proto = resource.ptr< ProtocolResource >(oldf.header->context_idx);
+	proto = find_function_protocol(w, func);
 
 	const char *protosym = fetch_string(resource, proto->name_idx);
-	const char *funcname = fetch_string(resource, oldf.header->name_idx);
-	Function override(mod.fetch_override("", protosym, TYPE_VOID
-				, funcname));
-	if (override) {
-		f.func = override;
+	const char *funcname = fetch_string(resource, func.header->name_idx);
+
+	Function overridef(find_override(w, func.mod->name.c_str(), protosym
+				, funcname, param_types));
+	if (overridef) {
+		funcval.func = overridef;
+	} else if (pfc_type == FCT_POLYMORPH) {
+		// no override. reset the func to the protocol function
+		// if it was previously overridden
+		funcval.func = find_default_function(w, funcval.func);
 	}
 }
 
@@ -738,6 +751,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
+	override_function(w, *f);
 
 	FunctionCall *call = new FunctionCall(*w.current, res, *f);
 	w.current = call;

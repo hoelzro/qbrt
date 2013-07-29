@@ -206,8 +206,8 @@ struct Module
 	const void * fetch_resource(const std::string &name) const;
 	Function fetch_function(const std::string &name) const;
 	Function fetch_override(const std::string &protomod
-		, const std::string &protoname, const Type &
-		, const std::string &fname) const;
+		, const std::string &protoname, const std::string &fname
+		, const std::string &param_types) const;
 	const Type * fetch_struct(const std::string &name) const;
 	const ProtocolResource * fetch_protocol(const std::string &name) const;
 	Function fetch_protocol_function(const std::string &protocol_name
@@ -248,8 +248,8 @@ const ProtocolResource * find_function_protocol(Worker &, const Function &);
 Function find_default_function(Worker &, const Function &);
 
 Function find_override(Worker &, const char *protocol_mod
-		, const char *protocol_name, const Type &
-		, const char *funcname);
+		, const char *protocol_name, const char *funcname
+		, const std::string &param_types);
 
 
 void add_type(Module &, const std::string &name, const Type &);

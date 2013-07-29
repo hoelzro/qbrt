@@ -240,7 +240,7 @@ inline const Module * current_module(const Worker &w)
 {
 	return w.current->function_call().mod;
 }
-const Module * find_module(const Worker &, const std::string &modname);
+const Module * find_module(Worker &, const std::string &modname);
 const Module * load_module(Worker &, const std::string &modname);
 
 void gotowork(Worker &);

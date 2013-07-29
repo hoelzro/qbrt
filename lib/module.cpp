@@ -204,30 +204,6 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		if (poly->type_count > 1) {
-			return -1;
-		}
-		if (poly->type_count < 1) {
-			return 1;
-		}
-
-		const ModSym &polytype(fetch_modsym(tbl, poly->type[0]));
-		const char *polytype_mod = fetch_string(tbl, polytype.mod_name);
-		if (type.module < polytype_mod) {
-			return -1;
-		}
-		if (type.module > polytype_mod) {
-			return 1;
-		}
-		const char *polytype_name;
-		polytype_name = fetch_string(tbl, polytype.sym_name);
-		if (type.name < polytype_name) {
-			return -1;
-		}
-		if (type.name > polytype_name) {
-			return 1;
-		}
-
 		const char *fname = fetch_string(tbl, f->name_idx);
 		if (function < fname) {
 			return -1;
@@ -235,23 +211,30 @@ struct PolymorphFunctionSearch
 		if (function > fname) {
 			return 1;
 		}
+
+		const char *ptypes = fetch_string(tbl, f->param_types_idx);
+		if (param_types < ptypes) {
+			return -1;
+		}
+		if (param_types > ptypes) {
+			return 1;
+		}
 		return 0;
 	}
 
 	const std::string &proto_mod;
 	const std::string &proto_name;
-	const Type &type;
 	const std::string &function;
+	const std::string &param_types;
 
 	PolymorphFunctionSearch(const std::string &pmod
 			, const std::string &pname, const std::string &f
-			, const Type &type)
+			, const string &param_types)
 		: proto_mod(pmod)
 		, proto_name(pname)
-		, type(type)
 		, function(f)
+		, param_types(param_types)
 	{}
-	~PolymorphFunctionSearch() {}
 };
 
 Function Module::fetch_protocol_function(const std::string &protoname
@@ -265,12 +248,12 @@ Function Module::fetch_protocol_function(const std::string &protoname
 	return Function(f, this);
 }
 
-Function Module::fetch_override(const std::string &protomod
-		, const std::string &protoname, const Type &type
-		, const std::string &fname) const
+Function Module::fetch_override(const string &protomod
+		, const string &protoname, const string &fname
+		, const string &param_types) const
 {
 	const FunctionHeader *f;
-	PolymorphFunctionSearch query(protomod, protoname, fname, type);
+	PolymorphFunctionSearch query(protomod, protoname, fname, param_types);
 	f = resource.find(query);
 	if (!f) {
 		return Function();

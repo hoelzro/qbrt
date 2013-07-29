@@ -140,7 +140,7 @@ void findtask(Worker &w)
 	w.fresh->pop_front();
 }
 
-const Module * find_module(const Worker &w, const std::string &modname)
+const Module * find_module(Worker &w, const std::string &modname)
 {
 	if (modname == "./") {
 		// if the module name is empty, return the current module
@@ -153,20 +153,21 @@ const Module * find_module(const Worker &w, const std::string &modname)
 	}
 	it = w.app.module.find(modname);
 	if (it != w.app.module.end()) {
+		w.module[modname] = it->second;
 		return it->second;
 	}
 	return NULL;
 }
 
-Function find_override(Worker &w, const char * protocol_mod
-		, const char *protocol_name, const Type &t
-		, const char *funcname)
+Function find_override(Worker &w, const char *protocol_mod
+		, const char *protocol_name, const char *funcname
+		, const string &param_types)
 {
 	std::map< std::string, const Module * >::const_iterator it;
 	it = w.module.begin();
 	for (; it!=w.module.end(); ++it) {
 		Function f(it->second->fetch_override(protocol_mod
-					, protocol_name, t, funcname));
+				, protocol_name, funcname, param_types));
 		if (f) {
 			return f;
 		}
