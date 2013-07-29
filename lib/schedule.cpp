@@ -203,7 +203,7 @@ const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
 	return NULL;
 }
 
-Function find_overridden_function(Worker &w, const Function &func)
+Function find_default_function(Worker &w, const Function &func)
 {
 	if (func.header->fcontext != PFC_OVERRIDE) {
 		return Function();

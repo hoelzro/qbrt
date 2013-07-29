@@ -245,7 +245,7 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
  * Given a function object, find the associated ProtocolResource
  */
 const ProtocolResource * find_function_protocol(Worker &, const Function &);
-Function find_overridden_function(Worker &, const Function &);
+Function find_default_function(Worker &, const Function &);
 
 Function find_override(Worker &, const char *protocol_mod
 		, const char *protocol_name, const Type &

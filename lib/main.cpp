@@ -639,7 +639,7 @@ void execute_unimorph(OpContext &ctx, const unimorph_instruction &i)
 	} else if (pfc_type == FCT_POLYMORPH) {
 		// no override. reset the func to the protocol function
 		// if it was previously overridden
-		funcval.func = find_overridden_function(worker, funcval.func);
+		funcval.func = find_default_function(worker, funcval.func);
 	}
 }
 
