@@ -218,7 +218,7 @@ struct Module
 	{}
 };
 
-Module * load_module(const std::string &objname);
+Module * read_module(const std::string &objname);
 
 inline c_function fetch_c_function(const Module &m, const std::string &name)
 {

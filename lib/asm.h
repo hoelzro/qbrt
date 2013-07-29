@@ -91,14 +91,13 @@ struct AsmModSym
 
 	virtual std::ostream & pretty(std::ostream &o) const
 	{
-		return o << *this;
+		return o << "modsym:" << *this;
 	}
 
 	friend inline std::ostream & operator << (
 			std::ostream &o, const AsmModSym &ms)
 	{
-		o << "modsym:" << ms.module.value << ms.symbol.value;
-		return o;
+		return o << ms.module.value << '/' << ms.symbol.value;
 	}
 
 	friend int compare_asm(const AsmModSym &, const AsmModSym &);

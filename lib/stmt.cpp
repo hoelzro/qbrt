@@ -340,6 +340,7 @@ void dparam_stmt::collect(AsmParamList &apl, string &param_types
 	for (; it!=stmts->end(); ++it) {
 		apl.push_back(new AsmParam((*it)->name, *(*it)->type));
 		param_types += (*it)->type->module.value;
+		param_types += '/';
 		param_types += (*it)->type->symbol.value;
 		param_types += ';';
 	}

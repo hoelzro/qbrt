@@ -657,13 +657,13 @@ uint32_t AsmPolymorph::write(ostream &out) const
 	return poly_size;
 }
 
-std::ostream & AsmPolymorph::pretty(std::ostream &o) const
+ostream & AsmPolymorph::pretty(std::ostream &o) const
 {
-	o << "polymorph:" << protocol.module.value
+	o << "polymorph:" << protocol.module.value << '/'
 		<< protocol.symbol.value;
 	AsmModSymList::const_iterator it(type.begin());
 	for (; it!=type.end(); ++it) {
-		o << ' ' << (*it)->module.value << (*it)->symbol.value;
+		o << ' ' << (*it)->module.value << '/' << (*it)->symbol.value;
 	}
 	return o;
 }
@@ -1047,7 +1047,7 @@ int main(int argc, const char **argv)
 		out.open("a.qb", ios::binary | ios::out);
 		library_name = "a";
 	}
-	g_current_module = library_name +'/';
+	g_current_module = library_name;
 
 	init_instruction_sizes();
 	init_writers();

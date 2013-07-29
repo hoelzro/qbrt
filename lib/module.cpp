@@ -316,7 +316,7 @@ void read_resource_table(ResourceTable &tbl, istream &input)
 	tbl.index = index;
 }
 
-Module * load_module(const string &objname)
+Module * read_module(const string &objname)
 {
 	ifstream in;
 	if (!open_qb(in, objname)) {

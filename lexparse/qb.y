@@ -280,14 +280,18 @@ stmt(A) ::= RETURN. {
 }
 
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
-	A = new AsmModSym(B->text, C->text);
+	Token *t = const_cast< Token * >(B);
+	t->text.erase(t->text.size() - 1, 1);
+	A = new AsmModSym(t->text, C->text);
 }
 modtype(A) ::= CURRENTMOD TYPENAME(C). {
 	A = new AsmModSym(g_current_module, C->text);
 }
 
 modsym(A) ::= MODNAME(B) ID(C). {
-	A = new AsmModSym(B->text, C->text);
+	Token *t = const_cast< Token * >(B);
+	t->text.erase(t->text.size() - 1, 1);
+	A = new AsmModSym(t->text, C->text);
 }
 modsym(A) ::= CURRENTMOD ID(C). {
 	A = new AsmModSym(g_current_module, C->text);

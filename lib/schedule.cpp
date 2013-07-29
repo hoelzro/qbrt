@@ -241,9 +241,9 @@ const Module * load_module(Worker &w, const string &objname)
 		w.module[objname] = mod;
 		return mod;
 	}
-	mod = load_module(objname);
+	mod = read_module(objname);
 	w.module[objname] = mod;
-	load_module(w.app, objname, mod);
+	load_module(w.app, mod);
 	return mod;
 }
 
@@ -385,14 +385,14 @@ const Module * load_module(Application &app, const string &modname)
 	if (mod) {
 		return mod;
 	}
-	mod = load_module(modname);
+	mod = read_module(modname);
 	app.module[modname] = mod;
 	return mod;
 }
 
-void load_module(Application &app, const string &modname, const Module *mod)
+void load_module(Application &app, const Module *mod)
 {
-	app.module[modname] = mod;
+	app.module[mod->name] = mod;
 }
 
 bool send_msg(Application &app, uint64_t pid, const qbrt_value &src)

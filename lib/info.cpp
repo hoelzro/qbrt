@@ -326,7 +326,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 
 	const char *fname = fetch_string(tbl, f.name_idx);
 	if (module && *module) {
-		cout << module;
+		cout << module << '/';
 	}
 	if (pname && *pname) {
 		cout << pname << " ";
@@ -336,6 +336,9 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		return;
 	}
 	cout << fname << "/" << (int) f.argc << ',' << (int) f.regc << ":\n";
+
+	const char *param_types = fetch_string(tbl, f.param_types_idx);
+	cout << "param types: " << param_types << endl;
 
 	if (poly) {
 		cout << "types:";
@@ -347,7 +350,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 			typesym = fetch_string(tbl, ms->sym_name);
 			cout << ' ';
 			if (typemod && *typemod) {
-				cout << typemod;
+				cout << typemod << '/';
 			}
 			cout << typesym;
 		}
@@ -386,7 +389,7 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 			const char *typemod = fetch_string(tbl, type.mod_name);
 			const char *typesym = fetch_string(tbl, type.sym_name);
 			cout << '\t' << name <<' '
-				<< typemod << typesym << endl;
+				<< typemod <<'/'<< typesym << endl;
 		}
 	}
 
@@ -451,7 +454,7 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	const ModSym &modsym(tbl.obj< ModSym >(index));
 	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
 	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
-	printf("\t%u modsym(%s%s)\n", index, mod.value, sym.value);
+	printf("\t%u modsym(%s/%s)\n", index, mod.value, sym.value);
 }
 
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
@@ -483,7 +486,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 			break;
 	}
 	if (modname && *modname) {
-		printf("%s", modname);
+		printf("%s/", modname);
 	}
 	if (pname && *pname) {
 		printf("%s", pname);
@@ -510,7 +513,7 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 	const char *symname(fetch_string(tbl, protoname.sym_name));
 	printf("\t%u polymorph ", i);
 	if (modname && *modname) {
-		printf(modname);
+		printf("%s/", modname);
 	}
 	printf("%s", symname);
 
@@ -551,7 +554,7 @@ void print_resources(const ResourceTable &tbl)
 
 void show_object_info(const char *objname)
 {
-	Module *mod = load_module(objname);
+	Module *mod = read_module(objname);
 	if (!mod) {
 		exit(1);
 	}
