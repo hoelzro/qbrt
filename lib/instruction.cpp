@@ -37,7 +37,6 @@ DEFINE_IWRITER(lpfunc);
 DEFINE_IWRITER(newproc);
 DEFINE_IWRITER(recv);
 DEFINE_IWRITER(stracc);
-DEFINE_IWRITER(unimorph);
 DEFINE_IWRITER(move);
 DEFINE_IWRITER(ref);
 DEFINE_IWRITER(copy);
@@ -77,7 +76,6 @@ void init_writers()
 	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
 	WRITER[OP_RECV] = (instruction_writer)iwriter<recv_instruction>;
 	WRITER[OP_STRACC] = (instruction_writer)iwriter<stracc_instruction>;
-	WRITER[OP_UNIMORPH] = (instruction_writer)iwriter<unimorph_instruction>;
 	WRITER[OP_MOVE] = (instruction_writer) iwriter<move_instruction>;
 	WRITER[OP_REF] = (instruction_writer) iwriter<ref_instruction>;
 	WRITER[OP_COPY] = (instruction_writer) iwriter<copy_instruction>;

@@ -147,27 +147,6 @@ struct loadobj_instruction
 	static const uint8_t SIZE = 3;
 };
 
-/**
- * polymorph a function with the type of a single value
- */
-struct unimorph_instruction
-: public instruction
-{
-	uint64_t opcode_data : 8;
-	uint64_t funcreg : 16;
-	uint64_t valreg : 16;
-	uint64_t reserved : 24;
-
-	unimorph_instruction(uint16_t funcreg, uint16_t valreg)
-		: opcode_data(OP_UNIMORPH)
-		, funcreg(funcreg)
-		, valreg(valreg)
-		, reserved(0)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
 struct move_instruction
 : public instruction
 {

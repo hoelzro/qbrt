@@ -608,41 +608,6 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	}
 }
 
-void execute_unimorph(OpContext &ctx, const unimorph_instruction &i)
-{
-	ctx.pc() += unimorph_instruction::SIZE;
-
-	qbrt_value &funcreg(ctx.dstvalue(i.funcreg));
-	const qbrt_value &valreg(ctx.srcvalue(i.valreg));
-	const Type &valtype(value_type(valreg));
-
-	Worker &worker(ctx.worker());
-	const ResourceTable &resource(ctx.resource());
-	function_value &funcval(*funcreg.data.f);
-	Function func(funcval.func);
-	int pfc_type(PFC_TYPE(func.header->fcontext));
-
-	if (pfc_type == FCT_TRADITIONAL) {
-		cerr << "You can't morph a traditional function\n";
-		return;
-	}
-
-	const ProtocolResource *proto;
-	proto = find_function_protocol(worker, func);
-
-	const char *protosym = fetch_string(resource, proto->name_idx);
-	const char *funcname = fetch_string(resource, func.header->name_idx);
-	Function override(find_override(worker, "", protosym, valtype
-				, funcname));
-	if (override) {
-		funcval.func = override;
-	} else if (pfc_type == FCT_POLYMORPH) {
-		// no override. reset the func to the protocol function
-		// if it was previously overridden
-		funcval.func = find_default_function(worker, funcval.func);
-	}
-}
-
 void execute_loadtype(OpContext &ctx, const loadtype_instruction &i)
 {
 	const char *modname = fetch_string(ctx.resource(), i.modname);
@@ -713,7 +678,6 @@ void init_executioners()
 	x[OP_NEWPROC] = (executioner) execute_newproc;
 	x[OP_RECV] = (executioner) execute_recv;
 	x[OP_STRACC] = (executioner) execute_stracc;
-	x[OP_UNIMORPH] = (executioner) execute_unimorph;
 	x[OP_LOADOBJ] = (executioner) execute_loadobj;
 	x[OP_MOVE] = (executioner) execute_move;
 	x[OP_REF] = (executioner) execute_ref;

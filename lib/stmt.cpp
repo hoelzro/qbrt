@@ -617,22 +617,6 @@ void stracc_stmt::pretty(std::ostream &out) const
 	out << "stracc " << *dst <<' '<< *src;
 }
 
-void unimorph_stmt::allocate_registers(RegAlloc *r)
-{
-	r->alloc(*pfreg);
-	r->alloc(*valreg);
-}
-
-void unimorph_stmt::generate_code(AsmFunc &f)
-{
-	asm_instruction(f, new unimorph_instruction(*pfreg, *valreg));
-}
-
-void unimorph_stmt::pretty(std::ostream &out) const
-{
-	out << "morph " << *pfreg <<' '<< valreg;
-}
-
 void wait_stmt::allocate_registers(RegAlloc *r)
 {
 	r->alloc(*reg);

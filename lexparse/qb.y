@@ -265,9 +265,6 @@ stmt(A) ::= RECV reg(B) reg(C). {
 stmt(A) ::= STRACC reg(B) reg(C). {
 	A = new stracc_stmt(B, C);
 }
-stmt(A) ::= UNIMORPH reg(B) reg(C). {
-	A = new unimorph_stmt(B, C);
-}
 stmt(A) ::= WAIT reg(B). {
 	A = new wait_stmt(B);
 }

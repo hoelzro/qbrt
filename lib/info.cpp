@@ -112,15 +112,6 @@ uint8_t print_stracc_instruction(const stracc_instruction &i)
 	return stracc_instruction::SIZE;
 }
 
-uint8_t print_unimorph_instruction(const unimorph_instruction &i)
-{
-	cout << "unimorph";
-	print_register(i.funcreg);
-	print_register(i.valreg);
-	cout << endl;
-	return unimorph_instruction::SIZE;
-}
-
 uint8_t print_loadobj_instruction(const loadobj_instruction &i)
 {
 	cout << "loadobj";
@@ -277,7 +268,6 @@ void set_printers()
 	PRINTER[OP_LCONTEXT] = (instruction_printer) print_lcontext_instruction;
 	PRINTER[OP_LOADOBJ] = (instruction_printer) print_loadobj_instruction;
 	PRINTER[OP_LPFUNC] = (instruction_printer) print_lpfunc_instruction;
-	PRINTER[OP_UNIMORPH] = (instruction_printer) print_unimorph_instruction;
 	PRINTER[OP_CONSTS] = (instruction_printer) print_consts_instruction;
 	PRINTER[OP_CONSTHASH] =
 		(instruction_printer) print_consthash_instruction;

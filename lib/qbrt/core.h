@@ -235,7 +235,6 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_LOADOBJ	0x0b
 #define OP_LOADTYPE	0x0c
 #define OP_LPFUNC	0x0d
-#define OP_UNIMORPH	0x0e
 #define OP_LCONTEXT	0x0f
 #define OP_LONGBR
 #define OP_GOTO		0x11

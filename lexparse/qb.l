@@ -103,7 +103,6 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "protofunc"	{ lex_token(TOKEN_PROTOFUNC); }
 "recv"		{ lex_token(TOKEN_RECV); }
 "stracc"	{ lex_token(TOKEN_STRACC); }
-"unimorph"	{ lex_token(TOKEN_UNIMORPH); }
 "wait"		{ lex_token(TOKEN_WAIT); }
 "noop"		{
 		printf("noop token\n");

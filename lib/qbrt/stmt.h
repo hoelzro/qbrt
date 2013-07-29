@@ -532,21 +532,6 @@ struct stracc_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct unimorph_stmt
-: public Stmt
-{
-	unimorph_stmt(AsmReg *pfreg, AsmReg *value)
-	: pfreg(pfreg)
-	, valreg(value)
-	{}
-	AsmReg *pfreg;
-	AsmReg *valreg;
-
-	void allocate_registers(RegAlloc *);
-	void generate_code(AsmFunc &);
-	void pretty(std::ostream &out) const;
-};
-
 struct wait_stmt
 : public Stmt
 {
