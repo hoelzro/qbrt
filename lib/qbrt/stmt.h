@@ -367,15 +367,16 @@ struct dfunc_stmt
 struct protocol_stmt
 : public Stmt
 {
-	protocol_stmt(const std::string &protoname, const std::string &typevar)
+	protocol_stmt(const std::string &protoname
+			, std::list< AsmString * > *types)
 	: name(protoname)
-	, typevar(typevar)
+	, typevar(types)
 	, functions(NULL)
 	, protocol(NULL)
 	{}
 
 	AsmString name;
-	AsmString typevar;
+	std::list< AsmString * > *typevar;
 	Stmt::List *functions;
 	AsmProtocol *protocol;
 

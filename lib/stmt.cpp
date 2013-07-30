@@ -357,7 +357,7 @@ void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 	f->ctx = ctx;
 	f->fcontext = fcontext;
 	dparam_stmt::collect(f->params, f->param_types.value, params);
-	f->argc = params->size();
+	f->argc = params ? params->size() : 0;
 	this->func = f;
 }
 
@@ -420,9 +420,7 @@ void fork_stmt::generate_code(AsmFunc &f)
 
 void protocol_stmt::set_function_context(uint8_t, AsmResource *)
 {
-	this->protocol = new AsmProtocol(name);
-	this->protocol->argc = 1;
-	this->protocol->typevar = &typevar;
+	this->protocol = new AsmProtocol(name, typevar);
 
 	::set_function_context(*functions, FCT_PROTOCOL, this->protocol);
 }
@@ -441,7 +439,10 @@ void protocol_stmt::allocate_registers(RegAlloc *alloc)
 void protocol_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
-	collect_string(rs, typevar);
+	list< AsmString * >::iterator it(typevar->begin());
+	for (; it!=typevar->end(); ++it) {
+		collect_string(rs, **it);
+	}
 
 	if (this->functions) {
 		::collect_resources(rs, *functions);
@@ -451,7 +452,11 @@ void protocol_stmt::collect_resources(ResourceSet &rs)
 
 void protocol_stmt::pretty(std::ostream &out) const
 {
-	out << "protocol " << name.value << " " << typevar.value;
+	out << "protocol " << name.value;
+	list< AsmString * >::iterator it(typevar->begin());
+	for (; it!=typevar->end(); ++it) {
+		out << " " << (*it)->value;
+	}
 }
 
 void fork_stmt::pretty(std::ostream &out) const

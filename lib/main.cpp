@@ -736,11 +736,11 @@ void override_function(Worker &w, function_value &funcval)
 	Function overridef(find_override(w, func.mod->name.c_str(), protosym
 				, funcname, param_types));
 	if (overridef) {
-		funcval.func = overridef;
+		reassign_func(funcval, overridef);
 	} else if (pfc_type == FCT_POLYMORPH) {
 		// no override. reset the func to the protocol function
 		// if it was previously overridden
-		funcval.func = find_default_function(w, funcval.func);
+		reassign_func(funcval, find_default_function(w, funcval.func));
 	}
 }
 

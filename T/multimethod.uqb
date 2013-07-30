@@ -1,0 +1,49 @@
+
+protocol Multi A B
+
+protoabstract Multi dispatch
+dparam a ./A
+dparam b ./B
+end.
+
+end.
+
+
+bind ./Multi
+bindtype core/String
+bindtype core/Int
+
+func dispatch
+dparam a core/String
+dparam b core/Int
+lfunc $0 io/print
+const $0.0 "Multi.dispatch(String,Int)\n"
+call void $0
+end.
+
+end.
+
+bind ./Multi
+bindtype core/Int
+bindtype core/String
+
+func dispatch
+dparam a core/Int
+dparam b core/String
+lfunc $0 io/print
+const $0.0 "Multi.dispatch(Int,String)\n"
+call void $0
+end.
+
+end.
+
+
+func __main
+lfunc $2 ./dispatch
+const $2.0 18
+const $2.1 "tacos"
+call void $2
+const $2.0 "burritos"
+const $2.1 19
+call void $2
+end.

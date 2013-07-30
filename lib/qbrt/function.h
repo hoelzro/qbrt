@@ -355,10 +355,7 @@ struct function_value
 	Function func;
 	qbrt_value *reg;
 
-	function_value(const Function &f)
-		: func(f)
-		, reg(new qbrt_value[regtotal(f)])
-	{}
+	function_value(const Function &);
 
 	uint8_t num_values() const { return regtotal(func); }
 	qbrt_value & value(uint8_t r) { return reg[r]; }
@@ -366,6 +363,7 @@ struct function_value
 };
 
 void load_function_param_types(std::string &typestr, const function_value &);
+void reassign_func(function_value &f, Function newfunc);
 
 
 struct cfunction_value

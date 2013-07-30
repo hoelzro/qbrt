@@ -27,6 +27,7 @@
 %type bind_stmt {bind_stmt *}
 %type bindtype_block {list< bindtype_stmt * > *}
 %type bindtype_stmt {bindtype_stmt *}
+%type typename_list {list< AsmString * > *}
 
 
 %include {
@@ -124,8 +125,8 @@ func_list(A) ::= . {
 	A = NULL;
 }
 
-protocol_stmt(A) ::= PROTOCOL TYPENAME(B) TYPENAME(C). {
-	A = new protocol_stmt(B->text, C->text);
+protocol_stmt(A) ::= PROTOCOL TYPENAME(B) typename_list(C). {
+	A = new protocol_stmt(B->text, C);
 }
 protocol_block(A) ::= protocol_stmt(B) protofunc_list(C) END. {
 	A = B;
@@ -274,6 +275,15 @@ stmt(A) ::= REF reg(B) reg(C). {
 }
 stmt(A) ::= RETURN. {
 	A = new return_stmt();
+}
+
+typename_list(A) ::= typename_list(B) TYPENAME(C). {
+	A = B;
+	A->push_back(new AsmString(C->text));
+}
+typename_list(A) ::= TYPENAME(B). {
+	A = new list< AsmString * >();
+	A->push_back(new AsmString(B->text));
 }
 
 modtype(A) ::= MODNAME(B) TYPENAME(C). {

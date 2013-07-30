@@ -112,16 +112,16 @@ struct AsmProtocol
 	const AsmString &name;
 	AsmString doc;
 	AsmString filename;
-	AsmString *typevar;
+	std::list< AsmString * > *typevar;
 	uint16_t line_no;
 	uint16_t argc;
 
-	AsmProtocol(const AsmString &name)
+	AsmProtocol(const AsmString &name, std::list< AsmString * > *types)
 		: AsmResource(RESOURCE_PROTOCOL)
 		, name(name)
-		, typevar(NULL)
+		, typevar(types)
 		, line_no(0)
-		, argc(0)
+		, argc(types->size())
 	{}
 
 	virtual uint32_t write(std::ostream &) const;

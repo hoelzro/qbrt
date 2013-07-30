@@ -630,8 +630,11 @@ uint32_t AsmProtocol::write(ostream &out) const
 
 	uint32_t proto_size(10);
 
-	out.write((const char *) typevar->index, 2);
-	proto_size += 2;
+	list< AsmString * >::const_iterator it(typevar->begin());
+	for (; it!=typevar->end(); ++it) {
+		out.write((const char *) (*it)->index, 2);
+		proto_size += 2;
+	}
 
 	return proto_size;
 }

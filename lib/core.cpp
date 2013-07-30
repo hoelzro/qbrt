@@ -275,6 +275,14 @@ uint8_t isize(uint8_t opcode)
 }
 
 
+function_value::function_value(const Function &f)
+: func(f)
+{
+	int regc(regtotal(f));
+	reg = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
+	new (reg) qbrt_value[regc];
+}
+
 void load_function_param_types(string &paramstr, const function_value &func)
 {
 	paramstr = "";
@@ -286,4 +294,18 @@ void load_function_param_types(string &paramstr, const function_value &func)
 		paramstr += typ->name;
 		paramstr += ';';
 	}
+}
+
+void reassign_func(function_value &funcval, Function newfunc)
+{
+	int old_regc(regtotal(funcval.func));
+	int new_regc(regtotal(newfunc));
+	if (old_regc < new_regc) {
+		size_t newsize(new_regc * sizeof(qbrt_value));
+		funcval.reg = (qbrt_value *) realloc(funcval.reg, newsize);
+		for (int i(old_regc); i<new_regc; ++i) {
+			new (&funcval.reg[i]) qbrt_value();
+		}
+	}
+	funcval.func = newfunc;
 }
