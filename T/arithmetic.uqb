@@ -1,7 +1,7 @@
-dfunc "__main" 0
-lfunc $0 "io" "print"
-lfunc $1 "io" "print"
-lfunc $2 "io" "print"
+func __main
+lfunc $0 io/print
+lfunc $1 io/print
+lfunc $2 io/print
 const $2.0 "\n"
 
 const $3 5
