@@ -96,7 +96,7 @@ func_block(A) ::= dfunc_stmt(B) dparam_block(D) block(C). {
 	A->code->push_back(new return_stmt());
 }
 dfunc_stmt(A) ::= FUNC ID(B). {
-	A = new dfunc_stmt(B->text);
+	A = new dfunc_stmt(B->module_name());
 }
 
 dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
@@ -111,7 +111,7 @@ dparam_block(A) ::= . {
 	A = NULL;
 }
 dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
-	A = new dparam_stmt(B->strval(), C);
+	A = new dparam_stmt(B->module_name(), C);
 }
 
 func_list(A) ::= func_list(B) func_block(C). {
@@ -127,7 +127,7 @@ func_list(A) ::= . {
 }
 
 protocol_stmt(A) ::= PROTOCOL TYPENAME(B) typename_list(C). {
-	A = new protocol_stmt(B->text, C);
+	A = new protocol_stmt(B->module_name(), C);
 }
 protocol_block(A) ::= protocol_stmt(B) protofunc_list(C) END. {
 	A = B;
@@ -147,7 +147,7 @@ protofunc_list(A) ::= protofunc_list(B) protofunc_block(C). {
 }
 
 protoabstract_stmt(A) ::= PROTOABSTRACT TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text, true);
+	A = new dfunc_stmt(B->module_name(), C->module_name(), true);
 }
 protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
 	A = B;
@@ -155,7 +155,7 @@ protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
 }
 
 protofunc_stmt(A) ::= PROTOFUNC TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text, false);
+	A = new dfunc_stmt(B->module_name(), C->module_name(), false);
 }
 protofunc_block(A) ::= protofunc_stmt(B) dparam_block(C) block(D). {
 	A = B;
@@ -280,25 +280,25 @@ stmt(A) ::= RETURN. {
 
 typename_list(A) ::= typename_list(B) TYPENAME(C). {
 	A = B;
-	A->push_back(new AsmString(C->text));
+	A->push_back(new AsmString(C->module_name()));
 }
 typename_list(A) ::= TYPENAME(B). {
 	A = new list< AsmString * >();
-	A->push_back(new AsmString(B->text));
+	A->push_back(new AsmString(B->module_name()));
 }
 
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
-	A = new AsmModSym(B->module_name(), C->text);
+	A = new AsmModSym(B->module_name(), C->module_name());
 }
 modtype(A) ::= CURRENTMOD TYPENAME(C). {
-	A = new AsmModSym(g_current_module, C->text);
+	A = new AsmModSym(g_current_module, C->module_name());
 }
 
 modsym(A) ::= MODNAME(B) ID(C). {
-	A = new AsmModSym(B->module_name(), C->text);
+	A = new AsmModSym(B->module_name(), C->module_name());
 }
 modsym(A) ::= CURRENTMOD ID(C). {
-	A = new AsmModSym(g_current_module, C->text);
+	A = new AsmModSym(g_current_module, C->module_name());
 }
 
 reg(A) ::= REG(B) REGEXT(C). {

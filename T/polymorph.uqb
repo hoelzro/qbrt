@@ -1,14 +1,14 @@
 
-protocol ProtoShow _ProtoShow_T
+protocol ProtoShow; _ProtoShow_T;
 
-protoabstract ProtoShow abstrakt
-dparam a ./_ProtoShow_T
-dparam b core/Int
+protoabstract ProtoShow; abstrakt;
+dparam a; ./_ProtoShow_T;
+dparam b; core/Int;
 end.
 
 protofunc ProtoShow fshow
-dparam val ./_ProtoShow_T
-lfunc $0 io/print
+dparam val; ./_ProtoShow_T;
+lfunc $0 io/print;
 const $0.0 "execute default ProtoShow.fshow\n"
 call void $0
 end.
@@ -16,24 +16,24 @@ end.
 end.
 
 
-bind ./ProtoShow
-bindtype core/String
+bind ./ProtoShow;
+bindtype core/String;
 
-func fshow
-dparam val core/String
-lfunc $0 io/print
+func fshow;
+dparam val; core/String;
+lfunc $0 io/print;
 const $0.0 "execute String version of ProtoShow.fshow\n"
 call void $0
 end.
 
 end.
 
-bind ./ProtoShow
-bindtype core/Int
+bind ./ProtoShow;
+bindtype core/Int;
 
-func fshow
-dparam val core/Int
-lfunc $0 io/print
+func fshow;
+dparam val; core/Int;
+lfunc $0 io/print;
 const $0.0 "execute Int version of ProtoShow.fshow\n"
 call void $0
 end.
@@ -41,8 +41,8 @@ end.
 end.
 
 
-func __main
-dparam argc core/Int
+func __main;
+dparam argc; core/Int;
 lfunc $2 ./fshow
 const $2.0 18
 call void $2

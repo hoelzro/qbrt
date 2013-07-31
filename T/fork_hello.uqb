@@ -1,20 +1,20 @@
-func ask_name
-dparam in io/Stream
-dparam out io/Stream
+func ask_name~
+dparam in io/Stream~
+dparam out io/Stream~
 
-lfunc $0 io/write
+lfunc $0 io/write~
 ref $0.0 %1
 const $0.1 "Excuse me, what's your name? "
 call void $0
-lfunc $1 io/getline
+lfunc $1 io/getline~
 ref $1.0 %0
 call result $1
 end.
 
 
-func __main
+func __main~
 fork $2
-  lfunc $1 ./ask_name
+  lfunc $1 ./ask_name~
   lcontext $1.0 #stdin
   lcontext $1.1 #stdout
   call $2 $1
@@ -24,7 +24,7 @@ wait $2
 stracc $0 $2
 const $3 "!\n"
 stracc $0 $3
-lfunc $4 io/write
+lfunc $4 io/write~
 lcontext $4.0 #stdout
 ref $4.1 $0
 call result $4

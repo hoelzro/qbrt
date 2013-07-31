@@ -27,9 +27,10 @@ REGEXT	[0-9]+
 LABEL	@[a-zA-Z0-9_]+
 HASHTAG	#[a-zA-Z0-9_]+
 STRC	(\\.|[^\"])
-ID	[a-z_][a-z_0-9]*
-MODNAME	({ID}\/)*
-TYPENAME	_?[A-Z][a-zA-Z0-9_]*
+BASEID	[a-z_][a-z_0-9]*
+MODNAME	({BASEID}\/)*
+ID	{BASEID};
+TYPENAME	_?[A-Z][a-zA-Z0-9_]*;
 
 %x STR
 
