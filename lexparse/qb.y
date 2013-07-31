@@ -46,6 +46,7 @@ extern string g_current_module;
 %syntax_error {
 	cout << "Qbrt syntax error. wtf? @ ";
 	cout << Token::s_lineno << "," << Token::s_column << endl;
+	exit(1);
 }
 
 %parse_failure {
