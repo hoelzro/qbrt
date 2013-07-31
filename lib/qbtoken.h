@@ -116,6 +116,11 @@ struct Token
 		return b;
 	}
 
+	std::string module_name() const
+	{
+		return text.substr(0, text.size() - 1);
+	}
+
 
 	typedef std::list< const Token * > List;
 };

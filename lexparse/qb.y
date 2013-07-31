@@ -288,18 +288,14 @@ typename_list(A) ::= TYPENAME(B). {
 }
 
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
-	Token *t = const_cast< Token * >(B);
-	t->text.erase(t->text.size() - 1, 1);
-	A = new AsmModSym(t->text, C->text);
+	A = new AsmModSym(B->module_name(), C->text);
 }
 modtype(A) ::= CURRENTMOD TYPENAME(C). {
 	A = new AsmModSym(g_current_module, C->text);
 }
 
 modsym(A) ::= MODNAME(B) ID(C). {
-	Token *t = const_cast< Token * >(B);
-	t->text.erase(t->text.size() - 1, 1);
-	A = new AsmModSym(t->text, C->text);
+	A = new AsmModSym(B->module_name(), C->text);
 }
 modsym(A) ::= CURRENTMOD ID(C). {
 	A = new AsmModSym(g_current_module, C->text);
