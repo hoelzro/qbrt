@@ -22,6 +22,6 @@ end.
 
 func __main
 lfunc $0 ./numbers
-const $0.0 7
+const $0.0 2
 call \void $0
 end.

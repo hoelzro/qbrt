@@ -531,6 +531,21 @@ void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
 	ctx.pc() += lpfunc_instruction::SIZE;
 }
 
+void execute_match(OpContext &ctx, const match_instruction &i)
+{
+	qbrt_value &result(ctx.dstvalue(i.result));
+	qbrt_value &pattern(ctx.dstvalue(i.pattern));
+	qbrt_value &input(ctx.dstvalue(i.input));
+
+	int comparison(qbrt_compare(pattern, input));
+	bool match(comparison == 0);
+	if (match) {
+		ctx.pc() += match_instruction::SIZE;
+	} else {
+		ctx.pc() += i.jump();
+	}
+}
+
 void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 {
 	Failure *f;
@@ -675,6 +690,7 @@ void init_executioners()
 	x[OP_LFUNC] = (executioner) execute_loadfunc;
 	x[OP_LCONTEXT] = (executioner) execute_lcontext;
 	x[OP_LPFUNC] = (executioner) execute_lpfunc;
+	x[OP_MATCH] = (executioner) execute_match;
 	x[OP_NEWPROC] = (executioner) execute_newproc;
 	x[OP_RECV] = (executioner) execute_recv;
 	x[OP_STRACC] = (executioner) execute_stracc;
