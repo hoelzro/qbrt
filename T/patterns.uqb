@@ -4,13 +4,21 @@ dparam val core/Int
 lfunc $1 io/print
 const $0 1
 match $2 $0 %0 @CHECK2
-  const $1.0 "the number is one\n"
+  const $1.0 "the number is one: "
+  call \void $1
+  copy $1.0 $2
+  call \void $1
+  const $1.0 "\n"
   call \void $1
   goto @ENDMATCH
 @CHECK2
 const $0 2
 match $2 $0 %0 @CHECK3
-  const $1.0 "the number is two\n"
+  const $1.0 "the number is two: "
+  call \void $1
+  copy $1.0 $2
+  call \void $1
+  const $1.0 "\n"
   call \void $1
   goto @ENDMATCH
 @CHECK3

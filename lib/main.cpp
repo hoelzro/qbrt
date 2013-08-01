@@ -540,6 +540,7 @@ void execute_match(OpContext &ctx, const match_instruction &i)
 	int comparison(qbrt_compare(pattern, input));
 	bool match(comparison == 0);
 	if (match) {
+		qbrt_value::copy(result, input);
 		ctx.pc() += match_instruction::SIZE;
 	} else {
 		ctx.pc() += i.jump();
@@ -843,6 +844,10 @@ void core_print(OpContext &ctx, qbrt_value &out)
 			break;
 		case VT_BSTRING:
 			cout << *(val->data.str);
+			break;
+		default:
+			cout << "type not supported by print: "
+				<< val->type->name << endl;
 			break;
 	}
 }
