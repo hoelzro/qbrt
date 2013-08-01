@@ -54,13 +54,11 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 		lex_token(TOKEN_REGEXT);
 	}
 
-"result"	{
+"\\result"	{
 		lex_token(TOKEN_RESULT);
 	}
-"void"		{
-		lex_token(TOKEN_VOID);
-	}
-"pid"	{ lex_token(TOKEN_PID); }
+"\\void"	{ lex_token(TOKEN_VOID); }
+"\\pid"		{ lex_token(TOKEN_PID); }
 
 {LABEL}		{
 		lex_token(TOKEN_LABEL);
@@ -74,45 +72,45 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 		lex_token(TOKEN_INT);
 	}
 
-"bind"		{ lex_token(TOKEN_BIND); }
-"bindtype"	{ lex_token(TOKEN_BINDTYPE); }
-"brf"		{ lex_token(TOKEN_BRF); }
-"brt"		{ lex_token(TOKEN_BRT); }
-"brne"		{ lex_token(TOKEN_BRNE); }
-"brfail"	{ lex_token(TOKEN_BRFAIL); }
-"brnfail"	{ lex_token(TOKEN_BRNFAIL); }
-"call"		{ lex_token(TOKEN_CALL); }
-"cfailure"	{ lex_token(TOKEN_CFAILURE); }
-"const"		{ lex_token(TOKEN_CONST); }
-"copy"		{ lex_token(TOKEN_COPY); }
-"dparam"	{ lex_token(TOKEN_DPARAM); }
-"fork"		{ lex_token(TOKEN_FORK); }
-"func"		{ lex_token(TOKEN_FUNC); }
-"goto"		{ lex_token(TOKEN_GOTO); }
-"iadd"		{ lex_token(TOKEN_IADD); }
-"idiv"		{ lex_token(TOKEN_IDIV); }
-"imult"		{ lex_token(TOKEN_IMULT); }
-"isub"		{ lex_token(TOKEN_ISUB); }
-"lcontext"	{ lex_token(TOKEN_LCONTEXT); }
-"lfunc"		{ lex_token(TOKEN_LFUNC); }
+"\\bind"	{ lex_token(TOKEN_BIND); }
+"\\bindtype"	{ lex_token(TOKEN_BINDTYPE); }
+"\\brf"		{ lex_token(TOKEN_BRF); }
+"\\brt"		{ lex_token(TOKEN_BRT); }
+"\\brne"	{ lex_token(TOKEN_BRNE); }
+"\\brfail"	{ lex_token(TOKEN_BRFAIL); }
+"\\brnfail"	{ lex_token(TOKEN_BRNFAIL); }
+"\\call"	{ lex_token(TOKEN_CALL); }
+"\\cfailure"	{ lex_token(TOKEN_CFAILURE); }
+"\\const"	{ lex_token(TOKEN_CONST); }
+"\\copy"	{ lex_token(TOKEN_COPY); }
+"\\dparam"	{ lex_token(TOKEN_DPARAM); }
+"\\fork"	{ lex_token(TOKEN_FORK); }
+"\\func"	{ lex_token(TOKEN_FUNC); }
+"\\goto"	{ lex_token(TOKEN_GOTO); }
+"\\iadd"	{ lex_token(TOKEN_IADD); }
+"\\idiv"	{ lex_token(TOKEN_IDIV); }
+"\\imult"	{ lex_token(TOKEN_IMULT); }
+"\\isub"	{ lex_token(TOKEN_ISUB); }
+"\\lcontext"	{ lex_token(TOKEN_LCONTEXT); }
+"\\lfunc"	{ lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ lex_token(TOKEN_LPFUNC); }
-"module"	{ lex_token(TOKEN_MODULE); }
-"newproc"	{ lex_token(TOKEN_NEWPROC); }
-"protocol"	{ lex_token(TOKEN_PROTOCOL); }
-"protoabstract"	{ lex_token(TOKEN_PROTOABSTRACT); }
-"protofunc"	{ lex_token(TOKEN_PROTOFUNC); }
-"recv"		{ lex_token(TOKEN_RECV); }
-"stracc"	{ lex_token(TOKEN_STRACC); }
-"wait"		{ lex_token(TOKEN_WAIT); }
-"noop"		{
-		printf("noop token\n");
-		lex_token(TOKEN_NOOP);
-	}
-"ref"		{ lex_token(TOKEN_REF); }
-"return"	{ lex_token(TOKEN_RETURN); }
+"\\module"	{ lex_token(TOKEN_MODULE); }
+"\\newproc"	{ lex_token(TOKEN_NEWPROC); }
+"\\protocol"	{ lex_token(TOKEN_PROTOCOL); }
+"\\protoabstract"	{ lex_token(TOKEN_PROTOABSTRACT); }
+"\\protofunc"	{ lex_token(TOKEN_PROTOFUNC); }
+"\\recv"	{ lex_token(TOKEN_RECV); }
+"\\stracc"	{ lex_token(TOKEN_STRACC); }
+"\\wait"	{ lex_token(TOKEN_WAIT); }
+"\\noop"	{
+	printf("noop token\n");
+	lex_token(TOKEN_NOOP);
+}
+"\\ref"		{ lex_token(TOKEN_REF); }
+"\\return"	{ lex_token(TOKEN_RETURN); }
 
 
-"end."		{ lex_token(TOKEN_END); }
+"\\end."	{ lex_token(TOKEN_END); }
 
 ".\/"		{
 	lex_token(TOKEN_CURRENTMOD);
