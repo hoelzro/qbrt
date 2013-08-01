@@ -103,24 +103,23 @@ task :clean => [] do
 end
 
 
-TestFiles = ['T/hello.uqb',
-	'T/arithmetic.uqb',
-	'T/fork_hello.uqb',
-	'T/newproc.uqb',
+TestFiles = ['hello.uqb',
+	'arithmetic.uqb',
+	'fork_hello.uqb',
+	'newproc.uqb',
 ]
 
 def test_uqb(file)
 	passed = false
 	mod = file.chomp(File.extname(file))
-	sh "./qbc #{file}"
-	modbase = mod.sub('T/', '')
-	input_file = "T/INPUT/#{modbase}"
+	sh "../qbc #{file}"
+	input_file = "INPUT/#{mod}"
 	if File.exist? input_file
-		output = `cat #{input_file} | ./qbrt #{mod} 2>&1`
+		output = `cat #{input_file} | ../qbrt #{mod} 2>&1`
 	else
-		output = `./qbrt #{mod} 2>&1`
+		output = `../qbrt #{mod} 2>&1`
 	end
-	expected = File.read("T/OUTPUT/#{modbase}")
+	expected = File.read("OUTPUT/#{mod}")
 	if (output != expected)
 		puts "Expected output:\n#{expected}..."
 		puts "Actual output:\n#{output}..."
@@ -133,6 +132,7 @@ end
 
 task :T => ['qbc', 'qbrt'] do
 	failures = []
+	Dir.chdir "T/"
 	TestFiles.each do |t|
 		if not test_uqb t
 			failures << t
