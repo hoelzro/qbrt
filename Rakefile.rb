@@ -106,7 +106,10 @@ end
 TestFiles = ['hello.uqb',
 	'arithmetic.uqb',
 	'fork_hello.uqb',
+	'multimethod.uqb',
 	'newproc.uqb',
+	'param_types.uqb',
+	'polymorph.uqb',
 ]
 
 def test_uqb(file)

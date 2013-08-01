@@ -1,0 +1,2 @@
+Multi.dispatch(Int,String)
+Multi.dispatch(String,Int)
