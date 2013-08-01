@@ -948,6 +948,7 @@ Stmt::List * parse(istream &in)
 	void *parser = ParseAlloc(malloc);
 
 	while (! in.eof()) {
+		QBRTBEGIN(QBRTINITIAL);
 		getline(in, s);
 		yy_scan_string(s.c_str());
 		while (toktype=yylex()) {

@@ -7,22 +7,22 @@ const $2.0 "\n"
 const $3 5
 const $4 8
 iadd $0.0 $3 $4
-call void $0
-call void $2
+call \void $0
+call \void $2
 
 const $4 3
 isub $1.0 $0.0 $4
-call void $1
-call void $2
+call \void $1
+call \void $2
 
 const $4 3
 imult $0.0 $1.0 $4
-call void $0
-call void $2
+call \void $0
+call \void $2
 
 const $4 5
 idiv $1.0 $0.0 $4
-call void $1
-call void $2
+call \void $1
+call \void $2
 
 end.

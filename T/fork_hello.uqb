@@ -5,10 +5,10 @@ dparam out io/Stream
 lfunc $0 io/write
 ref $0.0 %1
 const $0.1 "Excuse me, what's your name? "
-call void $0
+call \void $0
 lfunc $1 io/getline
 ref $1.0 %0
-call result $1
+call \result $1
 end.
 
 
@@ -27,6 +27,6 @@ stracc $0 $3
 lfunc $4 io/write
 lcontext $4.0 #stdout
 ref $4.1 $0
-call result $4
+call \result $4
 end.
 

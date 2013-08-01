@@ -127,6 +127,8 @@ struct Token
 
 std::ostream & operator << (std::ostream &, const Token &);
 
+#define QBRTBEGIN (yy_start) = 1 + 2 *
+#define QBRTINITIAL 0
 
 extern Token *lexval;
 
