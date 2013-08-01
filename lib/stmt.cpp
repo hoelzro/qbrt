@@ -88,7 +88,7 @@ void brfail_stmt::allocate_registers(RegAlloc *alloc)
 
 void brfail_stmt::generate_code(AsmFunc &f)
 {
-	asm_jump(f, label.name, new brfail_instruction(check, 0, *reg));
+	asm_jump(f, label.name, new brfail_instruction(check, *reg));
 }
 
 void brfail_stmt::pretty(std::ostream &out) const
@@ -544,8 +544,27 @@ void lpfunc_stmt::generate_code(AsmFunc &f)
 
 void lpfunc_stmt::pretty(std::ostream &out) const
 {
-	out << "lpfunc " << dst <<' '<< *protocol
+	out << "lpfunc " << *dst <<' '<< *protocol
 		<<' '<< function.value;
+}
+
+void match_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*result);
+	r->alloc(*pattern);
+	r->alloc(*input);
+}
+
+void match_stmt::generate_code(AsmFunc &f)
+{
+	asm_jump(f, nonmatch.name
+			, new match_instruction(*result, *pattern, *input));
+}
+
+void match_stmt::pretty(std::ostream &out) const
+{
+	out << "match " << *result << ' ' << *pattern << ' ' << *input
+		<< ' ' << nonmatch.name;
 }
 
 void newproc_stmt::allocate_registers(RegAlloc *r)

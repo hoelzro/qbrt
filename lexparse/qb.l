@@ -97,6 +97,7 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "lcontext"	{ BEGIN(ARGS); lex_token(TOKEN_LCONTEXT); }
 "lfunc"		{ BEGIN(ARGS); lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ BEGIN(ARGS); lex_token(TOKEN_LPFUNC); }
+"match"		{ BEGIN(ARGS); lex_token(TOKEN_MATCH); }
 "module"	{ BEGIN(ARGS); lex_token(TOKEN_MODULE); }
 "newproc"	{ BEGIN(ARGS); lex_token(TOKEN_NEWPROC); }
 "protocol"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOCOL); }
@@ -114,6 +115,7 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 
 
 "end."		{ lex_token(TOKEN_END); }
+{LABEL}		{ lex_token(TOKEN_LABEL); }
 [ \t]	{
 	++Token::s_column; // eat whitespace
 }

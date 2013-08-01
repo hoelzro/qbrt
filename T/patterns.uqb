@@ -1,0 +1,27 @@
+func numbers
+dparam val core/Int
+
+lfunc $1 io/print
+const $0 1
+match $2 $0 %0 @CHECK2
+  const $1.0 "the number is one\n"
+  call \void $1
+  goto @ENDMATCH
+@CHECK2
+const $0 2
+match $2 $0 %0 @CHECK3
+  const $1.0 "the number is two\n"
+  call \void $1
+  goto @ENDMATCH
+@CHECK3
+const $1.0 "the number does not match\n"
+call \void $1
+@ENDMATCH
+end.
+
+
+func __main
+lfunc $0 ./numbers
+const $0.0 7
+call \void $0
+end.

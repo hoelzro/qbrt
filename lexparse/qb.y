@@ -258,6 +258,9 @@ stmt(A) ::= LPFUNC reg(B) modsym(C) STR(D). {
 	A = new lpfunc_stmt(B, C, D->strval());
 	C = NULL;
 }
+stmt(A) ::= MATCH reg(B) reg(C) reg(D) LABEL(E). {
+	A = new match_stmt(B, C, D, E->label());
+}
 stmt(A) ::= NEWPROC reg(B) reg(C). {
 	A = new newproc_stmt(B, C);
 }

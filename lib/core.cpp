@@ -243,6 +243,7 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_LCONTEXT] = lcontext_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_LOADTYPE] = loadtype_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_LOADOBJ] = loadobj_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_MATCH] = match_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_MOVE] = move_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_REF] = ref_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_COPY] = copy_instruction::SIZE;

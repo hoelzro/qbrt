@@ -478,6 +478,30 @@ struct lpfunc_stmt
 	void pretty(std::ostream &) const;
 };
 
+/**
+ * Pattern match on a given register value
+ */
+struct match_stmt
+: public Stmt
+{
+	match_stmt(AsmReg *result, AsmReg *patt, AsmReg *in
+			, const std::string &nonmatch)
+	: result(result)
+	, pattern(patt)
+	, input(in)
+	, nonmatch(nonmatch)
+	{}
+
+	AsmReg *result;
+	AsmReg *pattern;
+	AsmReg *input;
+	AsmLabel nonmatch;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
 /** Create a new process
  *
  * Launch the new process with function in the 2nd register

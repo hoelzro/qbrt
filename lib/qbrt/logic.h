@@ -85,9 +85,9 @@ struct brfail_instruction
 	int64_t op : 16;
 	int64_t reserved : 24;
 
-	brfail_instruction(bool check, int16_t jmp, reg_t op)
+	brfail_instruction(bool check, reg_t op)
 	: opcode_data(check ? OP_BRFAIL : OP_BRNFAIL)
-	, jump_data(jmp)
+	, jump_data(0)
 	, op(op)
 	, reserved(0)
 	{}
@@ -96,6 +96,26 @@ struct brfail_instruction
 	inline bool brnfail() const { return opcode_data == OP_BRNFAIL; }
 
 	static const uint8_t SIZE = 5;
+};
+
+struct match_instruction
+: public jump_instruction
+{
+	int64_t opcode_data : 8;
+	int64_t jump_data :16;
+	int64_t result : 16;
+	int64_t pattern : 16;
+	int64_t input : 16;
+
+	match_instruction(reg_t result, reg_t patt, reg_t in)
+	: opcode_data(OP_MATCH)
+	, jump_data(0)
+	, result(result)
+	, pattern(patt)
+	, input(in)
+	{}
+
+	static const uint8_t SIZE = 9;
 };
 
 struct fork_instruction

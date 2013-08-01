@@ -91,6 +91,18 @@ uint8_t print_lpfunc_instruction(const lpfunc_instruction &i)
 	return lpfunc_instruction::SIZE;
 }
 
+uint8_t print_match_instruction(const match_instruction &i)
+{
+	cout << "match";
+	print_register(i.result);
+	print_register(i.pattern);
+	print_register(i.input);
+	cout << ' ';
+	print_jump_delta(i.jump_data);
+	cout << endl;
+	return match_instruction::SIZE;
+}
+
 uint8_t print_newproc_instruction(const newproc_instruction &i)
 {
 	cout << "newproc " << pretty_reg(i.pid)
@@ -268,6 +280,7 @@ void set_printers()
 	PRINTER[OP_LCONTEXT] = (instruction_printer) print_lcontext_instruction;
 	PRINTER[OP_LOADOBJ] = (instruction_printer) print_loadobj_instruction;
 	PRINTER[OP_LPFUNC] = (instruction_printer) print_lpfunc_instruction;
+	PRINTER[OP_MATCH] = (instruction_printer) print_match_instruction;
 	PRINTER[OP_CONSTS] = (instruction_printer) print_consts_instruction;
 	PRINTER[OP_CONSTHASH] =
 		(instruction_printer) print_consthash_instruction;
