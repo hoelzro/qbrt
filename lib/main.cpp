@@ -1097,7 +1097,7 @@ void list_pop(OpContext &ctx, qbrt_value &out)
 void core_open(OpContext &ctx, qbrt_value &out)
 {
 	const qbrt_value &filename(ctx.srcvalue(PRIMARY_REG(0)));
-	const qbrt_value &mode(ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &mode(ctx.srcvalue(PRIMARY_REG(1)));
 	// these type checks should be done automatically...
 	// once types are working.
 	if (filename.type->id != VT_BSTRING) {
@@ -1151,23 +1151,23 @@ int main(int argc, const char **argv)
 	init_executioners();
 
 	Module *mod_core = new Module("core");
-	add_c_function(*mod_core, "pid", core_pid);
-	add_c_function(*mod_core, "send", core_send);
-	add_c_function(*mod_core, "wid", core_wid);
+	add_c_function(*mod_core, core_pid, "pid", 0);
+	add_c_function(*mod_core, core_send, "send", 2);
+	add_c_function(*mod_core, core_wid, "wid", 0);
 	add_type(*mod_core, "Int", TYPE_INT);
 	add_type(*mod_core, "String", TYPE_BSTRING);
 	add_type(*mod_core, "ByteString", TYPE_BSTRING);
 
 	Module *mod_list = new Module("list");
-	add_c_function(*mod_list, "empty", list_empty);
-	add_c_function(*mod_list, "head", list_head);
-	add_c_function(*mod_list, "pop", list_pop);
+	add_c_function(*mod_list, list_empty, "empty", 1);
+	add_c_function(*mod_list, list_head, "head", 1);
+	add_c_function(*mod_list, list_pop, "pop", 1);
 
 	Module *mod_io = new Module("io");
-	add_c_function(*mod_io, "print", core_print);
-	add_c_function(*mod_io, "open", core_open);
-	add_c_function(*mod_io, "write", core_write);
-	add_c_function(*mod_io, "getline", core_getline);
+	add_c_function(*mod_io, core_print, "print", 1);
+	add_c_function(*mod_io, core_open, "open", 2);
+	add_c_function(*mod_io, core_write, "write", 2);
+	add_c_function(*mod_io, core_getline, "getline", 1);
 
 	Application app;
 	load_module(app, mod_core);

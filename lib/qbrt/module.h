@@ -201,7 +201,7 @@ struct Module
 	ObjectHeader header;
 	ResourceTable resource;
 	std::map< std::string, const Type * > types;
-	std::map< std::string, c_function > cfunction;
+	std::map< std::string, CFunction > cfunction;
 
 	const void * fetch_resource(const std::string &name) const;
 	Function fetch_function(const std::string &name) const;
@@ -222,12 +222,12 @@ Module * read_module(const std::string &objname);
 
 inline c_function fetch_c_function(const Module &m, const std::string &name)
 {
-	std::map< std::string, c_function >::const_iterator it;
+	std::map< std::string, CFunction >::const_iterator it;
 	it = m.cfunction.find(name);
 	if (it == m.cfunction.end()) {
-		return 0;
+		return NULL;
 	}
-	return it->second;
+	return it->second.function;
 }
 
 static inline const char * fetch_string(const ResourceTable &tbl, uint16_t idx)
@@ -253,7 +253,11 @@ Function find_override(Worker &, const char *protocol_mod
 
 
 void add_type(Module &, const std::string &name, const Type &);
-void add_c_function(Module &, const std::string &name, c_function);
+CFunction * add_c_function(Module &, c_function
+		, const std::string &name, uint8_t argc);
+CFunction * add_c_override(Module &, c_function
+		, const std::string &protomod, const std::string &protoname
+		, const std::string &name, uint8_t argc);
 
 bool open_qb(std::ifstream &lib, const std::string &qbname);
 		// , const Version &min, const Version &max);

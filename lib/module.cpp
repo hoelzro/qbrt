@@ -50,9 +50,22 @@ void add_type(Module &mod, const std::string &name, const Type &t)
 	mod.types[name] = &t;
 }
 
-void add_c_function(Module &mod, const std::string &name, c_function f)
+CFunction * add_c_function(Module &mod, c_function f, const std::string &name
+		, uint8_t argc)
 {
-	mod.cfunction[name] = f;
+	mod.cfunction.insert(pair< string, CFunction >(name
+				, CFunction(f, name, argc)));
+	return &mod.cfunction[name];
+}
+
+CFunction * add_c_override(Module &mod, c_function f
+		, const std::string &protomod
+		, const std::string &protoname
+		, const std::string &name, uint8_t argc)
+{
+	CFunction *cfunc = add_c_function(mod, f, name, argc);
+	cfunc->proto_module = protomod;
+	cfunc->proto_name = protoname;
 }
 
 Function Module::fetch_function(const std::string &name) const

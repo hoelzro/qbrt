@@ -366,6 +366,29 @@ void load_function_param_types(std::string &typestr, const function_value &);
 void reassign_func(function_value &f, Function newfunc);
 
 
+struct CFunction
+{
+	c_function function;
+	const std::string name;
+	std::string proto_module;
+	std::string proto_name;
+	const uint8_t argc;
+
+	CFunction(c_function f, const std::string &name, uint8_t argc)
+	: function(f)
+	, name(name)
+	, argc(argc)
+	{}
+	CFunction()
+	: function(NULL)
+	, name()
+	, argc(0)
+	{}
+
+	operator bool () const { return function; }
+	bool operator ! () const { return ! function; }
+};
+
 struct cfunction_value
 : public qbrt_value_index
 {
