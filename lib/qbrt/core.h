@@ -14,7 +14,6 @@ typedef uint64_t TaskID;
 struct qbrt_value;
 struct qbrt_value_index;
 struct function_value;
-struct cfunction_value;
 struct Worker;
 struct Type;
 struct List;
@@ -38,7 +37,6 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 #define VT_FLOAT	0x05
 #define VT_REF		0x06
 #define VT_TUPLE	0x07
-#define VT_CFUNCTION	0x08
 #define VT_LIST		0x09
 #define VT_MAP		0x0a
 #define VT_VECTOR	0x0b
@@ -76,7 +74,6 @@ struct qbrt_value
 		std::string *str;
 		std::string *hashtag;
 		function_value *f;
-		cfunction_value *cfunc;
 		// binary_value *bin;
 		// uint8_t *bin;
 		double fp;
@@ -145,11 +142,6 @@ struct qbrt_value
 	{
 		v.type = &TYPE_FUNCTION;
 		v.data.f = f;
-	}
-	static void cfunc(qbrt_value &v, cfunction_value *f)
-	{
-		v.type = &TYPE_CFUNCTION;
-		v.data.cfunc = f;
 	}
 	static void ref(qbrt_value &, qbrt_value &ref);
 	static void typ(qbrt_value &v, const Type *t)

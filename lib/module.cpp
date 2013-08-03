@@ -51,21 +51,21 @@ void add_type(Module &mod, const std::string &name, const Type &t)
 }
 
 CFunction * add_c_function(Module &mod, c_function f, const std::string &name
-		, uint8_t argc)
+		, uint8_t argc, const std::string &param_types)
 {
-	mod.cfunction.insert(pair< string, CFunction >(name
-				, CFunction(f, name, argc)));
-	return &mod.cfunction[name];
+	multimap< string, CFunction >::iterator it =
+		mod.cfunction.insert(pair< string, CFunction >(name
+				, CFunction(f, name, argc, param_types)));
+	return &it->second;
 }
 
 CFunction * add_c_override(Module &mod, c_function f
-		, const std::string &protomod
-		, const std::string &protoname
-		, const std::string &name, uint8_t argc)
+		, const std::string &protomod, const std::string &protoname
+		, const std::string &name, uint8_t argc
+		, const std::string &param_types)
 {
-	CFunction *cfunc = add_c_function(mod, f, name, argc);
-	cfunc->proto_module = protomod;
-	cfunc->proto_name = protoname;
+	CFunction *cfunc = add_c_function(mod, f, name, argc, param_types);
+	cfunc->set_protocol(protomod, protoname);
 }
 
 Function Module::fetch_function(const std::string &name) const
@@ -329,4 +329,30 @@ Module * read_module(const string &objname)
 	in.close();
 
 	return mod;
+}
+
+const CFunction * fetch_c_function(const Module &m, const std::string &name)
+{
+	pair< multimap< string, CFunction >::const_iterator
+		, multimap< string, CFunction >::const_iterator > range;
+	range = m.cfunction.equal_range(name);
+	if (range.first == range.second) {
+		return NULL;
+	}
+	multimap< string, CFunction >::const_iterator it(range.first);
+	for (; it != range.second; ++it) {
+		if (it->second.fcontext == PFC_NONE) {
+			return &it->second;
+		}
+	}
+
+	return NULL;
+}
+
+const CFunction * fetch_c_override(const Module &, const std::string &protomod
+		, const std::string &protoname, const std::string &name
+		, const std::string &param_types)
+{
+	std::map< std::string, CFunction >::const_iterator it;
+	return NULL;
 }

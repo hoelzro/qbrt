@@ -58,7 +58,7 @@ void CodeFrame::io_pop()
 FunctionCall::FunctionCall(function_value &func)
 : CodeFrame(CFT_CALL)
 , result(NULL)
-, reg_data(func.reg)
+, reg_data(func.regv)
 , header(func.func.header)
 , mod(func.func.mod)
 , regc(func.num_values())
@@ -163,8 +163,7 @@ Function find_override(Worker &w, const char *protocol_mod
 		, const char *protocol_name, const char *funcname
 		, const string &param_types)
 {
-	std::map< std::string, const Module * >::const_iterator it;
-	it = w.module.begin();
+	ModuleMap::const_iterator it(w.module.begin());
 	for (; it!=w.module.end(); ++it) {
 		Function f(it->second->fetch_override(protocol_mod
 				, protocol_name, funcname, param_types));
@@ -173,6 +172,22 @@ Function find_override(Worker &w, const char *protocol_mod
 		}
 	}
 	return Function();
+}
+
+const CFunction * find_c_override(Worker &w, const std::string &protomod
+		, const std::string &protoname, const std::string &name
+		, const std::string &param_types)
+{
+	const CFunction *cf;
+	ModuleMap::const_iterator it(w.module.begin());
+	for (; it != w.module.end(); ++it) {
+		cf = fetch_c_override(*it->second, protomod
+				, protoname, name, param_types);
+		if (cf) {
+			return cf;
+		}
+	}
+	return NULL;
 }
 
 const ProtocolResource * find_function_protocol(Worker &w, const Function &f)

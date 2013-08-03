@@ -24,7 +24,6 @@ static void init_primitive_modules()
 	PRIMITIVE_MODULE[VT_BOOL] = "core";
 	PRIMITIVE_MODULE[VT_FLOAT] = "core";
 	PRIMITIVE_MODULE[VT_FUNCTION] = "core";
-	PRIMITIVE_MODULE[VT_CFUNCTION] = "core";
 	PRIMITIVE_MODULE[VT_BSTRING] = "core";
 	PRIMITIVE_MODULE[VT_HASHTAG] = "core";
 	PRIMITIVE_MODULE[VT_REF] = "core";
@@ -45,7 +44,6 @@ static void init_primitive_names()
 	PRIMITIVE_NAME[VT_BOOL] = "Bool";
 	PRIMITIVE_NAME[VT_FLOAT] = "Float";
 	PRIMITIVE_NAME[VT_FUNCTION] = "Function";
-	PRIMITIVE_NAME[VT_CFUNCTION] = "Function";
 	PRIMITIVE_NAME[VT_BSTRING] = "String";
 	PRIMITIVE_NAME[VT_HASHTAG] = "HashTag";
 	PRIMITIVE_NAME[VT_REF] = "Ref";
@@ -87,6 +85,7 @@ static const std::string & get_primitive_name(uint8_t id)
 	return name;
 }
 
+
 Type::Type(uint8_t id)
 	: module(get_primitive_module(id))
 	, name(get_primitive_name(id))
@@ -109,7 +108,6 @@ Type TYPE_HASHTAG(VT_HASHTAG);
 Type TYPE_REF(VT_REF);
 Type TYPE_TUPLE(VT_TUPLE);
 Type TYPE_FUNCTION(VT_FUNCTION);
-Type TYPE_CFUNCTION(VT_CFUNCTION);
 Type TYPE_LIST(VT_LIST);
 Type TYPE_MAP(VT_MAP);
 Type TYPE_VECTOR(VT_VECTOR);
@@ -278,10 +276,31 @@ uint8_t isize(uint8_t opcode)
 
 function_value::function_value(const Function &f)
 : func(f)
+, argc(f.header->argc)
+, regc(Function::regtotal(f))
 {
-	int regc(regtotal(f));
-	reg = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
-	new (reg) qbrt_value[regc];
+	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
+	new (regv) qbrt_value[regc];
+}
+
+function_value::function_value(const CFunction *cf)
+: cfunc(cf)
+, argc(cf->argc)
+, regc(cf->argc)
+{
+	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
+	new (regv) qbrt_value[regc];
+}
+
+void function_value::realloc(uint8_t new_regc)
+{
+	size_t newsize(new_regc * sizeof(qbrt_value));
+	qbrt_value *newreg =
+		(qbrt_value *) ::realloc(this->regv, newsize);
+	this->regv = newreg;
+	for (int i(this->regc); i<new_regc; ++i) {
+		new (&this->regv[i]) qbrt_value();
+	}
 }
 
 void load_function_param_types(string &paramstr, const function_value &func)
@@ -299,14 +318,19 @@ void load_function_param_types(string &paramstr, const function_value &func)
 
 void reassign_func(function_value &funcval, Function newfunc)
 {
-	int old_regc(regtotal(funcval.func));
-	int new_regc(regtotal(newfunc));
-	if (old_regc < new_regc) {
-		size_t newsize(new_regc * sizeof(qbrt_value));
-		funcval.reg = (qbrt_value *) realloc(funcval.reg, newsize);
-		for (int i(old_regc); i<new_regc; ++i) {
-			new (&funcval.reg[i]) qbrt_value();
-		}
+	int new_regc(Function::regtotal(newfunc));
+	if (funcval.regc < new_regc) {
+		funcval.realloc(new_regc);
 	}
+	funcval.cfunc = NULL;
 	funcval.func = newfunc;
+}
+
+void reassign_func(function_value &funcval, const CFunction *newfunc)
+{
+	if (funcval.regc < newfunc->argc) {
+		funcval.realloc(newfunc->argc);
+	}
+	funcval.func = Function();
+	funcval.cfunc = newfunc;
 }

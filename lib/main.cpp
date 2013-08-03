@@ -182,7 +182,7 @@ class WorkerCContext
 : public OpContext
 {
 public:
-	WorkerCContext(Worker &w, cfunction_value &cf)
+	WorkerCContext(Worker &w, function_value &cf)
 	: w(w)
 	, frame(*w.current)
 	, cfunc(cf)
@@ -272,7 +272,7 @@ public:
 private:
 	Worker &w;
 	CodeFrame &frame;
-	cfunction_value &cfunc;
+	function_value &cfunc;
 };
 
 
@@ -494,9 +494,9 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	if (qbrt) {
 		qbrt_value::f(dst, new function_value(qbrt));
 	} else {
-		c_function cf = fetch_c_function(*mod, fname);
+		const CFunction *cf = fetch_c_function(*mod, fname);
 		if (cf) {
-			qbrt_value::cfunc(dst, new cfunction_value(cf));
+			qbrt_value::f(dst, new function_value(cf));
 		} else {
 			cerr << "could not find function: " << modname
 				<<"/"<< fname << endl;
@@ -732,32 +732,40 @@ void execute_instruction(Worker &w, const instruction &i)
 
 void override_function(Worker &w, function_value &funcval)
 {
-	Function func(funcval.func);
-	int pfc_type(PFC_TYPE(func.header->fcontext));
-
+	int pfc_type(PFC_TYPE(funcval.fcontext()));
 	if (pfc_type == FCT_TRADITIONAL) {
+		// no overrides for regular functions
 		return;
+	}
+
+	if (pfc_type == FCT_POLYMORPH) {
+		// no override. reset the func to the protocol function
+		// if it was previously overridden
+		reassign_func(funcval, find_default_function(w, funcval.func));
 	}
 
 	string param_types;
 	load_function_param_types(param_types, funcval);
 
-	const ResourceTable &resource(w.current->function_call().mod->resource);
+	Function func(funcval.func);
 
 	const ProtocolResource *proto;
 	proto = find_function_protocol(w, func);
 
+	const ResourceTable &resource(w.current->function_call().mod->resource);
 	const char *protosym = fetch_string(resource, proto->name_idx);
-	const char *funcname = fetch_string(resource, func.header->name_idx);
 
 	Function overridef(find_override(w, func.mod->name.c_str(), protosym
-				, funcname, param_types));
+				, funcval.name(), param_types));
 	if (overridef) {
 		reassign_func(funcval, overridef);
-	} else if (pfc_type == FCT_POLYMORPH) {
-		// no override. reset the func to the protocol function
-		// if it was previously overridden
-		reassign_func(funcval, find_default_function(w, funcval.func));
+	} else {
+		const CFunction *cfunc = find_c_override(w
+				, func.mod->name.c_str()
+				, protosym, funcval.name(), param_types);
+		if (cfunc) {
+			reassign_func(funcval, cfunc);
+		}
 	}
 }
 
@@ -768,15 +776,20 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
+
 	override_function(w, *f);
 
-	FunctionCall *call = new FunctionCall(*w.current, res, *f);
-	w.current = call;
+	if (f->abstract()) {
+		// can't execute the function if it's abstract
+		cerr << "cannot execute abstract function\n";
+		w.current->cfstate = CFS_FAILED;
+		return;
+	}
 
-	WorkerOpContext ctx(w);
+	WorkerCContext ctx(w, *f);
 	const ResourceTable &resource(w.current->function_call().mod->resource);
 	// check arguments
-	for (uint16_t i(0); i<f->func.header->argc; ++i) {
+	for (uint16_t i(0); i < f->argc; ++i) {
 		const qbrt_value *val(&ctx.srcvalue(PRIMARY_REG(i)));
 		if (!val) {
 			cerr << "wtf null value?\n";
@@ -789,20 +802,21 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		const char *type_name = fetch_string(resource, type.sym_name);
 		if (valtype->module != type_mod || valtype->name != type_name) {
 			cerr << "Type Mismatch: parameter " << name << '/' << i
-				<< " expected to be " << type_mod
+				<< " expected to be " << type_mod << '/'
 				<< type_name << ", instead received "
-				<< valtype->module << ':' << valtype->name
+				<< valtype->module << '/' << valtype->name
 				<< endl;
 			exit(1);
 		}
 	}
-}
 
-void ccall(Worker &w, qbrt_value &res, cfunction_value &f)
-{
-	c_function cf = f.func;
-	WorkerCContext ctx(w, f);
-	cf(ctx, res);
+	if (f->qbrt()) {
+		FunctionCall *call = new FunctionCall(*w.current, res, *f);
+		w.current = call;
+	} else {
+		c_function cf = f->cfunc->function;
+		cf(ctx, res);
+	}
 }
 
 void call(Worker &w, qbrt_value &res, qbrt_value &f)
@@ -811,9 +825,6 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 	switch (f.type->id) {
 		case VT_FUNCTION:
 			qbrtcall(w, res, f.data.f);
-			break;
-		case VT_CFUNCTION:
-			ccall(w, res, *f.data.cfunc);
 			break;
 		case VT_FAILURE:
 			fail = DUPE_FAILURE(*f.data.failure
@@ -901,14 +912,11 @@ ostream & inspect_failure(ostream &out, const Failure &f)
 
 ostream & inspect_function_value(ostream &out, const function_value &fv)
 {
-	inspect_function(out, fv.func);
-	inspect_value_index(out, fv);
-	return out;
-}
-
-ostream & inspect_cfunction_value(ostream &out, const cfunction_value &fv)
-{
-	out << "cfunction ";
+	if (fv.c()) {
+		out << "cfunction ";
+	} else {
+		inspect_function(out, fv.func);
+	}
 	inspect_value_index(out, fv);
 	return out;
 }
@@ -948,9 +956,6 @@ ostream & inspect(ostream &out, const qbrt_value &v)
 			break;
 		case VT_FUNCTION:
 			inspect_function_value(out, *v.data.f);
-			break;
-		case VT_CFUNCTION:
-			inspect_cfunction_value(out, *v.data.cfunc);
 			break;
 		case VT_HASHTAG:
 			out << '#' << *v.data.hashtag;
@@ -1151,23 +1156,29 @@ int main(int argc, const char **argv)
 	init_executioners();
 
 	Module *mod_core = new Module("core");
-	add_c_function(*mod_core, core_pid, "pid", 0);
-	add_c_function(*mod_core, core_send, "send", 2);
-	add_c_function(*mod_core, core_wid, "wid", 0);
+	add_c_function(*mod_core, core_pid, "pid", 0, "");
+	add_c_function(*mod_core, core_send, "send", 2
+			, "io/Stream;core/String;");
+	add_c_function(*mod_core, core_wid, "wid", 0, "");
 	add_type(*mod_core, "Int", TYPE_INT);
 	add_type(*mod_core, "String", TYPE_BSTRING);
 	add_type(*mod_core, "ByteString", TYPE_BSTRING);
 
 	Module *mod_list = new Module("list");
-	add_c_function(*mod_list, list_empty, "empty", 1);
-	add_c_function(*mod_list, list_head, "head", 1);
-	add_c_function(*mod_list, list_pop, "pop", 1);
+	add_c_function(*mod_list, list_empty, "empty", 1, "core/List;");
+	add_c_function(*mod_list, list_head, "head", 1, "core/List;");
+	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");
 
 	Module *mod_io = new Module("io");
-	add_c_function(*mod_io, core_print, "print", 1);
-	add_c_function(*mod_io, core_open, "open", 2);
-	add_c_function(*mod_io, core_write, "write", 2);
-	add_c_function(*mod_io, core_getline, "getline", 1);
+	add_c_override(*mod_io, core_print, "print", "Printable"
+			, "print", 1, "core/String;");
+	add_c_override(*mod_io, core_print, "print", "Printable"
+			, "print", 1, "core/Int;");
+	add_c_function(*mod_io, core_open, "open", 2
+			, "core/String;core/String;");
+	add_c_function(*mod_io, core_write, "write", 2
+			, "io/Stream;core/String;");
+	add_c_function(*mod_io, core_getline, "getline", 1, "io/Stream;");
 
 	Application app;
 	load_module(app, mod_core);
@@ -1189,18 +1200,18 @@ int main(int argc, const char **argv)
 	function_value *main_func = new function_value(qbrt_main);
 	int main_func_argc(main_func->func.argc());
 	if (main_func_argc >= 1) {
-		qbrt_value::i(main_func->reg[0], argc - 1);
+		qbrt_value::i(main_func->regv[0], argc - 1);
 	}
 	if (main_func_argc >= 2) {
-		qbrt_value::list(main_func->reg[1], NULL);
+		qbrt_value::list(main_func->regv[1], NULL);
 		for (int i(1); i<argc; ++i) {
 			qbrt_value arg;
 			string strarg(argv[i]);
 			qbrt_value::str(arg, argv[i]);
-			cons(arg, main_func->reg[1].data.list);
+			cons(arg, main_func->regv[1].data.list);
 		}
-		qbrt_value::list(main_func->reg[1]
-				, reverse(main_func->reg[1].data.list));
+		qbrt_value::list(main_func->regv[1]
+				, reverse(main_func->regv[1].data.list));
 	}
 
 	Stream *stream_stdin = NULL;

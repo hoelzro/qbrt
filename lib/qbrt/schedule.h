@@ -116,7 +116,7 @@ struct FunctionCall
 	FunctionCall(qbrt_value &result, function_value &func)
 	: CodeFrame(CFT_CALL)
 	, result(&result)
-	, reg_data(func.reg)
+	, reg_data(func.regv)
 	, header(func.func.header)
 	, mod(func.func.mod)
 	, regc(func.num_values())
@@ -124,7 +124,7 @@ struct FunctionCall
 	FunctionCall(CodeFrame &parent, qbrt_value &result, function_value &func)
 	: CodeFrame(parent, CFT_CALL)
 	, result(&result)
-	, reg_data(func.reg)
+	, reg_data(func.regv)
 	, header(func.func.header)
 	, mod(func.func.mod)
 	, regc(func.num_values())
@@ -242,6 +242,10 @@ inline const Module * current_module(const Worker &w)
 }
 const Module * find_module(Worker &, const std::string &modname);
 const Module * load_module(Worker &, const std::string &modname);
+
+const CFunction * find_c_override(Worker &, const std::string &protomod
+		, const std::string &protoname, const std::string &name
+		, const std::string &param_types);
 
 void gotowork(Worker &);
 void * launch_worker(void *);

@@ -342,70 +342,89 @@ struct Function
 	inline uint8_t argc() const { return header->argc; }
 	inline uint8_t regc() const { return header->regc; }
 	uint32_t code_offset() const;
+
+	static inline uint8_t regtotal(const Function &f)
+	{
+		return f.header->argc + f.header->regc;
+	}
 };
-
-static inline uint8_t regtotal(const Function &f)
-{
-	return f.header->argc + f.header->regc;
-}
-
-struct function_value
-: public qbrt_value_index
-{
-	Function func;
-	qbrt_value *reg;
-
-	function_value(const Function &);
-
-	uint8_t num_values() const { return regtotal(func); }
-	qbrt_value & value(uint8_t r) { return reg[r]; }
-	const qbrt_value & value(uint8_t r) const { return reg[r]; }
-};
-
-void load_function_param_types(std::string &typestr, const function_value &);
-void reassign_func(function_value &f, Function newfunc);
-
 
 struct CFunction
 {
 	c_function function;
 	const std::string name;
+	const std::string param_types;
 	std::string proto_module;
 	std::string proto_name;
 	const uint8_t argc;
+	uint8_t fcontext;
 
-	CFunction(c_function f, const std::string &name, uint8_t argc)
+	CFunction(c_function f, const std::string &name, uint8_t argc
+			, const std::string &paramtypes)
 	: function(f)
 	, name(name)
+	, param_types(paramtypes)
 	, argc(argc)
+	, fcontext(PFC_NONE)
 	{}
 	CFunction()
 	: function(NULL)
 	, name()
 	, argc(0)
+	, fcontext(PFC_NULL)
 	{}
+
+	void set_protocol(const std::string &mod, const std::string &name)
+	{
+		proto_module = mod;
+		proto_name = name;
+		fcontext = PFC_OVERRIDE;
+	}
 
 	operator bool () const { return function; }
 	bool operator ! () const { return ! function; }
 };
 
-struct cfunction_value
+struct function_value
 : public qbrt_value_index
 {
-	c_function func;
-	qbrt_value *reg;
+	Function func;
+	const CFunction *cfunc;
+	qbrt_value *regv;
+	uint8_t argc;
 	uint8_t regc;
 
-	cfunction_value(c_function f)
-		: func(f)
-		, reg(new qbrt_value[10])
-		, regc(10)
-	{}
+	function_value(const Function &);
+	function_value(const CFunction *);
+	void realloc(uint8_t regc);
+
+	bool qbrt() const { return func && !cfunc; }
+	bool c() const { return cfunc && !func; }
+	uint8_t fcontext() const
+	{
+		return qbrt() ? func.header->fcontext : cfunc->fcontext;
+	}
+	bool traditional() const
+	{
+		return fcontext() == PFC_NONE;
+	}
+	bool abstract() const
+	{
+		return fcontext() == PFC_ABSTRACT;
+	}
+	const char * name() const
+	{
+		return qbrt() ? func.name() : cfunc->name.c_str();
+	}
 
 	uint8_t num_values() const { return regc; }
-	qbrt_value & value(uint8_t r) { return reg[r]; }
-	const qbrt_value & value(uint8_t r) const { return reg[r]; }
+	qbrt_value & value(uint8_t r) { return regv[r]; }
+	const qbrt_value & value(uint8_t r) const { return regv[r]; }
 };
+
+void load_function_param_types(std::string &typestr, const function_value &);
+void reassign_func(function_value &, Function newfunc);
+void reassign_func(function_value &, const CFunction *newfunc);
 
 
 static inline qbrt_value & follow_ref(qbrt_value &val)
