@@ -1,7 +1,7 @@
 
 protocol Multi A B
 
-protoabstract Multi dispatch
+abstract dispatch
 dparam a ./A
 dparam b ./B
 end.

@@ -101,8 +101,7 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "module"	{ BEGIN(ARGS); lex_token(TOKEN_MODULE); }
 "newproc"	{ BEGIN(ARGS); lex_token(TOKEN_NEWPROC); }
 "protocol"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOCOL); }
-"protoabstract"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOABSTRACT); }
-"protofunc"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOFUNC); }
+"abstract"	{ BEGIN(ARGS); lex_token(TOKEN_ABSTRACT); }
 "recv"		{ BEGIN(ARGS); lex_token(TOKEN_RECV); }
 "stracc"	{ BEGIN(ARGS); lex_token(TOKEN_STRACC); }
 "wait"		{ BEGIN(ARGS); lex_token(TOKEN_WAIT); }

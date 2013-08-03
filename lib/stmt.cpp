@@ -351,11 +351,18 @@ void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 	AsmFunc *f = new AsmFunc(this->name);
 	f->regc = 0;
 	f->stmts = code;
-	if (PFC_TYPE(this->fcontext) != FCT_PROTOCOL) {
-		fcontext = FCT_WITH_CODE(afc);
+	switch (afc) {
+		case FCT_TRADITIONAL:
+			f->fcontext = PFC_NONE;
+			break;
+		case FCT_PROTOCOL:
+			f->fcontext = abstract ? PFC_ABSTRACT : PFC_DEFAULT;
+			break;
+		case FCT_POLYMORPH:
+			f->fcontext = PFC_OVERRIDE;
+			break;
 	}
 	f->ctx = ctx;
-	f->fcontext = fcontext;
 	dparam_stmt::collect(f->params, f->param_types.value, params);
 	f->argc = params ? params->size() : 0;
 	this->func = f;

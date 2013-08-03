@@ -333,27 +333,22 @@ struct dparam_stmt
 struct dfunc_stmt
 : public Stmt
 {
-	dfunc_stmt(const std::string &fname)
+	dfunc_stmt(const std::string &fname, bool abstract)
 		: name(fname)
+		, protocol_name(NULL)
 		, params(NULL)
 		, code(NULL)
 		, func(NULL)
 		, fcontext(PFC_NULL)
-	{}
-	dfunc_stmt(const std::string &protoname, const std::string &fname, bool abstract)
-		: name(fname)
-		, protocol_name(protoname)
-		, params(NULL)
-		, code(NULL)
-		, func(NULL)
-		, fcontext(abstract ? PFC_ABSTRACT : PFC_DEFAULT)
+		, abstract(abstract)
 	{}
 	AsmString name;
-	AsmString protocol_name;
+	AsmString *protocol_name;
 	dparam_stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;
 	uint8_t fcontext;
+	bool abstract;
 
 	bool has_code() const { return code && !code->empty(); }
 	uint16_t argc() const { return params ? params->size() : 0; }

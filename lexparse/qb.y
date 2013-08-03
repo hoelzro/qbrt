@@ -18,10 +18,8 @@
 %type func_list {Stmt::List *}
 %type protocol_block {protocol_stmt *}
 %type protocol_stmt {protocol_stmt *}
-%type protoabstract_block {dfunc_stmt *}
-%type protoabstract_stmt {dfunc_stmt *}
-%type protofunc_block {dfunc_stmt *}
-%type protofunc_stmt {dfunc_stmt *}
+%type abstract_block {dfunc_stmt *}
+%type abstract_stmt {dfunc_stmt *}
 %type protofunc_list {Stmt::List *}
 %type bind_block {bind_stmt *}
 %type bind_stmt {bind_stmt *}
@@ -96,7 +94,7 @@ func_block(A) ::= dfunc_stmt(B) dparam_block(D) block(C). {
 	A->code->push_back(new return_stmt());
 }
 dfunc_stmt(A) ::= FUNC ID(B). {
-	A = new dfunc_stmt(B->text);
+	A = new dfunc_stmt(B->text, false);
 }
 
 dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
@@ -137,30 +135,21 @@ protocol_block(A) ::= protocol_stmt(B) protofunc_list(C) END. {
 protofunc_list(A) ::= . {
 	A = new Stmt::List();
 }
-protofunc_list(A) ::= protofunc_list(B) protoabstract_block(C). {
+protofunc_list(A) ::= protofunc_list(B) abstract_block(C). {
 	A = B;
 	A->push_back(C);
 }
-protofunc_list(A) ::= protofunc_list(B) protofunc_block(C). {
+protofunc_list(A) ::= protofunc_list(B) func_block(C). {
 	A = B;
 	A->push_back(C);
 }
 
-protoabstract_stmt(A) ::= PROTOABSTRACT TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text, true);
+abstract_stmt(A) ::= ABSTRACT ID(B). {
+	A = new dfunc_stmt(B->text, true);
 }
-protoabstract_block(A) ::= protoabstract_stmt(B) dparam_block(C) END. {
+abstract_block(A) ::= abstract_stmt(B) dparam_block(C) END. {
 	A = B;
 	A->params = C;
-}
-
-protofunc_stmt(A) ::= PROTOFUNC TYPENAME(B) ID(C). {
-	A = new dfunc_stmt(B->text, C->text, false);
-}
-protofunc_block(A) ::= protofunc_stmt(B) dparam_block(C) block(D). {
-	A = B;
-	A->params = C;
-	A->code = D;
 }
 
 bind_stmt(A) ::= BIND modtype(B). {
