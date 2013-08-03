@@ -457,7 +457,7 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	const ModSym &modsym(tbl.obj< ModSym >(index));
 	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
 	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
-	printf("\t%u modsym(%s/%s)\n", index, mod.value, sym.value);
+	printf("\t% 2u modsym(%s/%s)\n", index, mod.value, sym.value);
 }
 
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
@@ -470,7 +470,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ModSym *proto_ms = NULL;
 	const char *fname = fetch_string(tbl, f.name_idx);
 	const char *fctx = fcontext_name(f.fcontext);
-	printf("\t%u %s function ", i, fctx);
+	printf("\t% 2u %s function ", i, fctx);
 
 	switch (PFC_TYPE(f.fcontext)) {
 		case FCT_PROTOCOL:
