@@ -1,0 +1,25 @@
+
+protocol Printable T
+
+abstract print
+dparam val ./T
+end.
+
+end.
+
+
+func __main
+
+lfunc $0 ./print
+const $0.0 "hello world "
+call \void $0
+
+lfunc $0 ./print
+const $0.0 1
+call \void $0
+
+lfunc $0 ./print
+const $0.0 "\n"
+call \void $0
+
+end.
