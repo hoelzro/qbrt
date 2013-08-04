@@ -187,7 +187,7 @@ const CFunction * find_c_override(Worker &w, const std::string &protomod
 			return cf;
 		}
 	}
-	return NULL;
+	return find_c_override(w.app, protomod, protoname, name, param_types);
 }
 
 const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
@@ -409,6 +409,22 @@ const Module * load_module(Application &app, const string &modname)
 void load_module(Application &app, const Module *mod)
 {
 	app.module[mod->name] = mod;
+}
+
+const CFunction * find_c_override(Application &app, const std::string &protomod
+		, const std::string &protoname, const std::string &name
+		, const std::string &param_types)
+{
+	const CFunction *cf;
+	ModuleMap::const_iterator it(app.module.begin());
+	for (; it != app.module.end(); ++it) {
+		cf = fetch_c_override(*it->second, protomod
+				, protoname, name, param_types);
+		if (cf) {
+			return cf;
+		}
+	}
+	return NULL;
 }
 
 bool send_msg(Application &app, uint64_t pid, const qbrt_value &src)

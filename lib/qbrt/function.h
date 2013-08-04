@@ -402,7 +402,13 @@ struct function_value
 	bool c() const { return cfunc && !func; }
 	uint8_t fcontext() const
 	{
-		return qbrt() ? func.header->fcontext : cfunc->fcontext;
+		if (qbrt()) {
+			return func.header->fcontext;
+		} else if (c()) {
+			return cfunc->fcontext;
+		}
+		std::cerr << "wtf this function value is empty?\n";
+		return PFC_NULL;
 	}
 	bool traditional() const
 	{

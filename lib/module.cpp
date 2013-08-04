@@ -342,6 +342,8 @@ const CFunction * fetch_c_function(const Module &m, const std::string &name)
 	multimap< string, CFunction >::const_iterator it(range.first);
 	for (; it != range.second; ++it) {
 		if (it->second.fcontext == PFC_NONE) {
+			// there should be only 1 regular function with
+			// this name. looks like we found it.
 			return &it->second;
 		}
 	}
@@ -349,10 +351,28 @@ const CFunction * fetch_c_function(const Module &m, const std::string &name)
 	return NULL;
 }
 
-const CFunction * fetch_c_override(const Module &, const std::string &protomod
+const CFunction * fetch_c_override(const Module &m, const std::string &protomod
 		, const std::string &protoname, const std::string &name
 		, const std::string &param_types)
 {
-	std::map< std::string, CFunction >::const_iterator it;
+	pair< multimap< string, CFunction >::const_iterator
+		, multimap< string, CFunction >::const_iterator > range;
+	range = m.cfunction.equal_range(name);
+	if (range.first == range.second) {
+		return NULL;
+	}
+	multimap< string, CFunction >::const_iterator it(range.first);
+	for (; it != range.second; ++it) {
+		if (it->second.proto_module != protomod) {
+			continue;
+		}
+		if (it->second.proto_name != protoname) {
+			continue;
+		}
+		if (it->second.param_types != param_types) {
+			continue;
+		}
+		return &it->second;
+	}
 	return NULL;
 }

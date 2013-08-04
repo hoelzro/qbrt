@@ -787,6 +787,12 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 	}
 
 	WorkerCContext ctx(w, *f);
+	if (f->c()) {
+		c_function cf = f->cfunc->function;
+		cf(ctx, res);
+		return;
+	}
+
 	const ResourceTable &resource(w.current->function_call().mod->resource);
 	// check arguments
 	for (uint16_t i(0); i < f->argc; ++i) {
@@ -813,9 +819,6 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 	if (f->qbrt()) {
 		FunctionCall *call = new FunctionCall(*w.current, res, *f);
 		w.current = call;
-	} else {
-		c_function cf = f->cfunc->function;
-		cf(ctx, res);
 	}
 }
 

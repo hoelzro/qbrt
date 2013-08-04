@@ -276,6 +276,7 @@ uint8_t isize(uint8_t opcode)
 
 function_value::function_value(const Function &f)
 : func(f)
+, cfunc(NULL)
 , argc(f.header->argc)
 , regc(Function::regtotal(f))
 {
@@ -285,6 +286,7 @@ function_value::function_value(const Function &f)
 
 function_value::function_value(const CFunction *cf)
 : cfunc(cf)
+, func()
 , argc(cf->argc)
 , regc(cf->argc)
 {

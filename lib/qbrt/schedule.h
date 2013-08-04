@@ -275,6 +275,9 @@ private:
 const Module * find_app_module(Application &, const std::string &modname);
 const Module * load_module(Application &, const std::string &modname);
 void load_module(Application &, const Module *);
+const CFunction * find_c_override(Application &, const std::string &protomod
+		, const std::string &protoname, const std::string &name
+		, const std::string &param_types);
 bool send_msg(Application &, uint64_t pid, const qbrt_value &src);
 Worker & new_worker(Application &);
 ProcessRoot * new_process(Application &, FunctionCall *);
