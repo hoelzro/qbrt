@@ -560,7 +560,9 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 	qbrt_value::set_void(func);
 	Worker &w(ctx.worker());
 
-	FunctionCall *call = new FunctionCall(*fval);
+	const QbrtFunction *qfunc;
+	qfunc = dynamic_cast< const QbrtFunction * >(fval->func);
+	FunctionCall *call = new FunctionCall(*qfunc, *fval);
 	ProcessRoot *proc = new_process(w.app, call);
 	qbrt_value::i(pid, proc->pid);
 }
@@ -1056,6 +1058,21 @@ void core_send(OpContext &ctx, qbrt_value &out)
 	}
 }
 
+/** Convert a string value to a string, straight copy */
+void core_str_from_str(OpContext &ctx, qbrt_value &result)
+{
+	qbrt_value::copy(result, ctx.srcvalue(PRIMARY_REG(0)));
+}
+
+/** Convert an integer value to a string */
+void core_str_from_int(OpContext &ctx, qbrt_value &result)
+{
+	const qbrt_value &src(ctx.srcvalue(PRIMARY_REG(0)));
+	ostringstream out;
+	out << src.data.i;
+	qbrt_value::str(result, out.str());
+}
+
 void list_empty(OpContext &ctx, qbrt_value &out)
 {
 	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
@@ -1167,6 +1184,10 @@ int main(int argc, const char **argv)
 	add_type(*mod_core, "Int", TYPE_INT);
 	add_type(*mod_core, "String", TYPE_BSTRING);
 	add_type(*mod_core, "ByteString", TYPE_BSTRING);
+	add_c_override(*mod_core, core_str_from_str, "core", "Stringy", "str", 1
+			, "core/String;");
+	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
+			, "core/Int;");
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, list_empty, "empty", 1, "core/List;");

@@ -55,13 +55,12 @@ void CodeFrame::io_pop()
 }
 
 
-FunctionCall::FunctionCall(function_value &func)
+FunctionCall::FunctionCall(const QbrtFunction &func, qbrt_value_index &vals)
 : CodeFrame(CFT_CALL)
 , result(NULL)
-, regv(func.regv)
-, header(func.func.header)
-, mod(func.func.mod)
-, regc(func.num_values())
+, regv(vals)
+, header(func.header)
+, mod(func.mod)
 {}
 
 const char * FunctionCall::name() const

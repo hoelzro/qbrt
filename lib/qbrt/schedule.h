@@ -127,7 +127,7 @@ struct FunctionCall
 	, header(func.header)
 	, mod(func.mod)
 	{}
-	FunctionCall(function_value &func);
+	FunctionCall(const QbrtFunction &func, qbrt_value_index &vals);
 
 	virtual void finish_frame(Worker &);
 
@@ -172,33 +172,6 @@ static inline ParallelPath * fork_frame(CodeFrame &src)
 	src.fork.insert(pp);
 	return pp;
 }
-
-struct CFunctionCall
-: public CodeFrame
-{
-	c_function function;
-	qbrt_value *result;
-	qbrt_value *argv;
-	uint8_t argc;
-
-	CFunctionCall(CodeFrame &parent, qbrt_value &result
-			, function_value &func)
-	: CodeFrame(parent, CFT_CCALL)
-	, result(&result)
-	, argv(func.regv)
-	, argc(func.regc)
-	{}
-
-	virtual void finish_frame(Worker &);
-
-	FunctionCall & function_call();
-	const FunctionCall & function_call() const;
-	const char * name() const;
-
-	uint8_t num_values() const { return argc; }
-	qbrt_value & value(uint8_t i) { return argv[i]; }
-	const qbrt_value & value(uint8_t i) const { return argv[i]; }
-};
 
 
 struct ProcessRoot

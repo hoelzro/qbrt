@@ -2,7 +2,6 @@
 #include "qbrt/type.h"
 #include <iostream>
 #include <sstream>
-#include <cstdlib>
 #include "qbrt/arithmetic.h"
 #include "qbrt/function.h"
 #include "qbrt/logic.h"
@@ -10,6 +9,7 @@
 #include "qbrt/tuple.h"
 #include "qbrt/list.h"
 #include "instruction/schedule.h"
+#include <cstdlib>
 
 using namespace std;
 
@@ -271,47 +271,4 @@ uint8_t isize(uint8_t opcode)
 		exit(1);
 	}
 	return sz;
-}
-
-
-function_value::function_value(uint8_t argc, uint8_t regc)
-: argc(argc)
-, regc(regc)
-{
-	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
-	new (regv) qbrt_value[regc];
-}
-
-
-void function_value::realloc(uint8_t new_regc)
-{
-	size_t newsize(new_regc * sizeof(qbrt_value));
-	qbrt_value *newreg =
-		(qbrt_value *) ::realloc(this->regv, newsize);
-	this->regv = newreg;
-	for (int i(this->regc); i<new_regc; ++i) {
-		new (&this->regv[i]) qbrt_value();
-	}
-}
-
-void load_function_param_types(string &paramstr, const function_value &func)
-{
-	paramstr = "";
-	for (int i(0); i<func.argc; ++i) {
-		const qbrt_value &val(func.value(i));
-		const Type *typ(val.type);
-		paramstr += typ->module;
-		paramstr += '/';
-		paramstr += typ->name;
-		paramstr += ';';
-	}
-}
-
-void reassign_func(function_value &funcval, const Function *newfunc)
-{
-	int new_regc(newfunc->regtotal());
-	if (funcval.regc < new_regc) {
-		funcval.realloc(new_regc);
-	}
-	funcval.func = newfunc;
 }

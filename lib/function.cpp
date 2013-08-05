@@ -1,6 +1,9 @@
 #include "qbrt/function.h"
 #include "qbrt/resourcetype.h"
 #include "qbrt/module.h"
+#include <cstdlib>
+
+using namespace std;
 
 
 const char * QbrtFunction::name() const
@@ -58,4 +61,57 @@ const char * QbrtFunction::protocol_module() const
 			break; }
 	}
 	return fetch_string(mod->resource, mod_idx);
+}
+
+const char * CFunction::protocol_module() const
+{
+	return proto_module.empty() ? NULL : proto_module.c_str();
+}
+
+const char * CFunction::protocol_name() const
+{
+	return proto_name.empty() ? NULL : proto_name.c_str();
+}
+
+
+function_value::function_value(const Function *f)
+: func(f)
+, argc(f->argc())
+, regc(f->regtotal())
+{
+	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
+	new (regv) qbrt_value[regc];
+}
+
+void function_value::realloc(uint8_t new_regc)
+{
+	size_t newsize(new_regc * sizeof(qbrt_value));
+	qbrt_value *newreg =
+		(qbrt_value *) ::realloc(this->regv, newsize);
+	this->regv = newreg;
+	for (int i(this->regc); i<new_regc; ++i) {
+		new (&this->regv[i]) qbrt_value();
+	}
+}
+
+void load_function_param_types(string &paramstr, const function_value &func)
+{
+	paramstr = "";
+	for (int i(0); i<func.argc; ++i) {
+		const qbrt_value &val(func.value(i));
+		const Type *typ(val.type);
+		paramstr += typ->module;
+		paramstr += '/';
+		paramstr += typ->name;
+		paramstr += ';';
+	}
+}
+
+void reassign_func(function_value &funcval, const Function *newfunc)
+{
+	int new_regc(newfunc->regtotal());
+	if (funcval.regc < new_regc) {
+		funcval.realloc(new_regc);
+	}
+	funcval.func = newfunc;
 }

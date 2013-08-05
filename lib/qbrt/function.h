@@ -407,7 +407,7 @@ struct function_value
 	uint8_t argc;
 	uint8_t regc;
 
-	function_value(const Function *f);
+	function_value(const Function *);
 	void realloc(uint8_t regc);
 
 	uint8_t fcontext() const { return func->fcontext(); }
@@ -424,10 +424,6 @@ struct function_value
 	uint8_t num_values() const { return regc; }
 	qbrt_value & value(uint8_t r) { return regv[r]; }
 	const qbrt_value & value(uint8_t r) const { return regv[r]; }
-
-protected:
-	function_value(uint8_t argc, uint8_t regc);
-	function_value(uint8_t argc, uint8_t regc, qbrt_value_index &);
 };
 
 void load_function_param_types(std::string &typestr, const function_value &);
