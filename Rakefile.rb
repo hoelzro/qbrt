@@ -31,6 +31,7 @@ QBRT.name = 'qbrt'
 QBRT.include 'lib'
 QBRT.compile_files("lib/main.cpp", \
 		  "lib/core.cpp", \
+		  "lib/function.cpp", \
 		  "lib/io.cpp", \
 		  "lib/module.cpp", \
 		  "lib/schedule.cpp")

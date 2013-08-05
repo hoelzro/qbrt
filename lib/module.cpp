@@ -34,17 +34,6 @@ uint32_t ResourceTable::size(uint16_t i) const
 	return info2->offset - info1->offset;
 }
 
-const char * Function::name() const
-{
-	return fetch_string(mod->resource, header->name_idx);
-}
-
-uint32_t Function::code_offset() const
-{
-	return code - mod->resource.data
-		+ ResourceTable::DATA_OFFSET;
-}
-
 void add_type(Module &mod, const std::string &name, const Type &t)
 {
 	mod.types[name] = &t;
@@ -55,7 +44,7 @@ CFunction * add_c_function(Module &mod, c_function f, const std::string &name
 {
 	multimap< string, CFunction >::iterator it =
 		mod.cfunction.insert(pair< string, CFunction >(name
-				, CFunction(f, name, argc, param_types)));
+				, CFunction(f, &mod, name, argc, param_types)));
 	return &it->second;
 }
 
@@ -68,7 +57,7 @@ CFunction * add_c_override(Module &mod, c_function f
 	cfunc->set_protocol(protomod, protoname);
 }
 
-Function Module::fetch_function(const std::string &name) const
+const QbrtFunction * Module::fetch_function(const std::string &name) const
 {
 	const ResourceTable &tbl(resource);
 	const FunctionHeader *f;
@@ -82,9 +71,9 @@ Function Module::fetch_function(const std::string &name) const
 		if (name != fname) {
 			continue;
 		}
-		return Function(f, this);
+		return qbrt_function(f);
 	}
-	return Function();
+	return NULL;
 }
 
 
@@ -250,18 +239,19 @@ struct PolymorphFunctionSearch
 	{}
 };
 
-Function Module::fetch_protocol_function(const std::string &protoname
+const QbrtFunction * Module::fetch_protocol_function(
+		const std::string &protoname
 		, const std::string &fname) const
 {
 	const FunctionHeader *f;
 	f = resource.find(ProtocolFunctionSearch(protoname, fname));
 	if (!f) {
-		return Function();
+		return NULL;
 	}
-	return Function(f, this);
+	return qbrt_function(f);
 }
 
-Function Module::fetch_override(const string &protomod
+const QbrtFunction * Module::fetch_override(const string &protomod
 		, const string &protoname, const string &fname
 		, const string &param_types) const
 {
@@ -269,9 +259,19 @@ Function Module::fetch_override(const string &protomod
 	PolymorphFunctionSearch query(protomod, protoname, fname, param_types);
 	f = resource.find(query);
 	if (!f) {
-		return Function();
+		return NULL;
 	}
-	return Function(f, this);
+	return qbrt_function(f);
+}
+
+const QbrtFunction * Module::qbrt_function(const FunctionHeader *f) const
+{
+	const QbrtFunction *result = function_cache[f];
+	if (!result) {
+		result = new QbrtFunction(f, this);
+		function_cache[f] = result;
+	}
+	return result;
 }
 
 bool open_qb(ifstream &objstr, const std::string &objname)
@@ -341,7 +341,7 @@ const CFunction * fetch_c_function(const Module &m, const std::string &name)
 	}
 	multimap< string, CFunction >::const_iterator it(range.first);
 	for (; it != range.second; ++it) {
-		if (it->second.fcontext == PFC_NONE) {
+		if (it->second.fcontext() == PFC_NONE) {
 			// there should be only 1 regular function with
 			// this name. looks like we found it.
 			return &it->second;

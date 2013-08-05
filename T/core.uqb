@@ -1,0 +1,8 @@
+
+protocol Stringy T
+
+abstract str
+dparam val ./T
+end.
+
+end.

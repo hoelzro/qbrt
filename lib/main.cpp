@@ -96,7 +96,7 @@ public:
 	virtual Worker & worker() const { return w; }
 	virtual const char * function_name() const { return func.name(); }
 	virtual int & pc() const { return frame.pc; }
-	virtual uint8_t regc() const { return func.regc; }
+	virtual uint8_t regc() const { return func.num_values(); }
 	virtual const qbrt_value & srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
@@ -488,7 +488,7 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 		exit(1);
 	}
 	Failure *fail;
-	Function qbrt(mod->fetch_function(fname));
+	const QbrtFunction *qbrt(mod->fetch_function(fname));
 	qbrt_value &dst(ctx.dstvalue(i.reg));
 	c_function cf = NULL;
 	if (qbrt) {
@@ -525,7 +525,8 @@ void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
 		mod = ctx.worker().current->function_call().mod;
 	}
 
-	Function qbrt(mod->fetch_protocol_function(protoname, fname));
+	const QbrtFunction *qbrt;
+	qbrt = mod->fetch_protocol_function(protoname, fname);
 	qbrt_value &dst(ctx.dstvalue(i.reg));
 	qbrt_value::f(dst, new function_value(qbrt));
 	ctx.pc() += lpfunc_instruction::SIZE;
@@ -741,28 +742,31 @@ void override_function(Worker &w, function_value &funcval)
 	if (pfc_type == FCT_POLYMORPH) {
 		// no override. reset the func to the protocol function
 		// if it was previously overridden
-		reassign_func(funcval, find_default_function(w, funcval.func));
+		const Function *def_func =
+			find_default_function(w, *funcval.func);
+		reassign_func(funcval, def_func);
 	}
 
 	string param_types;
 	load_function_param_types(param_types, funcval);
 
-	Function func(funcval.func);
+	const Function &func(*funcval.func);
+	const QbrtFunction *qfunc;
+	qfunc = dynamic_cast< const QbrtFunction * >(&func);
+	if (!qfunc) {
+		cerr << "not a qbrt_function_value\n";
+		return;
+	}
 
-	const ProtocolResource *proto;
-	proto = find_function_protocol(w, func);
-
-	const ResourceTable &resource(w.current->function_call().mod->resource);
-	const char *protosym = fetch_string(resource, proto->name_idx);
-
-	Function overridef(find_override(w, func.mod->name.c_str(), protosym
-				, funcval.name(), param_types));
+	const char *proto_name = func.protocol_name();
+	const QbrtFunction *overridef(find_override(w, func.mod->name.c_str()
+				, proto_name, funcval.name(), param_types));
 	if (overridef) {
 		reassign_func(funcval, overridef);
 	} else {
 		const CFunction *cfunc = find_c_override(w
 				, func.mod->name.c_str()
-				, protosym, funcval.name(), param_types);
+				, proto_name, funcval.name(), param_types);
 		if (cfunc) {
 			reassign_func(funcval, cfunc);
 		}
@@ -787,13 +791,15 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 	}
 
 	WorkerCContext ctx(w, *f);
-	if (f->c()) {
-		c_function cf = f->cfunc->function;
+	if (f->func->cfunc()) {
+		c_function cf = f->func->cfunc();
 		cf(ctx, res);
 		return;
 	}
 
-	const ResourceTable &resource(w.current->function_call().mod->resource);
+	const ResourceTable &resource(f->func->mod->resource);
+	const QbrtFunction *qfunc;
+	qfunc = dynamic_cast< const QbrtFunction * >(f->func);
 	// check arguments
 	for (uint16_t i(0); i < f->argc; ++i) {
 		const qbrt_value *val(&ctx.srcvalue(PRIMARY_REG(i)));
@@ -801,7 +807,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 			cerr << "wtf null value?\n";
 		}
 		const Type *valtype = val->type;
-		const ParamResource &param(f->func.header->params[i]);
+		const ParamResource &param(qfunc->header->params[i]);
 		const char *name = fetch_string(resource, param.name_idx);
 		const ModSym &type(fetch_modsym(resource, param.type_idx));
 		const char *type_mod = fetch_string(resource, type.mod_name);
@@ -816,10 +822,8 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		}
 	}
 
-	if (f->qbrt()) {
-		FunctionCall *call = new FunctionCall(*w.current, res, *f);
-		w.current = call;
-	}
+	FunctionCall *call = new FunctionCall(*w.current, res, *qfunc, *f);
+	w.current = call;
 }
 
 void call(Worker &w, qbrt_value &res, qbrt_value &f)
@@ -888,8 +892,8 @@ ostream & inspect_function(ostream &out, const Function &f)
 	out << "function " << f.name() << "/" << (int) f.argc()
 		<< '+' << (int) f.regc() << endl;
 	out << "module: " << f.mod->name << endl;
-	out << "name/context/fcontext: " << f.header->name_idx << '/'
-		<< f.header->context_idx << '/' << (int) f.header->fcontext
+	out << "name/fcontext: " << f.name() << '/'
+		<< (int) f.fcontext()
 		<< endl;
 	return out;
 }
@@ -915,11 +919,7 @@ ostream & inspect_failure(ostream &out, const Failure &f)
 
 ostream & inspect_function_value(ostream &out, const function_value &fv)
 {
-	if (fv.c()) {
-		out << "cfunction ";
-	} else {
-		inspect_function(out, fv.func);
-	}
+	inspect_function(out, *fv.func);
 	inspect_value_index(out, fv);
 	return out;
 }
@@ -1158,7 +1158,8 @@ int main(int argc, const char **argv)
 	const char *objname = argv[1];
 	init_executioners();
 
-	Module *mod_core = new Module("core");
+	Application app;
+	Module *mod_core = const_cast< Module * >(load_module(app, "core"));
 	add_c_function(*mod_core, core_pid, "pid", 0, "");
 	add_c_function(*mod_core, core_send, "send", 2
 			, "io/Stream;core/String;");
@@ -1173,18 +1174,13 @@ int main(int argc, const char **argv)
 	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");
 
 	Module *mod_io = new Module("io");
-	add_c_override(*mod_io, core_print, "print", "Printable"
-			, "print", 1, "core/String;");
-	add_c_override(*mod_io, core_print, "print", "Printable"
-			, "print", 1, "core/Int;");
+	add_c_function(*mod_io, core_print, "print", 1, "core/String;");
 	add_c_function(*mod_io, core_open, "open", 2
 			, "core/String;core/String;");
 	add_c_function(*mod_io, core_write, "write", 2
 			, "io/Stream;core/String;");
 	add_c_function(*mod_io, core_getline, "getline", 1, "io/Stream;");
 
-	Application app;
-	load_module(app, mod_core);
 	load_module(app, mod_list);
 	load_module(app, mod_io);
 	Worker &w0(new_worker(app));
@@ -1195,13 +1191,13 @@ int main(int argc, const char **argv)
 		return 1;
 	}
 
-	Function qbrt_main(main_module->fetch_function("__main"));
+	const QbrtFunction *qbrt_main(main_module->fetch_function("__main"));
 	if (!qbrt_main) {
 		cerr << "no __main function defined\n";
 		return 1;
 	}
 	function_value *main_func = new function_value(qbrt_main);
-	int main_func_argc(main_func->func.argc());
+	int main_func_argc(main_func->argc);
 	if (main_func_argc >= 1) {
 		qbrt_value::i(main_func->regv[0], argc - 1);
 	}
@@ -1239,7 +1235,8 @@ int main(int argc, const char **argv)
 
 	qbrt_value result;
 	qbrt_value::i(result, 0);
-	FunctionCall *main_call = new FunctionCall(result, *main_func);
+	FunctionCall *main_call = new FunctionCall(result, *qbrt_main
+			, *main_func);
 	qbrt_value::stream(*add_context(main_call, "stdin"), stream_stdin);
 	qbrt_value::stream(*add_context(main_call, "stdout"), stream_stdout);
 	ProcessRoot *main_proc = new_process(app, main_call);

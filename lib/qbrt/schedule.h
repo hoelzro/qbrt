@@ -84,7 +84,6 @@ struct CodeFrame
 
 	virtual FunctionCall & function_call() = 0;
 	virtual const FunctionCall & function_call() const = 0;
-	inline qbrt_value & reg(uint8_t);
 	void io_push(StreamIO *s)
 	{
 		cfstate = CFS_IOWAIT;
@@ -108,26 +107,25 @@ struct FunctionCall
 : public CodeFrame
 {
 	qbrt_value *result;
-	qbrt_value *reg_data;
+	qbrt_value_index &regv;
 	const FunctionHeader *header;
 	const Module *mod;
-	int regc;
 
-	FunctionCall(qbrt_value &result, function_value &func)
+	FunctionCall(qbrt_value &result, const QbrtFunction &func
+			, qbrt_value_index &vals)
 	: CodeFrame(CFT_CALL)
 	, result(&result)
-	, reg_data(func.regv)
-	, header(func.func.header)
-	, mod(func.func.mod)
-	, regc(func.num_values())
+	, regv(vals)
+	, header(func.header)
+	, mod(func.mod)
 	{}
-	FunctionCall(CodeFrame &parent, qbrt_value &result, function_value &func)
+	FunctionCall(CodeFrame &parent, qbrt_value &result
+			, const QbrtFunction &func, qbrt_value_index &vals)
 	: CodeFrame(parent, CFT_CALL)
 	, result(&result)
-	, reg_data(func.regv)
-	, header(func.func.header)
-	, mod(func.func.mod)
-	, regc(func.num_values())
+	, regv(vals)
+	, header(func.header)
+	, mod(func.mod)
 	{}
 	FunctionCall(function_value &func);
 
@@ -137,15 +135,11 @@ struct FunctionCall
 	const FunctionCall & function_call() const { return *this; }
 	const char * name() const;
 
-	uint8_t num_values() const { return regc; }
-	qbrt_value & value(uint8_t i) { return reg_data[i]; }
-	const qbrt_value & value(uint8_t i) const { return reg_data[i]; }
+	uint8_t num_values() const { return regv.num_values(); }
+	qbrt_value & value(uint8_t i) { return regv.value(i); }
+	const qbrt_value & value(uint8_t i) const { return regv.value(i); }
 };
 
-qbrt_value & CodeFrame::reg(uint8_t i)
-{
-	return function_call().reg_data[i];
-}
 
 static inline const instruction & frame_instruction(const CodeFrame &f)
 {
@@ -164,9 +158,9 @@ struct ParallelPath
 
 	virtual void finish_frame(Worker &);
 
-	uint8_t num_values() const { return f_call.regc; }
-	qbrt_value & value(uint8_t i) { return f_call.reg_data[i]; }
-	const qbrt_value & value(uint8_t i) const { return f_call.reg_data[i]; }
+	uint8_t num_values() const { return f_call.num_values(); }
+	qbrt_value & value(uint8_t i) { return f_call.value(i); }
+	const qbrt_value & value(uint8_t i) const { return f_call.value(i); }
 
 private:
 	FunctionCall &f_call;
@@ -178,6 +172,34 @@ static inline ParallelPath * fork_frame(CodeFrame &src)
 	src.fork.insert(pp);
 	return pp;
 }
+
+struct CFunctionCall
+: public CodeFrame
+{
+	c_function function;
+	qbrt_value *result;
+	qbrt_value *argv;
+	uint8_t argc;
+
+	CFunctionCall(CodeFrame &parent, qbrt_value &result
+			, function_value &func)
+	: CodeFrame(parent, CFT_CCALL)
+	, result(&result)
+	, argv(func.regv)
+	, argc(func.regc)
+	{}
+
+	virtual void finish_frame(Worker &);
+
+	FunctionCall & function_call();
+	const FunctionCall & function_call() const;
+	const char * name() const;
+
+	uint8_t num_values() const { return argc; }
+	qbrt_value & value(uint8_t i) { return argv[i]; }
+	const qbrt_value & value(uint8_t i) const { return argv[i]; }
+};
+
 
 struct ProcessRoot
 {
@@ -243,6 +265,10 @@ inline const Module * current_module(const Worker &w)
 const Module * find_module(Worker &, const std::string &modname);
 const Module * load_module(Worker &, const std::string &modname);
 
+const Function * find_default_function(Worker &, const Function &);
+const QbrtFunction * find_override(Worker &, const char *protocol_mod
+		, const char *protocol_name, const char *funcname
+		, const std::string &param_types);
 const CFunction * find_c_override(Worker &, const std::string &protomod
 		, const std::string &protoname, const std::string &name
 		, const std::string &param_types);

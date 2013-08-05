@@ -204,18 +204,24 @@ struct Module
 	std::multimap< std::string, CFunction > cfunction;
 
 	const void * fetch_resource(const std::string &name) const;
-	Function fetch_function(const std::string &name) const;
-	Function fetch_override(const std::string &protomod
+	const QbrtFunction * fetch_function(const std::string &name) const;
+	const QbrtFunction * fetch_override(const std::string &protomod
 		, const std::string &protoname, const std::string &fname
 		, const std::string &param_types) const;
 	const Type * fetch_struct(const std::string &name) const;
 	const ProtocolResource * fetch_protocol(const std::string &name) const;
-	Function fetch_protocol_function(const std::string &protocol_name
+	const QbrtFunction * fetch_protocol_function(
+			const std::string &protocol_name
 			, const std::string &function_name) const;
 
 	Module(const std::string &module_name)
 	: name(module_name)
 	{}
+
+private:
+	const QbrtFunction * qbrt_function(const FunctionHeader *) const;
+	mutable std::map< const FunctionHeader *, const QbrtFunction * >
+		function_cache;
 };
 
 Module * read_module(const std::string &objname);
@@ -235,16 +241,6 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 {
 	return tbl.obj< ModSym >(i);
 }
-
-/**
- * Given a function object, find the associated ProtocolResource
- */
-const ProtocolResource * find_function_protocol(Worker &, const Function &);
-Function find_default_function(Worker &, const Function &);
-
-Function find_override(Worker &, const char *protocol_mod
-		, const char *protocol_name, const char *funcname
-		, const std::string &param_types);
 
 
 void add_type(Module &, const std::string &name, const Type &);

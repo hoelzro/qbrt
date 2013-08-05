@@ -274,25 +274,14 @@ uint8_t isize(uint8_t opcode)
 }
 
 
-function_value::function_value(const Function &f)
-: func(f)
-, cfunc(NULL)
-, argc(f.header->argc)
-, regc(Function::regtotal(f))
+function_value::function_value(uint8_t argc, uint8_t regc)
+: argc(argc)
+, regc(regc)
 {
 	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
 	new (regv) qbrt_value[regc];
 }
 
-function_value::function_value(const CFunction *cf)
-: cfunc(cf)
-, func()
-, argc(cf->argc)
-, regc(cf->argc)
-{
-	regv = (qbrt_value *) malloc(regc * sizeof(qbrt_value));
-	new (regv) qbrt_value[regc];
-}
 
 void function_value::realloc(uint8_t new_regc)
 {
@@ -308,7 +297,7 @@ void function_value::realloc(uint8_t new_regc)
 void load_function_param_types(string &paramstr, const function_value &func)
 {
 	paramstr = "";
-	for (int i(0); i<func.func.header->argc; ++i) {
+	for (int i(0); i<func.argc; ++i) {
 		const qbrt_value &val(func.value(i));
 		const Type *typ(val.type);
 		paramstr += typ->module;
@@ -318,21 +307,11 @@ void load_function_param_types(string &paramstr, const function_value &func)
 	}
 }
 
-void reassign_func(function_value &funcval, Function newfunc)
+void reassign_func(function_value &funcval, const Function *newfunc)
 {
-	int new_regc(Function::regtotal(newfunc));
+	int new_regc(newfunc->regtotal());
 	if (funcval.regc < new_regc) {
 		funcval.realloc(new_regc);
 	}
-	funcval.cfunc = NULL;
 	funcval.func = newfunc;
-}
-
-void reassign_func(function_value &funcval, const CFunction *newfunc)
-{
-	if (funcval.regc < newfunc->argc) {
-		funcval.realloc(newfunc->argc);
-	}
-	funcval.func = Function();
-	funcval.cfunc = newfunc;
 }

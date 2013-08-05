@@ -1,0 +1,25 @@
+
+func print
+
+lfunc $0 core/str
+ref $0.0 %0
+lfunc $1 io/write
+lcontext $1.0 #stdout
+call $1.1 $0
+call \void $1
+
+end.
+
+
+protocol ProtoStream T
+
+abstract write
+dparam out ./T
+dparam text core/String
+end.
+
+abstract readline
+dparam in ./T
+end.
+
+end.

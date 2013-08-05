@@ -58,7 +58,7 @@ void CodeFrame::io_pop()
 FunctionCall::FunctionCall(function_value &func)
 : CodeFrame(CFT_CALL)
 , result(NULL)
-, reg_data(func.regv)
+, regv(func.regv)
 , header(func.func.header)
 , mod(func.func.mod)
 , regc(func.num_values())
@@ -159,19 +159,19 @@ const Module * find_module(Worker &w, const std::string &modname)
 	return NULL;
 }
 
-Function find_override(Worker &w, const char *protocol_mod
+const QbrtFunction * find_override(Worker &w, const char *protocol_mod
 		, const char *protocol_name, const char *funcname
 		, const string &param_types)
 {
 	ModuleMap::const_iterator it(w.module.begin());
 	for (; it!=w.module.end(); ++it) {
-		Function f(it->second->fetch_override(protocol_mod
+		const QbrtFunction *f(it->second->fetch_override(protocol_mod
 				, protocol_name, funcname, param_types));
 		if (f) {
 			return f;
 		}
 	}
-	return Function();
+	return NULL;
 }
 
 const CFunction * find_c_override(Worker &w, const std::string &protomod
@@ -190,59 +190,20 @@ const CFunction * find_c_override(Worker &w, const std::string &protomod
 	return find_c_override(w.app, protomod, protoname, name, param_types);
 }
 
-const ProtocolResource * find_function_protocol(Worker &w, const Function &f)
+const Function * find_default_function(Worker &w, const Function &func)
 {
-	if (f.header->fcontext == PFC_NONE) {
-		cerr << "No function protocol for no context\n";
+	if (func.fcontext() != PFC_OVERRIDE) {
+		return NULL; // do nothing here
+	}
+
+	const char *proto_mod = func.protocol_module();
+	const Module *mod(find_module(w, proto_mod));
+	if (!mod) {
 		return NULL;
 	}
 
-	int fct(PFC_TYPE(f.header->fcontext));
-	const ResourceTable &res(f.mod->resource);
-	const ProtocolResource *proto;
-	uint16_t ctx(f.header->context_idx);
-	if (fct == FCT_POLYMORPH) {
-		const PolymorphResource *poly;
-		poly = res.ptr< PolymorphResource >(ctx);
-		const ModSym *protoms = res.ptr< ModSym >(poly->protocol_idx);
-		const char *proto_modname;
-		const char *protosym;
-		proto_modname = fetch_string(res, protoms->mod_name);
-		protosym = fetch_string(res, protoms->sym_name);
-		const Module *proto_mod(find_module(w, proto_modname));
-		proto = proto_mod->fetch_protocol(protosym);
-		return proto;
-	} else if (fct == FCT_PROTOCOL) {
-		return res.ptr< ProtocolResource >(ctx);
-	}
-	cerr << "where'd you find that function context? " << fct << endl;
-	return NULL;
-}
-
-Function find_default_function(Worker &w, const Function &func)
-{
-	if (func.header->fcontext != PFC_OVERRIDE) {
-		return Function();
-	}
-
-	const ResourceTable &res(func.mod->resource);
-	const ProtocolResource *proto;
-
-	uint16_t polymorph_index(func.header->context_idx);
-	const PolymorphResource *poly;
-	poly = res.ptr< PolymorphResource >(polymorph_index);
-
-	const ModSym *protoms = res.ptr< ModSym >(poly->protocol_idx);
-	const char *proto_modname;
-	const char *protosym;
-	proto_modname = fetch_string(res, protoms->mod_name);
-	protosym = fetch_string(res, protoms->sym_name);
-
-	const Module *mod(find_module(w, proto_modname));
-	if (!mod) {
-		return Function();
-	}
-	return mod->fetch_protocol_function(protosym, func.name());
+	const char *proto_name = func.protocol_name();
+	return mod->fetch_protocol_function(proto_name, func.name());
 }
 
 const Module * load_module(Worker &w, const string &objname)
