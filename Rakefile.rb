@@ -22,6 +22,7 @@ QBI.name = 'qbi'
 QBI.include 'lib'
 QBI.compile_files("lib/info.cpp", \
 		  "lib/core.cpp", \
+		  "lib/function.cpp", \
 		  "lib/module.cpp")
 QBI.obj_dir = 'o/qbi'
 QBI.debug!
@@ -38,6 +39,8 @@ QBRT.compile_files("lib/main.cpp", \
 QBRT.obj_dir = 'o/qbrt'
 QBRT.link 'pthread'
 QBRT.debug!
+QBRT_DIRS = ["o","o/qbrt","o/qbrt/lib"]
+LIBQB = ['libqb/core.qb', 'libqb/io.qb']
 
 PROJECT = CProject.new()
 PROJECT.cc = CCompiler.new()
@@ -72,7 +75,7 @@ end
 file "qbrt" => :compile_qbrt do
 	PROJECT.link(QBRT)
 end
-task :compile_qbrt => ["o","o/qbrt","o/qbrt/lib"] + QBRT.objects
+task :compile_qbrt => QBRT_DIRS + QBRT.objects + LIBQB
 task :qbrt_deps do
 	QBRT.all_dependencies.each { |d| puts d }
 end
@@ -92,6 +95,12 @@ file 'lib/qbparse.c' => ['lempar/lempar.c', 'lexparse/qb.y'] do
 	sh "./lemon -s -Tlempar/lempar.c lexparse/qb.y"
 	File.rename('lexparse/qb.h','lib/qbparse.h')
 	File.rename('lexparse/qb.c','lib/qbparse.c')
+end
+
+task :libqb => ["libqb/core.qb", "libqb/io.qb"]
+rule '.qb' => [ proc { |qb| qb.sub(".qb", ".uqb") } ] do |t|
+	src = t.name.sub('.qb', '.uqb')
+	sh "./qbc #{src}"
 end
 
 file 'lemon' => ['lempar/lemon.c'] do
@@ -115,15 +124,17 @@ TestFiles = ['hello.uqb',
 
 def test_uqb(file)
 	passed = false
+	Dir.chdir "T/"
 	mod = file.chomp(File.extname(file))
 	sh "../qbc #{file}"
-	input_file = "INPUT/#{mod}"
+	Dir.chdir "../"
+	input_file = "T/INPUT/#{mod}"
 	if File.exist? input_file
-		output = `cat #{input_file} | ../qbrt #{mod} 2>&1`
+		output = `cat #{input_file} | QBPATH=libqb:T ./qbrt #{mod} 2>&1`
 	else
-		output = `../qbrt #{mod} 2>&1`
+		output = `QBPATH=libqb:T ./qbrt #{mod} 2>&1`
 	end
-	expected = File.read("OUTPUT/#{mod}")
+	expected = File.read("T/OUTPUT/#{mod}")
 	if (output != expected)
 		puts "Expected output:\n#{expected}..."
 		puts "Actual output:\n#{output}..."
@@ -136,7 +147,6 @@ end
 
 task :T => ['qbc', 'qbrt'] do
 	failures = []
-	Dir.chdir "T/"
 	TestFiles.each do |t|
 		if not test_uqb t
 			failures << t

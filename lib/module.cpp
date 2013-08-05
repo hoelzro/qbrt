@@ -275,15 +275,28 @@ const QbrtFunction * Module::qbrt_function(const FunctionHeader *f) const
 }
 
 bool open_qb(ifstream &objstr, const std::string &objname)
-		// , const Version &min, const Version &max);
 {
-	string filename(objname +".qb");
-	objstr.open(filename.c_str(), ios::in | ios::binary);
-	if (!objstr) {
-		cerr << "failed to open object: " << objname << endl;
-		return false;
+	const char *envpath(getenv("QBPATH"));
+	if (!(envpath && *envpath)) {
+		envpath = ".";
 	}
-	return true;
+	char *path(strdup(envpath));
+
+	const char *dir = strtok(path, ":");
+	char truedir[4096];
+	while (dir) {
+		realpath(dir, truedir);
+		string filename(truedir);
+		filename += "/" + objname +".qb";
+		objstr.open(filename.c_str(), ios::in | ios::binary);
+		if (objstr) {
+			return true;
+		}
+		dir = strtok(NULL, ":");
+	}
+	free(path);
+	cerr << "failed to open object: " << objname << endl;
+	return false;
 }
 
 void read_header(ObjectHeader &h, istream &input)
