@@ -99,8 +99,10 @@ end
 
 task :libqb => ["libqb/core.qb", "libqb/io.qb"]
 rule '.qb' => [ proc { |qb| qb.sub(".qb", ".uqb") } ] do |t|
-	src = t.name.sub('.qb', '.uqb')
-	sh "./qbc #{src}"
+	src = t.name.sub('libqb/', '').sub('.qb', '.uqb')
+	Dir.chdir "libqb/"
+	sh "../qbc #{src}"
+	Dir.chdir "../"
 end
 
 file 'lemon' => ['lempar/lemon.c'] do
