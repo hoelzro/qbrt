@@ -715,7 +715,7 @@ uint32_t AsmDataType::write(std::ostream &out) const
 	out.write((const char *) doc.index, 2);
 	out.write((const char *) filename.index, 2);
 	out.write((const char *) &line_no, 2);
-	out.write((const char *) &argc, 2);
+	out.write((const char *) &argc, 1);
 
 	return 9;
 }

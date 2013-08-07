@@ -466,6 +466,20 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	printf("\t% 2u modsym(%s/%s)\n", index, mod.value, sym.value);
 }
 
+void print_construct(const ResourceTable &tbl, uint16_t index)
+{
+	const ConstructResource &cons(tbl.obj< ConstructResource >(index));
+	const StringResource &name(tbl.obj< StringResource >(cons.name_idx));
+	printf("\t% 2u construct %s/%d\n", index, name.value, cons.fld_count);
+}
+
+void print_datatype(const ResourceTable &tbl, uint16_t index)
+{
+	const DataTypeResource &dtr(tbl.obj< DataTypeResource >(index));
+	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx));
+	printf("\t% 2u datatype %s/%d\n", index, name.value, dtr.argc);
+}
+
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const FunctionHeader &f(tbl.obj< FunctionHeader >(i));
@@ -543,6 +557,10 @@ static inline void print_resource_line(const ResourceTable &tbl, uint16_t i)
 		print_modsym(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_HASHTAG) {
 		print_hashtag(tbl, i);
+	} else if (tbl.type(i) == RESOURCE_CONSTRUCT) {
+		print_construct(tbl, i);
+	} else if (tbl.type(i) == RESOURCE_DATATYPE) {
+		print_datatype(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_FUNCTION) {
 		print_function_resource_line(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_PROTOCOL) {

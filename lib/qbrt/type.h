@@ -6,6 +6,28 @@
 #include <list>
 
 
+struct ConstructResource
+{
+	uint16_t name_idx;
+	uint16_t doc_idx;
+	uint16_t filename_idx;
+	uint16_t lineno;
+	uint8_t fld_count;
+
+	static const uint32_t SIZE = 9;
+};
+
+struct DataTypeResource
+{
+	uint16_t name_idx;
+	uint16_t doc_idx;
+	uint16_t filename_idx;
+	uint16_t lineno;
+	uint8_t argc;
+
+	static const uint32_t SIZE = 9;
+};
+
 struct StructFieldResource
 {
 	uint16_t type_mod_id;
