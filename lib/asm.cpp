@@ -161,6 +161,18 @@ int AsmCmp< AsmPolymorph >::cmp(const AsmPolymorph &a, const AsmPolymorph &b)
 	return AsmCmp< AsmModSymList >::cmp(a.type, b.type);
 }
 
+template <>
+int AsmCmp< AsmConstruct >::cmp(const AsmConstruct &a, const AsmConstruct &b)
+{
+	return AsmCmp< AsmString >::cmp(a.name, b.name);
+}
+
+template <>
+int AsmCmp< AsmDataType >::cmp(const AsmDataType &a, const AsmDataType &b)
+{
+	return AsmCmp< AsmString >::cmp(a.name, b.name);
+}
+
 /**
  * Comparison order is:
  *   function context
@@ -237,6 +249,10 @@ int AsmCmp< AsmResource >::cmp(const AsmResource &a, const AsmResource &b)
 	}
 
 	switch (a.type) {
+		case RESOURCE_CONSTRUCT:
+			return compare_asm< AsmConstruct >(a, b);
+		case RESOURCE_DATATYPE:
+			return compare_asm< AsmDataType >(a, b);
 		case RESOURCE_STRING:
 			return compare_asm< AsmString >(a, b);
 		case RESOURCE_MODSYM:
@@ -670,6 +686,43 @@ ostream & AsmPolymorph::pretty(std::ostream &o) const
 		o << ' ' << (*it)->module.value << '/' << (*it)->symbol.value;
 	}
 	return o;
+}
+
+
+uint32_t AsmConstruct::write(std::ostream &out) const
+{
+	uint8_t fld_count(0);
+
+	out.write((const char *) name.index, 2);
+	out.write((const char *) doc.index, 2);
+	out.write((const char *) filename.index, 2);
+	out.write((const char *) &line_no, 2);
+	out.write((const char *) &fld_count, 1);
+
+	return 9;
+}
+
+ostream & AsmConstruct::pretty(ostream &o) const
+{
+	o << "construct:" << name.value;
+}
+
+uint32_t AsmDataType::write(std::ostream &out) const
+{
+	uint8_t argc(0);
+
+	out.write((const char *) name.index, 2);
+	out.write((const char *) doc.index, 2);
+	out.write((const char *) filename.index, 2);
+	out.write((const char *) &line_no, 2);
+	out.write((const char *) &argc, 2);
+
+	return 9;
+}
+
+ostream & AsmDataType::pretty(ostream &o) const
+{
+	o << "datatype:" << name.value;
 }
 
 

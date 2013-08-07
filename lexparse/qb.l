@@ -85,7 +85,9 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "call"		{ BEGIN(ARGS); lex_token(TOKEN_CALL); }
 "cfailure"	{ BEGIN(ARGS); lex_token(TOKEN_CFAILURE); }
 "const"		{ BEGIN(ARGS); lex_token(TOKEN_CONST); }
+"construct"	{ BEGIN(ARGS); lex_token(TOKEN_CONSTRUCT); }
 "copy"		{ BEGIN(ARGS); lex_token(TOKEN_COPY); }
+"datatype"	{ BEGIN(ARGS); lex_token(TOKEN_DATATYPE); }
 "dparam"	{ BEGIN(ARGS); lex_token(TOKEN_DPARAM); }
 "fork"		{ BEGIN(ARGS); lex_token(TOKEN_FORK); }
 "func"		{ BEGIN(ARGS); lex_token(TOKEN_FUNC); }

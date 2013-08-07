@@ -13,14 +13,3 @@ dparam val ./T
 end.
 
 end.
-
-
-datatype constructor List A
-  construct ListNode ./A
-    dparam value ./A
-    dparam next List(./A)
-  end.
-
-  construct EmptyList
-  end.
-end.

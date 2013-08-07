@@ -9,7 +9,7 @@
 %type stmt {Stmt *}
 %type func_block {dfunc_stmt *}
 %type dfunc_stmt {dfunc_stmt *}
-%type dparam_block {dparam_stmt::List *}
+%type dparam_list {dparam_stmt::List *}
 %type dparam_stmt {dparam_stmt *}
 %type fork_block {fork_stmt *}
 %type fork_stmt {fork_stmt *}
@@ -25,6 +25,11 @@
 %type bind_stmt {bind_stmt *}
 %type bindtype_block {list< bindtype_stmt * > *}
 %type bindtype_stmt {bindtype_stmt *}
+%type datatype_block {datatype_stmt *}
+%type datatype_stmt {datatype_stmt *}
+%type construct_list {Stmt::List *}
+%type construct_block {construct_stmt *}
+%type construct_stmt {construct_stmt *}
 %type typename_list {list< AsmString * > *}
 
 
@@ -71,6 +76,7 @@ top_stmt(A) ::= MODULE MODNAME. {
 top_stmt(A) ::= func_block(B). { A = B; }
 top_stmt(A) ::= protocol_block(B). { A = B; }
 top_stmt(A) ::= bind_block(B). { A = B; }
+top_stmt(A) ::= datatype_block(B). { A = B; }
 
 block(A) ::= sub_block(B) END. {
 	A = B;
@@ -87,7 +93,7 @@ sub_block(A) ::= stmt(B). {
 	A->push_back(B);
 }
 
-func_block(A) ::= dfunc_stmt(B) dparam_block(D) block(C). {
+func_block(A) ::= dfunc_stmt(B) dparam_list(D) block(C). {
 	B->params = D;
 	B->code = C;
 	A = B;
@@ -97,7 +103,7 @@ dfunc_stmt(A) ::= FUNC ID(B). {
 	A = new dfunc_stmt(B->text, false);
 }
 
-dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
+dparam_list(A) ::= dparam_list(B) dparam_stmt(C). {
 	if (!B) {
 		A = new dparam_stmt::List();
 	} else {
@@ -105,7 +111,7 @@ dparam_block(A) ::= dparam_block(B) dparam_stmt(C). {
 	}
 	A->push_back(C);
 }
-dparam_block(A) ::= . {
+dparam_list(A) ::= . {
 	A = NULL;
 }
 dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
@@ -147,7 +153,7 @@ protofunc_list(A) ::= protofunc_list(B) func_block(C). {
 abstract_stmt(A) ::= ABSTRACT ID(B). {
 	A = new dfunc_stmt(B->text, true);
 }
-abstract_block(A) ::= abstract_stmt(B) dparam_block(C) END. {
+abstract_block(A) ::= abstract_stmt(B) dparam_list(C) END. {
 	A = B;
 	A->params = C;
 }
@@ -170,6 +176,30 @@ bind_block(A) ::= bind_stmt(B) bindtype_block(C) func_list(D) END. {
 	A = B;
 	A->params = C;
 	A->functions = D;
+}
+
+
+datatype_block(A) ::= datatype_stmt(B) construct_list(C) END. {
+	A = B;
+	A->constructs = C;
+}
+datatype_stmt(A) ::= DATATYPE TYPENAME(B). {
+	A = new datatype_stmt(B->text);
+}
+construct_list(A) ::= construct_block(B). {
+	A = new Stmt::List();
+	A->push_back(B);
+}
+construct_list(A) ::= construct_list(B) construct_block(C). {
+	A = B;
+	A->push_back(C);
+}
+construct_block(A) ::= construct_stmt(B) dparam_list(C) END. {
+	A = B;
+	A->fields = C;
+}
+construct_stmt(A) ::= CONSTRUCT TYPENAME(B). {
+	A = new construct_stmt(B->text);
 }
 
 

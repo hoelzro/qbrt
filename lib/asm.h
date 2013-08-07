@@ -9,6 +9,7 @@
 
 
 struct AsmReg;
+struct AsmDataType;
 
 struct RegAlloc
 {
@@ -145,6 +146,46 @@ struct AsmPolymorph
 		: AsmResource(RESOURCE_POLYMORPH)
 		, protocol(proto)
 		, line_no(0)
+	{}
+
+	virtual uint32_t write(std::ostream &) const;
+	virtual std::ostream & pretty(std::ostream &o) const;
+};
+
+struct AsmConstruct
+: public AsmResource
+{
+	const AsmString &name;
+	const AsmResource &datatype;
+	AsmString doc;
+	AsmString filename;
+	uint16_t line_no;
+
+	AsmConstruct(const AsmString &name, const AsmResource &datatype)
+	: AsmResource(RESOURCE_CONSTRUCT)
+	, name(name)
+	, datatype(datatype)
+	, line_no(0)
+	{}
+
+	virtual uint32_t write(std::ostream &) const;
+	virtual std::ostream & pretty(std::ostream &o) const;
+};
+
+struct AsmDataType
+: public AsmResource
+{
+	const AsmString &name;
+	AsmString doc;
+	AsmString filename;
+	uint16_t line_no;
+	uint8_t argc;
+
+	AsmDataType(const AsmString &name)
+	: AsmResource(RESOURCE_DATATYPE)
+	, name(name)
+	, line_no(0)
+	, argc(0)
 	{}
 
 	virtual uint32_t write(std::ostream &) const;

@@ -7,6 +7,8 @@
 #include <map>
 #include <stdint.h>
 
+class AsmConstruct;
+class AsmDataType;
 class AsmFunc;
 class AsmLabel;
 class AsmModSym;
@@ -105,6 +107,24 @@ struct Stmt
 	virtual void collect_resources(ResourceSet &) {}
 	virtual void generate_code(AsmFunc &);
 	virtual void pretty(std::ostream &) const = 0;
+};
+
+struct dparam_stmt
+: public Stmt
+{
+	dparam_stmt(const std::string &name, AsmModSym *type)
+	: name(name)
+	, type(type)
+	{}
+	AsmString name;
+	AsmModSym *type;
+
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &) const;
+
+	typedef std::list< dparam_stmt * > List;
+
+	static void collect(AsmParamList &, std::string &param_types, List *);
 };
 
 
@@ -297,6 +317,24 @@ struct consthash_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct construct_stmt
+: public Stmt
+{
+	AsmString name;
+	dparam_stmt::List *fields;
+	AsmConstruct *construct;
+
+	construct_stmt(const std::string &name)
+	: name(name)
+	, fields(NULL)
+	, construct(NULL)
+	{}
+
+	void set_function_context(uint8_t, AsmResource *);
+	void collect_resources(ResourceSet &);
+	void pretty(std::ostream &) const;
+};
+
 struct copy_stmt
 : public Stmt
 {
@@ -312,22 +350,22 @@ struct copy_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct dparam_stmt
+struct datatype_stmt
 : public Stmt
 {
-	dparam_stmt(const std::string &name, AsmModSym *type)
-	: name(name)
-	, type(type)
-	{}
 	AsmString name;
-	AsmModSym *type;
+	Stmt::List *constructs;
+	AsmDataType *datatype;
 
+	datatype_stmt(const std::string &name)
+	: name(name)
+	, constructs(NULL)
+	, datatype(NULL)
+	{}
+
+	void set_function_context(uint8_t, AsmResource *);
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
-
-	typedef std::list< dparam_stmt * > List;
-
-	static void collect(AsmParamList &, std::string &param_types, List *);
 };
 
 struct dfunc_stmt

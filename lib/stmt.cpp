@@ -299,6 +299,22 @@ void consthash_stmt::pretty(std::ostream &out) const
 	out << "consthash " << *dst << " #" << value.value;
 }
 
+void construct_stmt::set_function_context(uint8_t, AsmResource *data)
+{
+	construct = new AsmConstruct(name, *data);
+}
+
+void construct_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, name);
+	collect_resource(rs, *construct);
+}
+
+void construct_stmt::pretty(ostream &out) const
+{
+	out << "construct " << name.value;
+}
+
 void copy_stmt::allocate_registers(RegAlloc *r)
 {
 	r->alloc(*dst);
@@ -313,6 +329,24 @@ void copy_stmt::generate_code(AsmFunc &f)
 void copy_stmt::pretty(std::ostream &out) const
 {
 	out << "copy " << *dst << " " << *src;
+}
+
+void datatype_stmt::set_function_context(uint8_t, AsmResource *)
+{
+	datatype = new AsmDataType(name);
+	::set_function_context(*constructs, 0, datatype);
+}
+
+void datatype_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_string(rs, name);
+	collect_resource(rs, *datatype);
+	::collect_resources(rs, *constructs);
+}
+
+void datatype_stmt::pretty(ostream &out) const
+{
+	out << "datatype " << name.value;
 }
 
 void dparam_stmt::collect_resources(ResourceSet &rs)
