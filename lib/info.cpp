@@ -428,6 +428,12 @@ void print_hashtag(const ResourceTable &tbl, uint16_t index)
 	printf("\t%u #%s\n", index, hash.value);
 }
 
+void print_unsupported_resource(const ResourceTable &tbl, uint16_t i)
+{
+	uint16_t type(tbl.type(i));
+	printf("\t% 2u unsupported:0x%x\n", i, type);
+}
+
 void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 {
 	const StringResource &str(
@@ -543,6 +549,8 @@ static inline void print_resource_line(const ResourceTable &tbl, uint16_t i)
 		print_protocol_resource_line(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_POLYMORPH) {
 		print_polymorph_resource_line(tbl, i);
+	} else {
+		print_unsupported_resource(tbl, i);
 	}
 }
 
