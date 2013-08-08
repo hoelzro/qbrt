@@ -798,11 +798,14 @@ ostream & operator << (ostream &out, const Token &t)
 		case TOKEN_LABEL:
 			out << "LABEL";
 			break;
-		case TOKEN_LFUNC:
-			out << "lfunc";
-			break;
 		case TOKEN_LCONTEXT:
 			out << "lcontext";
+			break;
+		case TOKEN_LCONSTRUCT:
+			out << "lconstruct";
+			break;
+		case TOKEN_LFUNC:
+			out << "lfunc";
 			break;
 		case TOKEN_NEWPROC:
 			out << "newproc";

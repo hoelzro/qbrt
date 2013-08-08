@@ -97,6 +97,7 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "imult"		{ BEGIN(ARGS); lex_token(TOKEN_IMULT); }
 "isub"		{ BEGIN(ARGS); lex_token(TOKEN_ISUB); }
 "lcontext"	{ BEGIN(ARGS); lex_token(TOKEN_LCONTEXT); }
+"lconstruct"	{ BEGIN(ARGS); lex_token(TOKEN_LCONSTRUCT); }
 "lfunc"		{ BEGIN(ARGS); lex_token(TOKEN_LFUNC); }
 "lpfunc"	{ BEGIN(ARGS); lex_token(TOKEN_LPFUNC); }
 "match"		{ BEGIN(ARGS); lex_token(TOKEN_MATCH); }

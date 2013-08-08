@@ -262,6 +262,7 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_NEWPROC	0x4c
 #define OP_RECV		0x4d
 #define OP_MATCH	0x4e
+#define OP_LCONSTRUCT	0x4f
 #define NUM_OP_CODES	0x100
 
 

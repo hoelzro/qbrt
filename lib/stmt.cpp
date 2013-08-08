@@ -5,6 +5,7 @@
 #include "qbrt/function.h"
 #include "qbrt/string.h"
 #include "instruction/schedule.h"
+#include "instruction/type.h"
 #include <iostream>
 #include <stdlib.h>
 
@@ -543,6 +544,26 @@ void lcontext_stmt::generate_code(AsmFunc &f)
 void lcontext_stmt::pretty(std::ostream &out) const
 {
 	out << "lcontext " << *dst << " #" << name.value;
+}
+
+void lconstruct_stmt::collect_resources(ResourceSet &rs)
+{
+	collect_modsym(rs, *modsym);
+}
+
+void lconstruct_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*dst);
+}
+
+void lconstruct_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new lconstruct_instruction(*dst, *modsym->index));
+}
+
+void lconstruct_stmt::pretty(std::ostream &out) const
+{
+	out << "lconstruct " << *dst << " " << *modsym;
 }
 
 void lfunc_stmt::collect_resources(ResourceSet &rs)

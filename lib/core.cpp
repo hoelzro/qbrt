@@ -9,6 +9,7 @@
 #include "qbrt/tuple.h"
 #include "qbrt/list.h"
 #include "instruction/schedule.h"
+#include "instruction/type.h"
 #include <cstdlib>
 
 using namespace std;
@@ -237,8 +238,9 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_IDIV] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IMULT] = binaryop_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_ISUB] = binaryop_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_LFUNC] = lfunc_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_LCONTEXT] = lcontext_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LCONSTRUCT] = lconstruct_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LFUNC] = lfunc_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_LOADTYPE] = loadtype_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_LOADOBJ] = loadobj_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_MATCH] = match_instruction::SIZE;

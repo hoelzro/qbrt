@@ -7,6 +7,7 @@
 #include "qbrt/list.h"
 #include "qbrt/tuple.h"
 #include "instruction/schedule.h"
+#include "instruction/type.h"
 #include <iostream>
 
 using namespace std;
@@ -29,8 +30,9 @@ DEFINE_IWRITER(consts);
 DEFINE_IWRITER(consthash);
 DEFINE_IWRITER(call);
 DEFINE_IWRITER(fork);
-DEFINE_IWRITER(lfunc);
 DEFINE_IWRITER(lcontext);
+DEFINE_IWRITER(lconstruct);
+DEFINE_IWRITER(lfunc);
 DEFINE_IWRITER(loadtype);
 DEFINE_IWRITER(loadobj);
 DEFINE_IWRITER(lpfunc);
@@ -66,6 +68,8 @@ void init_writers()
 	WRITER[OP_CONSTHASH] =
 		(instruction_writer) iwriter<consthash_instruction>;
 	WRITER[OP_LCONTEXT] = (instruction_writer)iwriter<lcontext_instruction>;
+	WRITER[OP_LCONSTRUCT] =
+		(instruction_writer)iwriter<lconstruct_instruction>;
 	WRITER[OP_FORK] = (instruction_writer) iwriter<fork_instruction>;
 	WRITER[OP_IDIV] = (instruction_writer) iwriter<binaryop_instruction>;
 	WRITER[OP_IMULT] = (instruction_writer) iwriter<binaryop_instruction>;

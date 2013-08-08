@@ -13,3 +13,21 @@ dparam val ./T
 end.
 
 end.
+
+
+bind ./Stringy
+bindtype core/Bool
+
+func str
+dparam val ./Bool
+
+lconstruct $0 ./True
+match \void $0 %0 @FALSE
+  const \result "true"
+  return
+
+@FALSE
+const \result "false"
+end.
+
+end.

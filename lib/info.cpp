@@ -6,6 +6,7 @@
 #include "qbrt/module.h"
 #include "qbrt/logic.h"
 #include "instruction/schedule.h"
+#include "instruction/type.h"
 #include <vector>
 #include <map>
 #include <stdio.h>
@@ -69,17 +70,24 @@ uint8_t print_call_instruction(const call_instruction &i)
 	return call_instruction::SIZE;
 }
 
-uint8_t print_lfunc_instruction(const lfunc_instruction &i)
-{
-	cout << "lfunc " << pretty_reg(i.reg) << " modsym:" << i.modsym << endl;
-	return lfunc_instruction::SIZE;
-}
-
 uint8_t print_lcontext_instruction(const lcontext_instruction &i)
 {
 	cout << "lcontext " << pretty_reg(i.reg)
 		<< " #" << i.hashtag << endl;
 	return lcontext_instruction::SIZE;
+}
+
+uint8_t print_lconstruct_instruction(const lconstruct_instruction &i)
+{
+	cout << "lconstruct " << pretty_reg(i.reg)
+		<< " modsym:" << i.modsym << endl;
+	return lconstruct_instruction::SIZE;
+}
+
+uint8_t print_lfunc_instruction(const lfunc_instruction &i)
+{
+	cout << "lfunc " << pretty_reg(i.reg) << " modsym:" << i.modsym << endl;
+	return lfunc_instruction::SIZE;
 }
 
 uint8_t print_lpfunc_instruction(const lpfunc_instruction &i)
@@ -276,8 +284,10 @@ void set_printers()
 	PRINTER[OP_IMULT] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_IDIV] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_ISUB] = (instruction_printer) print_binaryop_instruction;
-	PRINTER[OP_LFUNC] = (instruction_printer) print_lfunc_instruction;
 	PRINTER[OP_LCONTEXT] = (instruction_printer) print_lcontext_instruction;
+	PRINTER[OP_LCONSTRUCT] =
+		(instruction_printer) print_lconstruct_instruction;
+	PRINTER[OP_LFUNC] = (instruction_printer) print_lfunc_instruction;
 	PRINTER[OP_LOADOBJ] = (instruction_printer) print_loadobj_instruction;
 	PRINTER[OP_LPFUNC] = (instruction_printer) print_lpfunc_instruction;
 	PRINTER[OP_MATCH] = (instruction_printer) print_match_instruction;

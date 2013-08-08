@@ -269,6 +269,10 @@ stmt(A) ::= LABEL(B). {
 stmt(A) ::= LCONTEXT reg(B) HASHTAG(C). {
 	A = new lcontext_stmt(B, C->label());
 }
+stmt(A) ::= LCONSTRUCT reg(B) modtype(C). {
+	A = new lconstruct_stmt(B, C);
+	C = NULL;
+}
 stmt(A) ::= LFUNC reg(B) modsym(C). {
 	A = new lfunc_stmt(B, C);
 	C = NULL;

@@ -477,6 +477,22 @@ struct lcontext_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct lconstruct_stmt
+: public Stmt
+{
+	lconstruct_stmt(AsmReg *dst, AsmModSym *ms)
+	: dst(dst)
+	, modsym(ms)
+	{}
+	AsmReg *dst;
+	AsmModSym *modsym;
+
+	void allocate_registers(RegAlloc *);
+	void collect_resources(ResourceSet &);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
 struct lfunc_stmt
 : public Stmt
 {
