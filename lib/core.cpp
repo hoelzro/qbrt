@@ -96,7 +96,7 @@ Type::Type(uint8_t id)
 Type::Type(const std::string &mod, const std::string &name, uint16_t flds)
 	: module(mod)
 	, name(name)
-	, id(VT_STRUCT)
+	, id(VT_CONSTRUCT)
 {}
 
 Type TYPE_VOID(VT_VOID);
@@ -164,6 +164,9 @@ void qbrt_value::copy(qbrt_value &dst, const qbrt_value &src)
 		case VT_BSTRING:
 			qbrt_value::str(dst, *src.data.str);
 			break;
+		case VT_CONSTRUCT:
+			qbrt_value::construct(dst, src.type, src.data.cons);
+			break;
 		default:
 			cerr << "wtf you can't copy that!\n";
 			break;
@@ -191,16 +194,24 @@ int type_compare(T a, T b)
 
 int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 {
-	if (a.type->id < b.type->id) {
-		return -1;
-	} else if (a.type->id > b.type->id) {
-		return 1;
+	int comparison(Type::compare(*a.type, *b.type));
+	if (comparison) {
+		return comparison;
 	}
+
 	switch (a.type->id) {
 		case VT_INT:
 			return type_compare< int64_t >(a.data.i, b.data.i);
 		case VT_BSTRING:
-			return type_compare< const string & >(*a.data.str, *b.data.str);
+			return type_compare< const string & >(
+					*a.data.str, *b.data.str);
+		case VT_CONSTRUCT:
+			return type_compare< const Construct & >(
+					*a.data.cons, *b.data.cons);
+		default:
+			cerr << "Type does not support comparison: "
+				<< a.type->id << endl;
+			break;
 	}
 	return 0;
 }

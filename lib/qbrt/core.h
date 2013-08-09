@@ -23,6 +23,7 @@ struct Stream;
 struct Tuple;
 struct Promise;
 struct Failure;
+struct Construct;
 struct OpContext;
 typedef void (*c_function)(OpContext &, qbrt_value &out);
 
@@ -40,7 +41,7 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 #define VT_LIST		0x09
 #define VT_MAP		0x0a
 #define VT_VECTOR	0x0b
-#define VT_STRUCT	0x0c
+#define VT_CONSTRUCT	0x0c
 #define VT_INT		0x0d
 #define VT_STREAM	0x0e
 #define VT_HASHTAG	0x0f
@@ -57,7 +58,6 @@ extern Type TYPE_HASHTAG;
 extern Type TYPE_REF;
 extern Type TYPE_TUPLE;
 extern Type TYPE_FUNCTION;
-extern Type TYPE_CFUNCTION;
 extern Type TYPE_LIST;
 extern Type TYPE_MAP;
 extern Type TYPE_VECTOR;
@@ -80,6 +80,7 @@ struct qbrt_value
 		qbrt_value *ref;
 		qbrt_value_index *reg;
 		const Type *type;
+		Construct *cons;
 		Tuple *tuple;
 		List *list;
 		Map *map;
@@ -155,6 +156,11 @@ struct qbrt_value
 		set_void(v);
 		v.type = &TYPE_LIST;
 		v.data.list = l;
+	}
+	static void construct(qbrt_value &v, const Type *t, Construct *cons)
+	{
+		v.type = t;
+		v.data.cons = cons;
 	}
 	static void promise(qbrt_value &v, Promise *p)
 	{

@@ -208,7 +208,6 @@ struct Module
 	const QbrtFunction * fetch_override(const std::string &protomod
 		, const std::string &protoname, const std::string &fname
 		, const std::string &param_types) const;
-	const Type * fetch_struct(const std::string &name) const;
 	const ProtocolResource * fetch_protocol(const std::string &name) const;
 	const QbrtFunction * fetch_protocol_function(
 			const std::string &protocol_name
@@ -218,10 +217,14 @@ struct Module
 	: name(module_name)
 	{}
 
+	friend void add_type(Module &, const std::string &name, const Type &);
+	friend const Type * indexed_datatype(const Module &, uint16_t idx);
+
 private:
 	const QbrtFunction * qbrt_function(const FunctionHeader *) const;
 	mutable std::map< const FunctionHeader *, const QbrtFunction * >
 		function_cache;
+	mutable std::map< uint16_t, const Type * > indexed_type_cache;
 };
 
 Module * read_module(const std::string &objname);
@@ -230,6 +233,9 @@ const CFunction * fetch_c_function(const Module &, const std::string &name);
 const CFunction * fetch_c_override(const Module &, const std::string &protomod
 		, const std::string &protoname, const std::string &name
 		, const std::string &param_types);
+
+const ConstructResource * find_construct(const Module &
+		, const std::string &name);
 
 static inline const char * fetch_string(const ResourceTable &tbl, uint16_t idx)
 {
@@ -243,7 +249,6 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 }
 
 
-void add_type(Module &, const std::string &name, const Type &);
 CFunction * add_c_function(Module &, c_function
 		, const std::string &name, uint8_t argc
 		, const std::string &param_types);

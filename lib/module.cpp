@@ -77,17 +77,6 @@ const QbrtFunction * Module::fetch_function(const std::string &name) const
 }
 
 
-const Type * Module::fetch_struct(const std::string &type) const
-{
-	const StructResource *s;
-	s = (const StructResource *) NULL; // fetch_resource(type);
-	if (!s) {
-		return NULL;
-	}
-	const char *structname = fetch_string(resource, s->name_id);
-	return new Type(name, structname, s->field_count);
-}
-
 struct ProtocolSearch
 {
 	typedef ProtocolResource resource_t;
@@ -239,6 +228,64 @@ struct PolymorphFunctionSearch
 	{}
 };
 
+struct ConstructSearch
+{
+	const std::string &name;
+
+	ConstructSearch(const std::string &name)
+	: name(name)
+	{}
+
+	typedef ConstructResource resource_t;
+	static const uint16_t resource_type_id = RESOURCE_CONSTRUCT;
+
+	/**
+	 * Compare name to the construct at i
+	 */
+	int compare(const ResourceTable &tbl, uint16_t i) const
+	{
+		const ConstructResource *i_cons;
+		i_cons = tbl.ptr< ConstructResource >(i);
+		const char *i_name = fetch_string(tbl, i_cons->name_idx);
+
+		if (name < i_name) {
+			return -1;
+		} else if (name > i_name) {
+			return +1;
+		}
+		return 0;
+	}
+};
+
+struct DataTypeSearch
+{
+	const std::string &name;
+
+	DataTypeSearch(const std::string &name)
+	: name(name)
+	{}
+
+	typedef DataTypeResource resource_t;
+	static const uint16_t resource_type_id = RESOURCE_DATATYPE;
+
+	/**
+	 * Compare name to the datatype at i
+	 */
+	int compare(const ResourceTable &tbl, uint16_t i) const
+	{
+		const DataTypeResource *i_dtr;
+		i_dtr = tbl.ptr< DataTypeResource >(i);
+		const char *i_name = fetch_string(tbl, i_dtr->name_idx);
+
+		if (name < i_name) {
+			return -1;
+		} else if (name > i_name) {
+			return +1;
+		}
+		return 0;
+	}
+};
+
 const QbrtFunction * Module::fetch_protocol_function(
 		const std::string &protoname
 		, const std::string &fname) const
@@ -262,6 +309,26 @@ const QbrtFunction * Module::fetch_override(const string &protomod
 		return NULL;
 	}
 	return qbrt_function(f);
+}
+
+const Type * indexed_datatype(const Module &mod, uint16_t idx)
+{
+	map< uint16_t, const Type * >::const_iterator it;
+	it = mod.indexed_type_cache.find(idx);
+	if (it != mod.indexed_type_cache.end()) {
+		return it->second;
+	}
+
+	const DataTypeResource *dtr;
+	dtr = mod.resource.ptr< DataTypeResource >(idx);
+	if (!dtr) {
+		cerr << "DataTypeResource not found at: " << idx << endl;
+		return NULL;
+	}
+	const char *name = fetch_string(mod.resource, dtr->name_idx);
+	const Type *t = new Type(mod.name, name, dtr->argc);
+	mod.indexed_type_cache[idx] = t;
+	return t;
 }
 
 const QbrtFunction * Module::qbrt_function(const FunctionHeader *f) const
@@ -388,4 +455,16 @@ const CFunction * fetch_c_override(const Module &m, const std::string &protomod
 		return &it->second;
 	}
 	return NULL;
+}
+
+const ConstructResource * find_construct(const Module &m
+		, const std::string &name)
+{
+	ConstructSearch query(name);
+	const ConstructResource *cons;
+	cons = m.resource.find(query);
+	if (!cons) {
+		return NULL;
+	}
+	return cons;
 }

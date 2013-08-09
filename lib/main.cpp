@@ -12,6 +12,7 @@
 #include "qbrt/module.h"
 #include "io.h"
 #include "instruction/schedule.h"
+#include "instruction/type.h"
 
 #include <vector>
 #include <stack>
@@ -476,6 +477,31 @@ void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 	ctx.pc() += lcontext_instruction::SIZE;
 }
 
+void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
+{
+	const ResourceTable &resource(ctx.resource());
+	const ModSym &modsym(fetch_modsym(resource, i.modsym));
+	const char *modname = fetch_string(resource, modsym.mod_name);
+	const char *name = fetch_string(resource, modsym.sym_name);
+	const Module *mod(find_module(ctx.worker(), modname));
+	if (!mod) {
+		cerr << "cannot find module: " << modname << endl;
+		exit(1);
+	}
+	Failure *fail;
+	qbrt_value &dst(ctx.dstvalue(i.reg));
+
+	const ConstructResource *construct_r;
+	construct_r = find_construct(*mod, name);
+
+	const Type *typ = indexed_datatype(*mod, construct_r->datatype_idx);
+
+	Construct *cons = new Construct(*construct_r);
+	qbrt_value::construct(dst, typ, cons);
+
+	ctx.pc() += lcontext_instruction::SIZE;
+}
+
 void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 {
 	const ResourceTable &resource(ctx.resource());
@@ -632,7 +658,7 @@ void execute_loadtype(OpContext &ctx, const loadtype_instruction &i)
 	const char *modname = fetch_string(ctx.resource(), i.modname);
 	const char *type_name = fetch_string(ctx.resource(), i.type);
 	const Module &mod(*find_module(ctx.worker(), modname));
-	const Type *typ = mod.fetch_struct(type_name);
+	const Type *typ = NULL; // mod.fetch_struct(type_name);
 	qbrt_value &dst(ctx.dstvalue(i.reg));
 	qbrt_value::typ(dst, typ);
 	ctx.pc() += loadtype_instruction::SIZE;
@@ -691,8 +717,9 @@ void init_executioners()
 	x[OP_IDIV] = (executioner) execute_divide;
 	x[OP_IMULT] = (executioner) execute_binaryop;
 	x[OP_ISUB] = (executioner) execute_binaryop;
-	x[OP_LFUNC] = (executioner) execute_loadfunc;
 	x[OP_LCONTEXT] = (executioner) execute_lcontext;
+	x[OP_LCONSTRUCT] = (executioner) execute_lconstruct;
+	x[OP_LFUNC] = (executioner) execute_loadfunc;
 	x[OP_LPFUNC] = (executioner) execute_lpfunc;
 	x[OP_MATCH] = (executioner) execute_match;
 	x[OP_NEWPROC] = (executioner) execute_newproc;

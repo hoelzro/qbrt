@@ -697,9 +697,10 @@ uint32_t AsmConstruct::write(std::ostream &out) const
 	out.write((const char *) doc.index, 2);
 	out.write((const char *) filename.index, 2);
 	out.write((const char *) &line_no, 2);
+	out.write((const char *) datatype.index, 2);
 	out.write((const char *) &fld_count, 1);
 
-	return 9;
+	return 11;
 }
 
 ostream & AsmConstruct::pretty(ostream &o) const

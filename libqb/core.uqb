@@ -31,3 +31,13 @@ const \result "false"
 end.
 
 end.
+
+bind ./Stringy
+bindtype core/Void
+
+func str
+dparam val ./Void
+const \result "void"
+end.
+
+end.

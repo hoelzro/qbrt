@@ -12,9 +12,10 @@ struct ConstructResource
 	uint16_t doc_idx;
 	uint16_t filename_idx;
 	uint16_t lineno;
+	uint16_t datatype_idx;
 	uint8_t fld_count;
 
-	static const uint32_t SIZE = 9;
+	static const uint32_t SIZE = 11;
 };
 
 struct DataTypeResource
@@ -26,6 +27,35 @@ struct DataTypeResource
 	uint8_t argc;
 
 	static const uint32_t SIZE = 9;
+};
+
+struct Construct
+: public qbrt_value_index
+{
+	const ConstructResource &resource;
+	qbrt_value *fields;
+
+	Construct(const ConstructResource &cr)
+	: resource(cr)
+	, fields(new qbrt_value[cr.fld_count])
+	{}
+	~Construct()
+	{
+		delete[] fields;
+	}
+
+	friend bool operator < (const Construct &a, const Construct &b)
+	{
+		return a.resource.name_idx < b.resource.name_idx;
+	}
+	friend bool operator > (const Construct &a, const Construct &b)
+	{
+		return a.resource.name_idx > b.resource.name_idx;
+	}
+
+	uint8_t num_values() const { return resource.fld_count; }
+	qbrt_value & value(uint8_t i) { return fields[i]; }
+	const qbrt_value & value(uint8_t i) const { return fields[i]; }
 };
 
 struct StructFieldResource
@@ -55,10 +85,32 @@ struct Type
 	std::string module;
 	std::string name;
 	uint8_t id;
-	std::vector< StructField > field;
 
 	Type(uint8_t id);
 	Type(const std::string &mod, const std::string &name, uint16_t flds);
+
+	static int compare(const Type &a, const Type &b)
+	{
+		if (a.id < b.id) {
+			return -1;
+		}
+		if (a.id > b.id) {
+			return +1;
+		}
+		if (a.module < b.module) {
+			return -1;
+		}
+		if (a.module > b.module) {
+			return +1;
+		}
+		if (a.name < b.name) {
+			return -1;
+		}
+		if (a.name > b.name) {
+			return +1;
+		}
+		return 0;
+	}
 };
 
 
