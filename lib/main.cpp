@@ -1177,6 +1177,9 @@ int main(int argc, const char **argv)
 
 	Application app;
 	Module *mod_core = const_cast< Module * >(load_module(app, "core"));
+	if (!mod_core) {
+		return -1;
+	}
 	add_c_function(*mod_core, core_pid, "pid", 0, "");
 	add_c_function(*mod_core, core_send, "send", 2
 			, "io/Stream;core/String;");
