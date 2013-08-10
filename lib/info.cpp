@@ -219,51 +219,43 @@ uint8_t print_goto_instruction(const goto_instruction &i)
 	return goto_instruction::SIZE;
 }
 
-uint8_t print_brbool_instruction(const brbool_instruction &i)
+uint8_t print_if_instruction(const if_instruction &i)
 {
-	cout << (i.brt() ? "brt " : "brf ");
+	cout << (i.ifnot() ? "ifnot " : "if ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return brbool_instruction::SIZE;
+	return if_instruction::SIZE;
 }
 
-uint8_t print_brcmp_instruction(const brcmp_instruction &i)
+uint8_t print_ifcmp_instruction(const ifcmp_instruction &i)
 {
 	const char *bcname;
 	switch (i.opcode()) {
-		case OP_BRNE:
-			bcname = "brne";
+		case OP_IFEQ:
+			bcname = "ifeq ";
+			break;
+		case OP_IFNOTEQ:
+			bcname = "ifnoteq ";
 			break;
 		default:
-			bcname = "unk";
+			bcname = "unk ";
 			break;
 	}
-	cout << bcname << ' ';
 	print_jump_delta(i.jump_data);
 	print_register(i.ra);
 	print_register(i.rb);
 	cout << endl;
-	return brcmp_instruction::SIZE;
+	return ifcmp_instruction::SIZE;
 }
 
-uint8_t print_breq_instruction(const breq_instruction &i)
+uint8_t print_iffail_instruction(const iffail_instruction &i)
 {
-	cout << "breq ";
-	print_jump_delta(i.jump_data);
-	print_register(i.ra);
-	print_register(i.rb);
-	cout << endl;
-	return breq_instruction::SIZE;
-}
-
-uint8_t print_brfail_instruction(const brfail_instruction &i)
-{
-	cout << (i.brfail() ? "brfail " : "brnfail ");
+	cout << (i.iffail() ? "iffail " : "ifnotfail ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return brfail_instruction::SIZE;
+	return iffail_instruction::SIZE;
 }
 
 uint8_t print_wait_instruction(const wait_instruction &i)
@@ -301,12 +293,12 @@ void set_printers()
 	PRINTER[OP_CONSTI] = (instruction_printer) print_consti_instruction;
 	PRINTER[OP_FORK] = (instruction_printer) print_fork_instruction;
 	PRINTER[OP_GOTO] = (instruction_printer) print_goto_instruction;
-	PRINTER[OP_BRF] = (instruction_printer) print_brbool_instruction;
-	PRINTER[OP_BRT] = (instruction_printer) print_brbool_instruction;
-	PRINTER[OP_BRNE] = (instruction_printer) print_brcmp_instruction;
-	PRINTER[OP_BREQ] = (instruction_printer) print_breq_instruction;
-	PRINTER[OP_BRFAIL] = (instruction_printer) print_brfail_instruction;
-	PRINTER[OP_BRNFAIL] = (instruction_printer) print_brfail_instruction;
+	PRINTER[OP_IF] = (instruction_printer) print_if_instruction;
+	PRINTER[OP_IFNOT] = (instruction_printer) print_if_instruction;
+	PRINTER[OP_IFEQ] = (instruction_printer) print_ifcmp_instruction;
+	PRINTER[OP_IFNOTEQ] = (instruction_printer) print_ifcmp_instruction;
+	PRINTER[OP_IFFAIL] = (instruction_printer) print_iffail_instruction;
+	PRINTER[OP_IFNOTFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;
 	PRINTER[OP_RECV] = (instruction_printer) print_recv_instruction;
 	PRINTER[OP_STRACC] = (instruction_printer) print_stracc_instruction;
