@@ -160,6 +160,7 @@ struct AsmConstruct
 	AsmString doc;
 	AsmString filename;
 	uint16_t line_no;
+	AsmParamList fields;
 
 	AsmConstruct(const AsmString &name, const AsmResource &datatype)
 	: AsmResource(RESOURCE_CONSTRUCT)

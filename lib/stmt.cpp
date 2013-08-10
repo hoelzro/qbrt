@@ -303,12 +303,18 @@ void consthash_stmt::pretty(std::ostream &out) const
 void construct_stmt::set_function_context(uint8_t, AsmResource *data)
 {
 	construct = new AsmConstruct(name, *data);
+	string field_types;
+	dparam_stmt::collect(construct->fields, field_types, this->fields);
 }
 
 void construct_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
 	collect_resource(rs, *construct);
+	if (fields) {
+		// this should be safe right? :-P
+		::collect_resources(rs, *(Stmt::List *) fields);
+	}
 }
 
 void construct_stmt::pretty(ostream &out) const

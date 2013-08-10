@@ -6,6 +6,12 @@
 #include <list>
 
 
+struct ParamResource
+{
+	uint16_t name_idx;
+	uint16_t type_idx;
+};
+
 struct ConstructResource
 {
 	uint16_t name_idx;
@@ -14,8 +20,10 @@ struct ConstructResource
 	uint16_t lineno;
 	uint16_t datatype_idx;
 	uint8_t fld_count;
+	uint8_t reserved;
+	ParamResource fields[];
 
-	static const uint32_t SIZE = 11;
+	static const uint32_t SIZE = 12;
 };
 
 struct DataTypeResource

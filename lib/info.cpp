@@ -432,6 +432,36 @@ void print_code(const ResourceTable &tbl)
 	}
 }
 
+void print_constructure(const ConstructResource &conres
+		, const ResourceTable &tbl)
+{
+	const char *name = fetch_string(tbl, conres.name_idx);
+	cout << "\nconstruct: " << name << '/' << (int)conres.fld_count << endl;
+	for (int i(0); i<conres.fld_count; ++i) {
+		const ParamResource &p(conres.fields[i]);
+		const char *name = fetch_string(tbl, p.name_idx);
+		const ModSym &type = fetch_modsym(tbl, p.type_idx);
+		const char *typemod = fetch_string(tbl, type.mod_name);
+		const char *typesym = fetch_string(tbl, type.sym_name);
+		cout << '\t' << name <<' '
+			<< typemod <<'/'<< typesym << endl;
+	}
+}
+
+void print_constructs(const ResourceTable &tbl)
+{
+	uint16_t i(0);
+	for (; i<tbl.resource_count; ++i) {
+		if (tbl.type(i) != RESOURCE_CONSTRUCT) {
+			continue;
+		}
+
+		const ConstructResource &conres(
+				tbl.obj< ConstructResource >(i));
+		print_constructure(conres, tbl);
+	}
+}
+
 void print_hashtag(const ResourceTable &tbl, uint16_t index)
 {
 	const HashTagResource &hash(tbl.obj< HashTagResource >(index));
@@ -614,6 +644,7 @@ void show_object_info(const char *objname)
 	cout << dec;
 
 	print_resources(resource);
+	print_constructs(resource);
 	print_code(resource);
 }
 

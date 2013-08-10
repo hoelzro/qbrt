@@ -691,7 +691,8 @@ ostream & AsmPolymorph::pretty(std::ostream &o) const
 
 uint32_t AsmConstruct::write(std::ostream &out) const
 {
-	uint8_t fld_count(0);
+	uint8_t fld_count(fields.size());
+	uint8_t zero(0);
 
 	out.write((const char *) name.index, 2);
 	out.write((const char *) doc.index, 2);
@@ -699,8 +700,17 @@ uint32_t AsmConstruct::write(std::ostream &out) const
 	out.write((const char *) &line_no, 2);
 	out.write((const char *) datatype.index, 2);
 	out.write((const char *) &fld_count, 1);
+	out.write((const char *) &zero, 1);
 
-	return 11;
+	uint32_t size(12);
+	AsmParamList::const_iterator it(fields.begin());
+	for (; it!=fields.end(); ++it) {
+		out.write((const char *) (*it)->name.index, 2);
+		out.write((const char *) (*it)->type.index, 2);
+		size += 4;
+	}
+
+	return size;
 }
 
 ostream & AsmConstruct::pretty(ostream &o) const

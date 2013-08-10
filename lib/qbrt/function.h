@@ -213,12 +213,6 @@ struct PolymorphArg
 	friend bool operator < (const PolymorphArg &, const PolymorphArg &);
 };
 
-struct ParamResource
-{
-	uint16_t name_idx;
-	uint16_t type_idx;
-};
-
 struct FunctionHeader
 {
 	uint16_t name_idx;
