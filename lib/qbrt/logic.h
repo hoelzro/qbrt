@@ -19,7 +19,7 @@ struct goto_instruction
 	static const uint8_t SIZE = 3;
 };
 
-struct brbool_instruction
+struct if_instruction
 : public jump_instruction
 {
 	int64_t opcode_data : 8;
@@ -27,19 +27,18 @@ struct brbool_instruction
 	int64_t op : 16;
 	int64_t reserved : 24;
 
-	brbool_instruction(bool check, int16_t jmp, reg_t op)
-		: opcode_data(check ? OP_BRT : OP_BRF)
-		, jump_data(jmp)
+	if_instruction(bool check, reg_t op)
+		: opcode_data(check ? OP_IF : OP_IFNOT)
+		, jump_data(0)
 		, op(op)
 	{}
 
-	inline bool brt() const { return opcode_data == OP_BRT; }
-	inline bool brf() const { return opcode_data == OP_BRF; }
+	inline bool ifnot() const { return opcode_data == OP_IFNOT; }
 
 	static const uint8_t SIZE = 5;
 };
 
-struct brcmp_instruction
+struct ifcmp_instruction
 : public jump_instruction
 {
 	int64_t opcode_data : 8;
@@ -48,7 +47,7 @@ struct brcmp_instruction
 	int64_t rb : 16;
 	int64_t reserved : 8;
 
-	brcmp_instruction(int8_t opcode, reg_t a, reg_t b)
+	ifcmp_instruction(int8_t opcode, reg_t a, reg_t b)
 		: opcode_data(opcode)
 		, jump_data(0)
 		, ra(a)
@@ -58,26 +57,7 @@ struct brcmp_instruction
 	static const uint8_t SIZE = 7;
 };
 
-struct breq_instruction
-: public jump_instruction
-{
-	int64_t opcode_data : 8;
-	int64_t jump_data : 16;
-	int64_t ra : 16;
-	int64_t rb : 16;
-	int64_t reserved : 8;
-
-	breq_instruction(int16_t jmp, reg_t a, reg_t b)
-		: opcode_data(OP_BREQ)
-		, jump_data(jmp)
-		, ra(a)
-		, rb(b)
-	{}
-
-	static const uint8_t SIZE = 7;
-};
-
-struct brfail_instruction
+struct iffail_instruction
 : public jump_instruction
 {
 	int64_t opcode_data : 8;
@@ -85,15 +65,15 @@ struct brfail_instruction
 	int64_t op : 16;
 	int64_t reserved : 24;
 
-	brfail_instruction(bool check, reg_t op)
-	: opcode_data(check ? OP_BRFAIL : OP_BRNFAIL)
+	iffail_instruction(bool check, reg_t op)
+	: opcode_data(check ? OP_IFFAIL : OP_IFNOTFAIL)
 	, jump_data(0)
 	, op(op)
 	, reserved(0)
 	{}
 
-	inline bool brfail() const { return opcode_data == OP_BRFAIL; }
-	inline bool brnfail() const { return opcode_data == OP_BRNFAIL; }
+	inline bool iffail() const { return opcode_data == OP_IFFAIL; }
+	inline bool ifnotfail() const { return opcode_data == OP_IFNOTFAIL; }
 
 	static const uint8_t SIZE = 5;
 };

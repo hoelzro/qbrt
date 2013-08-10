@@ -183,10 +183,10 @@ struct bind_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct brbool_stmt
+struct if_stmt
 : public Stmt
 {
-	brbool_stmt(bool check, AsmReg *reg, const std::string &lbl)
+	if_stmt(bool check, AsmReg *reg, const std::string &lbl)
 		: check(check)
 		, label(lbl)
 		, reg(reg)
@@ -200,7 +200,7 @@ struct brbool_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct brcmp_stmt
+struct ifcmp_stmt
 : public Stmt
 {
 	AsmReg *a;
@@ -208,14 +208,15 @@ struct brcmp_stmt
 	AsmLabel label;
 	int8_t opcode;
 
-	static brcmp_stmt * ne(AsmReg *, AsmReg *, const std::string &lbl);
+	static ifcmp_stmt * eq(AsmReg *, AsmReg *, const std::string &lbl);
+	static ifcmp_stmt * ne(AsmReg *, AsmReg *, const std::string &lbl);
 
 	void allocate_registers(RegAlloc *);
 	void generate_code(AsmFunc &);
 	void pretty(std::ostream &) const;
 
 private:
-	brcmp_stmt(uint8_t op, AsmReg *a, AsmReg *b
+	ifcmp_stmt(uint8_t op, AsmReg *a, AsmReg *b
 			, const std::string &lbl)
 	: a(a)
 	, b(b)
@@ -224,10 +225,10 @@ private:
 	{}
 };
 
-struct brfail_stmt
+struct iffail_stmt
 : public Stmt
 {
-	brfail_stmt(bool check, AsmReg *reg, const std::string &lbl)
+	iffail_stmt(bool check, AsmReg *reg, const std::string &lbl)
 	: check(check)
 	, reg(reg)
 	, label(lbl)

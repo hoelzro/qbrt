@@ -77,11 +77,6 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 
 "bind"		{ BEGIN(ARGS); lex_token(TOKEN_BIND); }
 "bindtype"	{ BEGIN(ARGS); lex_token(TOKEN_BINDTYPE); }
-"brf"		{ BEGIN(ARGS); lex_token(TOKEN_BRF); }
-"brt"		{ BEGIN(ARGS); lex_token(TOKEN_BRT); }
-"brne"		{ BEGIN(ARGS); lex_token(TOKEN_BRNE); }
-"brfail"	{ BEGIN(ARGS); lex_token(TOKEN_BRFAIL); }
-"brnfail"	{ BEGIN(ARGS); lex_token(TOKEN_BRNFAIL); }
 "call"		{ BEGIN(ARGS); lex_token(TOKEN_CALL); }
 "cfailure"	{ BEGIN(ARGS); lex_token(TOKEN_CFAILURE); }
 "const"		{ BEGIN(ARGS); lex_token(TOKEN_CONST); }
@@ -92,6 +87,12 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 "fork"		{ BEGIN(ARGS); lex_token(TOKEN_FORK); }
 "func"		{ BEGIN(ARGS); lex_token(TOKEN_FUNC); }
 "goto"		{ BEGIN(ARGS); lex_token(TOKEN_GOTO); }
+"if"		{ BEGIN(ARGS); lex_token(TOKEN_IF); }
+"ifnot"		{ BEGIN(ARGS); lex_token(TOKEN_IFNOT); }
+"ifeq"		{ BEGIN(ARGS); lex_token(TOKEN_IFEQ); }
+"ifnoteq"	{ BEGIN(ARGS); lex_token(TOKEN_IFNOTEQ); }
+"iffail"	{ BEGIN(ARGS); lex_token(TOKEN_IFFAIL); }
+"ifnotfail"	{ BEGIN(ARGS); lex_token(TOKEN_IFNOTFAIL); }
 "iadd"		{ BEGIN(ARGS); lex_token(TOKEN_IADD); }
 "idiv"		{ BEGIN(ARGS); lex_token(TOKEN_IDIV); }
 "imult"		{ BEGIN(ARGS); lex_token(TOKEN_IMULT); }

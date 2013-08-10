@@ -465,12 +465,12 @@ void measure_jump_bytes(codeblock &code)
 	for (it=code.begin(); it!=code.end(); ++it) {
 		switch ((*it)->opcode()) {
 			case OP_GOTO:
-			case OP_BRF:
-			case OP_BRFAIL:
-			case OP_BRT:
-			case OP_BREQ:
-			case OP_BRNE:
-			case OP_BRNFAIL:
+			case OP_IF:
+			case OP_IFNOT:
+			case OP_IFEQ:
+			case OP_IFNOTEQ:
+			case OP_IFFAIL:
+			case OP_IFNOTFAIL:
 			case OP_MATCH:
 			case OP_FORK:
 				count_jump_bytes(it);

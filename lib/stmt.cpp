@@ -66,38 +66,6 @@ void Stmt::generate_code(AsmFunc &)
 }
 
 
-void brbool_stmt::allocate_registers(RegAlloc *alloc)
-{
-	alloc->alloc(*reg);
-}
-
-void brbool_stmt::generate_code(AsmFunc &f)
-{
-	asm_jump(f, label.name, new brbool_instruction(check, 0, *reg));
-}
-
-void brbool_stmt::pretty(std::ostream &out) const
-{
-	out << (check ? "brt " : "brf ")
-		<< *reg << " #" << label.name;
-}
-
-void brfail_stmt::allocate_registers(RegAlloc *alloc)
-{
-	alloc->alloc(*reg);
-}
-
-void brfail_stmt::generate_code(AsmFunc &f)
-{
-	asm_jump(f, label.name, new brfail_instruction(check, *reg));
-}
-
-void brfail_stmt::pretty(std::ostream &out) const
-{
-	out << (check ? "brfail " : "brnfail ")
-		<< *reg << " #" << label.name;
-}
-
 void binaryop_stmt::allocate_registers(RegAlloc *alloc)
 {
 	alloc->alloc(*result);
@@ -189,27 +157,6 @@ void bindtype_stmt::collect_resources(ResourceSet &rs)
 void bindtype_stmt::pretty(std::ostream &out) const
 {
 	out << "bindtype " << *bindtype;
-}
-
-brcmp_stmt * brcmp_stmt::ne(AsmReg *a, AsmReg *b, const std::string &lbl)
-{
-	return new brcmp_stmt(OP_BRNE, a, b, lbl);
-}
-
-void brcmp_stmt::allocate_registers(RegAlloc *r)
-{
-	r->alloc(*a);
-	r->alloc(*b);
-}
-
-void brcmp_stmt::generate_code(AsmFunc &f)
-{
-	asm_jump(f, label.name, new brcmp_instruction(opcode, *a, *b));
-}
-
-void brcmp_stmt::pretty(std::ostream &out) const
-{
-	out << "brcmp " << *a << ' ' << *b << label.name;
 }
 
 void call_stmt::allocate_registers(RegAlloc *r)
@@ -520,6 +467,64 @@ void goto_stmt::generate_code(AsmFunc &f)
 void goto_stmt::pretty(std::ostream &out) const
 {
 	out << "goto #" << label.name;
+}
+
+void if_stmt::allocate_registers(RegAlloc *alloc)
+{
+	alloc->alloc(*reg);
+}
+
+void if_stmt::generate_code(AsmFunc &f)
+{
+	asm_jump(f, label.name, new if_instruction(check, *reg));
+}
+
+void if_stmt::pretty(std::ostream &out) const
+{
+	out << (check ? "if " : "ifnot ")
+		<< *reg << " @" << label.name;
+}
+
+ifcmp_stmt * ifcmp_stmt::eq(AsmReg *a, AsmReg *b, const std::string &lbl)
+{
+	return new ifcmp_stmt(OP_IFEQ, a, b, lbl);
+}
+
+ifcmp_stmt * ifcmp_stmt::ne(AsmReg *a, AsmReg *b, const std::string &lbl)
+{
+	return new ifcmp_stmt(OP_IFNOTEQ, a, b, lbl);
+}
+
+void ifcmp_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*a);
+	r->alloc(*b);
+}
+
+void ifcmp_stmt::generate_code(AsmFunc &f)
+{
+	asm_jump(f, label.name, new ifcmp_instruction(opcode, *a, *b));
+}
+
+void ifcmp_stmt::pretty(std::ostream &out) const
+{
+	out << "ifcmp " << *a << ' ' << *b << " @" << label.name;
+}
+
+void iffail_stmt::allocate_registers(RegAlloc *alloc)
+{
+	alloc->alloc(*reg);
+}
+
+void iffail_stmt::generate_code(AsmFunc &f)
+{
+	asm_jump(f, label.name, new iffail_instruction(check, *reg));
+}
+
+void iffail_stmt::pretty(std::ostream &out) const
+{
+	out << (check ? "iffail " : "ifnotfail ")
+		<< *reg << " @" << label.name;
 }
 
 void label_stmt::generate_code(AsmFunc &f)

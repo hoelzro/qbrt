@@ -215,21 +215,6 @@ fork_stmt(A) ::= FORK reg(B). {
 stmt(A) ::= fork_block(B). {
 	A = B;
 }
-stmt(A) ::= BRF reg(C) LABEL(B). {
-	A = new brbool_stmt(false, C, B->label());
-}
-stmt(A) ::= BRNE reg(B) reg(C) LABEL(D). {
-	A = brcmp_stmt::ne(B, C, D->label());
-}
-stmt(A) ::= BRFAIL reg(B) LABEL(C). {
-	A = new brfail_stmt(true, B, C->label());
-}
-stmt(A) ::= BRNFAIL reg(B) LABEL(C). {
-	A = new brfail_stmt(false, B, C->label());
-}
-stmt(A) ::= BRT reg(C) LABEL(B). {
-	A = new brbool_stmt(true, C, B->label());
-}
 stmt(A) ::= CALL reg(B) reg(C). {
 	A = new call_stmt(B, C);
 }
@@ -250,6 +235,24 @@ stmt(A) ::= COPY reg(B) reg(C). {
 }
 stmt(A) ::= GOTO LABEL(B). {
 	A = new goto_stmt(B->label());
+}
+stmt(A) ::= IF reg(C) LABEL(B). {
+	A = new if_stmt(true, C, B->label());
+}
+stmt(A) ::= IFNOT reg(C) LABEL(B). {
+	A = new if_stmt(false, C, B->label());
+}
+stmt(A) ::= IFEQ reg(B) reg(C) LABEL(D). {
+	A = ifcmp_stmt::eq(B, C, D->label());
+}
+stmt(A) ::= IFNOTEQ reg(B) reg(C) LABEL(D). {
+	A = ifcmp_stmt::ne(B, C, D->label());
+}
+stmt(A) ::= IFFAIL reg(B) LABEL(C). {
+	A = new iffail_stmt(true, B, C->label());
+}
+stmt(A) ::= IFNOTFAIL reg(B) LABEL(C). {
+	A = new iffail_stmt(false, B, C->label());
 }
 stmt(A) ::= IADD reg(B) reg(C) reg(D). {
 	A = new binaryop_stmt('+', 'i', B, C, D);

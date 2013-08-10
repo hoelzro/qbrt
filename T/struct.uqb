@@ -9,27 +9,21 @@ datatype Animal
   end.
 end.
 
+
 func __main
 
+lconstruct $0 ./Dog
+lconstruct $0.1 core/True
 lfunc $1 io/print
-const $1.0 " "
 
-lfunc $2 core/str
-lfunc $0 io/print
-const $2.0 4
-call $0.0 $2
-call \void $0
-call \void $1
+if $0.1 @NO_DROOL
+const $1.0 "This dog drools.\n"
+goto @END_DROOL
 
-const $2.0 8
-call $0.0 $2
-call \void $0
-call \void $1
+@NO_DROOL
+const $1.0 "This dog has no drool.\n"
 
-const $2.0 15
-call $0.0 $2
-call \void $0
-const $1.0 "\n"
+@END_DROOL
 call \void $1
 
 end.
