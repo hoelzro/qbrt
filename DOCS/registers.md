@@ -50,7 +50,7 @@ register that stores the loaded function. The integer after the decimal
 is the index of the function parameter.
 
 ```
-lfunc $0 "" "foo"
+lfunc $0 ./foo
 const $0.0 3   // Load constant 3 into parameter 0 of function "foo"
 const $0.1 8   // Load constant 8 into parameter 1 of function "foo"
 call $1 $0

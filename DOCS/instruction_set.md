@@ -60,21 +60,21 @@ functionality. Here is an example and the related functions.
 
 Example:
 ```
-dfunc "decrement" 1
+func decrement
 const $0 1
 isub result %0 $0
 return
 end.
 
-dfunc "__main" 0
-lfunc $0 "" "decrement" // $0 contains the "decrement" function
+func __main
+lfunc $0 ./decrement // $0 contains the "decrement" function
 const $0.0 5
-call $1 $0              // $1 should now contain 4
+call $1 $0           // $1 should now contain 4
 return
 end.
 ```
 
-### dfunc
+### func
 
 Declare a function with a given name and number of parameters.
 Function declarations begin a function block and must be ended
@@ -153,15 +153,15 @@ Arguments:
 
 Example:
 ```
-lfunc $0 "" "foo"
+lfunc $0 ./foo
 newproc $2 $0	// create a new process executing foo()
 
-lfunc $4 "core" "send"
+lfunc $4 core/send
 copy $4.0 $2
 const $4.1 "hello"
 call void $4
 
-lfunc $3 "io" "print"
+lfunc $3 io/print
 recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
 call void $3	// print the value received from function foo()
 ```
@@ -177,8 +177,8 @@ Arguments:
 
 Example:
 ```
-lfunc $3 "io" "print"
-lfunc $0 "" "foo"
+lfunc $3 io/print
+lfunc $0 ./foo
 newproc $2 $0	// create a new process executing foo()
 recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
 call void $3	// print the value received from function foo()

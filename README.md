@@ -16,8 +16,8 @@ computer programs to write, at the expense of some human
 usability.
 
 ```
-dfunc "__main" 0
-lfunc $1 "io" "print"
+func __main
+lfunc $1 io/print
 const $1.0 "hello world\n"
 call void $1
 return
