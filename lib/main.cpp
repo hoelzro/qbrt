@@ -340,14 +340,17 @@ void execute_goto(OpContext &ctx, const goto_instruction &i)
 	ctx.pc() += i.jump();
 }
 
-void execute_brbool(OpContext &ctx, const brbool_instruction &i)
+/**
+ * If the condition is true, keep executing. else jump to the label
+ */
+void execute_if(OpContext &ctx, const if_instruction &i)
 {
 	const qbrt_value &op(ctx.srcvalue(i.op));
-	if (i.opcode() == OP_BRT && op.data.b
-			|| i.opcode() == OP_BRF && ! op.data.b) {
-		ctx.pc() += i.jump();
+	if (i.opcode() == OP_IF && op.data.b
+			|| i.opcode() == OP_IFNOT && ! op.data.b) {
+		ctx.pc() += if_instruction::SIZE;
 	} else {
-		ctx.pc() += brbool_instruction::SIZE;
+		ctx.pc() += i.jump();
 	}
 }
 
@@ -369,40 +372,47 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
 	return false;
 }
 
-void execute_brcmp(OpContext &ctx, const brcmp_instruction &i)
+/**
+ * If the comparison matches, execute normally
+ * else follow the jump
+ */
+void execute_ifcmp(OpContext &ctx, const ifcmp_instruction &i)
 {
 	const qbrt_value &a(ctx.srcvalue(i.ra));
 	const qbrt_value &b(ctx.srcvalue(i.rb));
-	bool follow_jump(false);
+	bool no_jump(false);
 	switch (i.opcode()) {
-		case OP_BREQ:
-			follow_jump = equal_value(a,b);
+		case OP_IFEQ:
+			no_jump = equal_value(a,b);
 			break;
-		case OP_BRNE:
-			follow_jump = ! equal_value(a,b);
+		case OP_IFNOTEQ:
+			no_jump = ! equal_value(a,b);
 			break;
 		default:
 			cerr << "Unsupported comparison: " << i.opcode()
 				<< "\n";
 			return;
 	}
-	if (follow_jump) {
-		ctx.pc() += i.jump();
+	if (no_jump) {
+		ctx.pc() += ifcmp_instruction::SIZE;
 	} else {
-		ctx.pc() += brcmp_instruction::SIZE;
+		ctx.pc() += i.jump();
 	}
 }
 
-void execute_brfail(OpContext &ctx, const brfail_instruction &i)
+/**
+ * If failure, keep going. If not failure, jump to the given label
+ */
+void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 {
 	const qbrt_value &op(ctx.srcvalue(i.op));
 	bool is_failure(op.type->id == TYPE_FAILURE.id);
 	int valtype(op.type->id);
-	if (i.opcode() == OP_BRFAIL && is_failure
-			|| i.opcode() == OP_BRNFAIL && ! is_failure) {
-		ctx.pc() += i.jump();
+	if (i.opcode() == OP_IFFAIL && is_failure
+			|| i.opcode() == OP_IFNOTFAIL && ! is_failure) {
+		ctx.pc() += iffail_instruction::SIZE;
 	} else {
-		ctx.pc() += brfail_instruction::SIZE;
+		ctx.pc() += i.jump();
 	}
 }
 
@@ -731,12 +741,12 @@ void init_executioners()
 	x[OP_COPY] = (executioner) execute_copy;
 	x[OP_FORK] = (executioner) execute_fork;
 	x[OP_GOTO] = (executioner) execute_goto;
-	x[OP_BRF] = (executioner) execute_brbool;
-	x[OP_BRT] = (executioner) execute_brbool;
-	x[OP_BREQ] = (executioner) execute_brcmp;
-	x[OP_BRNE] = (executioner) execute_brcmp;
-	x[OP_BRFAIL] = (executioner) execute_brfail;
-	x[OP_BRNFAIL] = (executioner) execute_brfail;
+	x[OP_IF] = (executioner) execute_if;
+	x[OP_IFNOT] = (executioner) execute_if;
+	x[OP_IFEQ] = (executioner) execute_ifcmp;
+	x[OP_IFNOTEQ] = (executioner) execute_ifcmp;
+	x[OP_IFFAIL] = (executioner) execute_iffail;
+	x[OP_IFNOTFAIL] = (executioner) execute_iffail;
 	x[OP_WAIT] = (executioner) execute_wait;
 }
 
