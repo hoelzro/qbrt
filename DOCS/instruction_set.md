@@ -63,14 +63,12 @@ Example:
 func decrement
 const $0 1
 isub result %0 $0
-return
 end.
 
 func __main
 lfunc $0 ./decrement // $0 contains the "decrement" function
 const $0.0 5
 call $1 $0           // $1 should now contain 4
-return
 end.
 ```
 
