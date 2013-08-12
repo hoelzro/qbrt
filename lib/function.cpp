@@ -92,6 +92,7 @@ void function_value::realloc(uint8_t new_regc)
 	for (int i(this->regc); i<new_regc; ++i) {
 		new (&this->regv[i]) qbrt_value();
 	}
+	this->regc = new_regc;
 }
 
 void load_function_param_types(string &paramstr, const function_value &func)

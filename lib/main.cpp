@@ -567,21 +567,25 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	}
 	Failure *fail;
 	const QbrtFunction *qbrt(mod->fetch_function(fname));
-	qbrt_value &dst(*ctx.dstvalue(i.reg));
+	qbrt_value *dst(ctx.dstvalue(i.reg));
+	if (!dst) {
+		cerr << "invalid register: " << i.reg << endl;
+		return;
+	}
 	c_function cf = NULL;
 	if (qbrt) {
-		qbrt_value::f(dst, new function_value(qbrt));
+		qbrt_value::f(*dst, new function_value(qbrt));
 	} else {
 		const CFunction *cf = fetch_c_function(*mod, fname);
 		if (cf) {
-			qbrt_value::f(dst, new function_value(cf));
+			qbrt_value::f(*dst, new function_value(cf));
 		} else {
 			cerr << "could not find function: " << modname
 				<<"/"<< fname << endl;
 			fail = FAIL_NOFUNCTION(ctx.function_name(), ctx.pc());
 			fail->debug << "could not find function: " << modname
 				<<'.'<< fname;
-			qbrt_value::fail(dst, fail);
+			qbrt_value::fail(*dst, fail);
 			ctx.worker().current->cfstate = CFS_FAILED;
 		}
 	}
