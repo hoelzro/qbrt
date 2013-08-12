@@ -202,6 +202,8 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 	switch (a.type->id) {
 		case VT_INT:
 			return type_compare< int64_t >(a.data.i, b.data.i);
+		case VT_BOOL:
+			return type_compare< bool >(a.data.b, b.data.b);
 		case VT_BSTRING:
 			return type_compare< const string & >(
 					*a.data.str, *b.data.str);
@@ -210,7 +212,7 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 					*a.data.cons, *b.data.cons);
 		default:
 			cerr << "Type does not support comparison: "
-				<< a.type->id << endl;
+				<< (int) a.type->id << endl;
 			break;
 	}
 	return 0;
