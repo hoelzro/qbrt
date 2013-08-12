@@ -230,6 +230,10 @@ string pretty_reg(uint16_t r)
 		result << "void";
 	} else if (SPECIAL_REG_PID == r) {
 		result << "pid";
+	} else if (CONST_REG_TRUE == r) {
+		result << "true";
+	} else if (CONST_REG_FALSE == r) {
+		result << "false";
 	} else {
 		result << "wtf? " << r;
 	}

@@ -13,10 +13,10 @@ end.
 func __main
 
 lconstruct $0 ./Dog
-lconstruct $0.1 core/True
+lconstruct $0.0 core/True
 lfunc $1 io/print
 
-if $0.1 @NO_DROOL
+if $0.0 @NO_DROOL
 const $1.0 "This dog drools.\n"
 goto @END_DROOL
 

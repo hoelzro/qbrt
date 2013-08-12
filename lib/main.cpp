@@ -1211,6 +1211,8 @@ int main(int argc, const char **argv)
 	}
 	const char *objname = argv[1];
 	init_executioners();
+	init_const_registers();
+
 
 	Application app;
 	Module *mod_core = const_cast< Module * >(load_module(app, "core"));

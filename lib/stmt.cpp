@@ -569,6 +569,17 @@ void lconstruct_stmt::allocate_registers(RegAlloc *r)
 
 void lconstruct_stmt::generate_code(AsmFunc &f)
 {
+	if (modsym->module.value == "core") {
+		if (modsym->symbol.value == "True") {
+			asm_instruction(f, new copy_instruction(*dst
+						, CONST_REG(REG_TRUE)));
+			return;
+		} else if (modsym->symbol.value == "False") {
+			asm_instruction(f, new copy_instruction(*dst
+						, CONST_REG(REG_FALSE)));
+			return;
+		}
+	}
 	asm_instruction(f, new lconstruct_instruction(*dst, *modsym->index));
 }
 
