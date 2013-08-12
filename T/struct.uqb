@@ -16,14 +16,27 @@ lconstruct $0 ./Dog
 lconstruct $0.0 core/True
 lfunc $1 io/print
 
-if $0.0 @NO_DROOL
+if $0.0 @NO_DROOL_THIS
 const $1.0 "This dog drools.\n"
-goto @END_DROOL
+goto @END_DROOL_THIS
 
-@NO_DROOL
+@NO_DROOL_THIS
 const $1.0 "This dog has no drool.\n"
 
-@END_DROOL
+@END_DROOL_THIS
+call \void $1
+
+lconstruct $2 ./Dog
+lconstruct $2.0 core/False
+
+if $2.0 @NO_DROOL_THAT
+const $1.0 "That dog drools.\n"
+goto @END_DROOL_THAT
+
+@NO_DROOL_THAT
+const $1.0 "That dog has no drool.\n"
+
+@END_DROOL_THAT
 call \void $1
 
 end.

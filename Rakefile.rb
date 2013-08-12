@@ -123,6 +123,7 @@ TestFiles = ['hello.uqb',
 	'newproc.uqb',
 	'param_types.uqb',
 	'polymorph.uqb',
+	'struct.uqb',
 ]
 
 def test_uqb(file)
