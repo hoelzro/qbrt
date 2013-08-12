@@ -73,8 +73,8 @@ qbrt_value & get_special_reg(CodeFrame &f, reg_t reg)
 struct OpContext
 {
 	virtual uint8_t regc() const = 0;
-	virtual const qbrt_value & srcvalue(uint16_t) const = 0;
-	virtual qbrt_value & dstvalue(uint16_t) = 0;
+	virtual const qbrt_value * srcvalue(uint16_t) const = 0;
+	virtual qbrt_value * dstvalue(uint16_t) = 0;
 	virtual qbrt_value & refvalue(uint16_t) = 0;
 	virtual const char * function_name() const = 0;
 	virtual int & pc() const = 0;
@@ -98,46 +98,84 @@ public:
 	virtual const char * function_name() const { return func.name(); }
 	virtual int & pc() const { return frame.pc; }
 	virtual uint8_t regc() const { return func.num_values(); }
-	virtual const qbrt_value & srcvalue(uint16_t reg) const
+	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(func.value(primary));
+			if (primary >= regc()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
+			return &follow_ref(func.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
+			if (primary >= regc()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(func.value(primary)).data.reg
-				->value(secondary);
+			qbrt_value_index *idx(func.value(primary).data.reg);
+			if (secondary >= idx->num_values()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
+			return &follow_ref(idx->value(secondary));
 		} else if (SPECIAL_REG_RESULT == reg) {
-			return *func.result;
+			return func.result;
 		} else if (REG_IS_CONST(reg)) {
-			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+			return &CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf src reg? " << reg << endl;
-		return *(qbrt_value *) NULL;
+		frame.cfstate = CFS_FAILED;
+		return NULL;
 	}
 
-	virtual qbrt_value & dstvalue(uint16_t reg)
+	virtual qbrt_value * dstvalue(uint16_t reg)
 	{
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(func.value(primary));
+			if (primary >= regc()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
+			return &follow_ref(func.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
+			if (primary >= regc()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(func.value(primary)).data.reg
-				->value(secondary);
+			qbrt_value_index *idx(func.value(primary).data.reg);
+			if (secondary >= idx->num_values()) {
+				qbrt_value::fail(*func.result
+					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
+			return &follow_ref(idx->value(secondary));
 		} else if (CONST_REG_VOID == reg) {
-			return w.drain;
+			return &w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
-			return *func.result;
+			return func.result;
 		} else if (REG_IS_CONST(reg)) {
-			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+			return &CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf dst reg? " << reg << endl;
-		return *(qbrt_value *) NULL;
+		frame.cfstate = CFS_FAILED;
+		return NULL;
 	}
 
 	virtual qbrt_value & refvalue(uint16_t reg)
@@ -193,48 +231,48 @@ public:
 	virtual const char * function_name() const { return "cfunction"; }
 	virtual int & pc() const { return *(int *) NULL; }
 	virtual uint8_t regc() const { return cfunc.regc; }
-	virtual const qbrt_value & srcvalue(uint16_t reg) const
+	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(cfunc.value(primary));
+			return &follow_ref(cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(cfunc.value(primary)).data.reg
+			return &follow_ref(cfunc.value(primary)).data.reg
 				->value(secondary);
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no src result register for c functions\n";
-			return *(qbrt_value *) NULL;
+			return NULL;
 		} else if (REG_IS_CONST(reg)) {
-			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+			return &CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
-		cerr << "wtf src reg? " << reg << endl;
-		return *(qbrt_value *) NULL;
+		cerr << "wtf src reg in C? " << reg << endl;
+		return NULL;
 	}
 
-	virtual qbrt_value & dstvalue(uint16_t reg)
+	virtual qbrt_value * dstvalue(uint16_t reg)
 	{
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(cfunc.value(primary));
+			return &follow_ref(cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(cfunc.value(primary)).data.reg
+			return &follow_ref(cfunc.value(primary)).data.reg
 				->value(secondary);
 		} else if (CONST_REG_VOID == reg) {
-			return w.drain;
+			return &w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no dst result register for c functions\n";
-			return *(qbrt_value *) NULL;
+			return NULL;
 		} else if (REG_IS_CONST(reg)) {
-			return CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+			return &CONST_REGISTER[REG_EXTRACT_CONST(reg)];
 		}
 		cerr << "wtf dst reg? " << reg << endl;
-		return *(qbrt_value *) NULL;
+		return NULL;
 	}
 
 	virtual qbrt_value & refvalue(uint16_t reg)
@@ -279,9 +317,9 @@ private:
 
 void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 {
-	const qbrt_value &a(ctx.srcvalue(i.a));
-	const qbrt_value &b(ctx.srcvalue(i.b));
-	qbrt_value &result(ctx.dstvalue(i.result));
+	const qbrt_value &a(*ctx.srcvalue(i.a));
+	const qbrt_value &b(*ctx.srcvalue(i.b));
+	qbrt_value &result(*ctx.dstvalue(i.result));
 	switch (i.opcode()) {
 		case OP_IADD:
 			qbrt_value::i(result, a.data.i + b.data.i);
@@ -298,12 +336,12 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 
 void execute_divide(OpContext &ctx, const binaryop_instruction &i)
 {
-	const qbrt_value &b(ctx.srcvalue(i.b));
-	qbrt_value &result(ctx.dstvalue(i.result));
+	const qbrt_value &b(*ctx.srcvalue(i.b));
+	qbrt_value &result(*ctx.dstvalue(i.result));
 	if (b.data.i == 0) {
 		qbrt_value::fail(result, new Failure("divideby0"));
 	} else {
-		const qbrt_value &a(ctx.srcvalue(i.a));
+		const qbrt_value &a(*ctx.srcvalue(i.a));
 		qbrt_value::i(result, a.data.i / b.data.i);
 	}
 	ctx.pc() += binaryop_instruction::SIZE;
@@ -317,7 +355,7 @@ void execute_fork(OpContext &ctx, const fork_instruction &i)
 	child->pc = parent.pc + fork_instruction::SIZE;
 	w.fresh->push_back(child);
 
-	qbrt_value &fork_target(ctx.dstvalue(i.result));
+	qbrt_value &fork_target(*ctx.dstvalue(i.result));
 	qbrt_value::promise(fork_target, new Promise(w.id));
 	ctx.pc() += i.jump();
 }
@@ -325,7 +363,7 @@ void execute_fork(OpContext &ctx, const fork_instruction &i)
 void execute_wait(OpContext &ctx, const wait_instruction &i)
 {
 	Worker &w(ctx.worker());
-	const qbrt_value &subject(ctx.srcvalue(i.reg));
+	const qbrt_value &subject(*ctx.srcvalue(i.reg));
 	if (subject.type->id == VT_PROMISE) {
 		w.current->cfstate = CFS_PEERWAIT;
 		// wait right here, don't change the pc
@@ -345,7 +383,7 @@ void execute_goto(OpContext &ctx, const goto_instruction &i)
  */
 void execute_if(OpContext &ctx, const if_instruction &i)
 {
-	const qbrt_value &op(ctx.srcvalue(i.op));
+	const qbrt_value &op(*ctx.srcvalue(i.op));
 	if (i.opcode() == OP_IF && op.data.b
 			|| i.opcode() == OP_IFNOT && ! op.data.b) {
 		ctx.pc() += if_instruction::SIZE;
@@ -378,8 +416,8 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
  */
 void execute_ifcmp(OpContext &ctx, const ifcmp_instruction &i)
 {
-	const qbrt_value &a(ctx.srcvalue(i.ra));
-	const qbrt_value &b(ctx.srcvalue(i.rb));
+	const qbrt_value &a(*ctx.srcvalue(i.ra));
+	const qbrt_value &b(*ctx.srcvalue(i.rb));
 	bool no_jump(false);
 	switch (i.opcode()) {
 		case OP_IFEQ:
@@ -405,7 +443,7 @@ void execute_ifcmp(OpContext &ctx, const ifcmp_instruction &i)
  */
 void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 {
-	const qbrt_value &op(ctx.srcvalue(i.op));
+	const qbrt_value &op(*ctx.srcvalue(i.op));
 	bool is_failure(op.type->id == TYPE_FAILURE.id);
 	int valtype(op.type->id);
 	if (i.opcode() == OP_IFFAIL && is_failure
@@ -419,21 +457,21 @@ void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
-	qbrt_value &result(ctx.dstvalue(SPECIAL_REG_RESULT));
+	qbrt_value &result(*ctx.dstvalue(SPECIAL_REG_RESULT));
 	qbrt_value::fail(result, new Failure(failtype));
 	ctx.pc() += cfailure_instruction::SIZE;
 }
 
 void execute_consti(OpContext &ctx, const consti_instruction &i)
 {
-	qbrt_value::i(ctx.dstvalue(i.reg), i.value);
+	qbrt_value::i(*ctx.dstvalue(i.reg), i.value);
 	ctx.pc() += consti_instruction::SIZE;
 }
 
 void execute_move(OpContext &ctx, const move_instruction &i)
 {
-	qbrt_value &dst(ctx.dstvalue(i.dst));
-	const qbrt_value &src(ctx.srcvalue(i.src));
+	qbrt_value &dst(*ctx.dstvalue(i.dst));
+	const qbrt_value &src(*ctx.srcvalue(i.src));
 	dst = src;
 	ctx.pc() += move_instruction::SIZE;
 }
@@ -448,30 +486,34 @@ void execute_ref(OpContext &ctx, const ref_instruction &i)
 
 void execute_copy(OpContext &ctx, const copy_instruction &i)
 {
-	qbrt_value &dst(ctx.dstvalue(i.dst));
-	const qbrt_value &src(ctx.srcvalue(i.src));
-	dst = src;
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+	if (!dst) {
+		cerr << "dst register for copy is invalid: " << i.dst << endl;
+		return;
+	}
+	const qbrt_value &src(*ctx.srcvalue(i.src));
+	*dst = src;
 	ctx.pc() += copy_instruction::SIZE;
 }
 
 void execute_consts(OpContext &ctx, const consts_instruction &i)
 {
 	const char *str = fetch_string(ctx.resource(), i.string_id);
-	qbrt_value::str(ctx.dstvalue(i.reg), str);
+	qbrt_value::str(*ctx.dstvalue(i.reg), str);
 	ctx.pc() += consts_instruction::SIZE;
 }
 
 void execute_consthash(OpContext &ctx, const consthash_instruction &i)
 {
 	const char *hash = fetch_string(ctx.resource(), i.hash_id);
-	qbrt_value::hashtag(ctx.dstvalue(i.reg), hash);
+	qbrt_value::hashtag(*ctx.dstvalue(i.reg), hash);
 	ctx.pc() += consthash_instruction::SIZE;
 }
 
 void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 {
 	const char *name = fetch_string(ctx.resource(), i.hashtag);
-	qbrt_value &dst(ctx.dstvalue(i.reg));
+	qbrt_value &dst(*ctx.dstvalue(i.reg));
 	qbrt_value *src = ctx.get_context(name);
 	if (src) {
 		qbrt_value::ref(dst, *src);
@@ -499,7 +541,7 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 		exit(1);
 	}
 	Failure *fail;
-	qbrt_value &dst(ctx.dstvalue(i.reg));
+	qbrt_value &dst(*ctx.dstvalue(i.reg));
 
 	const ConstructResource *construct_r;
 	construct_r = find_construct(*mod, name);
@@ -525,7 +567,7 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	}
 	Failure *fail;
 	const QbrtFunction *qbrt(mod->fetch_function(fname));
-	qbrt_value &dst(ctx.dstvalue(i.reg));
+	qbrt_value &dst(*ctx.dstvalue(i.reg));
 	c_function cf = NULL;
 	if (qbrt) {
 		qbrt_value::f(dst, new function_value(qbrt));
@@ -563,16 +605,16 @@ void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
 
 	const QbrtFunction *qbrt;
 	qbrt = mod->fetch_protocol_function(protoname, fname);
-	qbrt_value &dst(ctx.dstvalue(i.reg));
+	qbrt_value &dst(*ctx.dstvalue(i.reg));
 	qbrt_value::f(dst, new function_value(qbrt));
 	ctx.pc() += lpfunc_instruction::SIZE;
 }
 
 void execute_match(OpContext &ctx, const match_instruction &i)
 {
-	qbrt_value &result(ctx.dstvalue(i.result));
-	qbrt_value &pattern(ctx.dstvalue(i.pattern));
-	qbrt_value &input(ctx.dstvalue(i.input));
+	qbrt_value &result(*ctx.dstvalue(i.result));
+	qbrt_value &pattern(*ctx.dstvalue(i.pattern));
+	qbrt_value &input(*ctx.dstvalue(i.input));
 
 	int comparison(qbrt_compare(pattern, input));
 	bool match(comparison == 0);
@@ -587,8 +629,8 @@ void execute_match(OpContext &ctx, const match_instruction &i)
 void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 {
 	Failure *f;
-	qbrt_value &pid(ctx.dstvalue(i.pid));
-	qbrt_value &func(ctx.dstvalue(i.func));
+	qbrt_value &pid(*ctx.dstvalue(i.pid));
+	qbrt_value &func(*ctx.dstvalue(i.func));
 
 	ctx.pc() += newproc_instruction::SIZE;
 
@@ -611,7 +653,7 @@ void execute_recv(OpContext &ctx, const recv_instruction &i)
 		return;
 	}
 
-	qbrt_value &dst(ctx.dstvalue(i.dst));
+	qbrt_value &dst(*ctx.dstvalue(i.dst));
 	qbrt_value *msg(w.current->proc->recv.pop());
 	dst = *msg;
 	ctx.pc() += recv_instruction::SIZE;
@@ -620,8 +662,8 @@ void execute_recv(OpContext &ctx, const recv_instruction &i)
 void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 {
 	Failure *f;
-	qbrt_value &dst(ctx.dstvalue(i.dst));
-	const qbrt_value &src(ctx.srcvalue(i.src));
+	qbrt_value &dst(*ctx.dstvalue(i.dst));
+	const qbrt_value &src(*ctx.srcvalue(i.src));
 
 	int op_pc(ctx.pc());
 	ctx.pc() += stracc_instruction::SIZE;
@@ -669,7 +711,7 @@ void execute_loadtype(OpContext &ctx, const loadtype_instruction &i)
 	const char *type_name = fetch_string(ctx.resource(), i.type);
 	const Module &mod(*find_module(ctx.worker(), modname));
 	const Type *typ = NULL; // mod.fetch_struct(type_name);
-	qbrt_value &dst(ctx.dstvalue(i.reg));
+	qbrt_value &dst(*ctx.dstvalue(i.reg));
 	qbrt_value::typ(dst, typ);
 	ctx.pc() += loadtype_instruction::SIZE;
 }
@@ -686,8 +728,8 @@ void call(Worker &ctx, qbrt_value &res, qbrt_value &f);
 void execute_call(OpContext &ctx, const call_instruction &i)
 {
 	Worker &w(ctx.worker());
-	qbrt_value &func_reg(ctx.dstvalue(i.func_reg));
-	qbrt_value &output(ctx.dstvalue(i.result_reg));
+	qbrt_value &func_reg(*ctx.dstvalue(i.func_reg));
+	qbrt_value &output(*ctx.dstvalue(i.result_reg));
 	// increment pc so it's in the right place when we get back
 	ctx.pc() += call_instruction::SIZE;
 
@@ -702,7 +744,7 @@ void execute_return(OpContext &ctx, const return_instruction &i)
 
 void fail(OpContext &ctx, Failure *f)
 {
-	qbrt_value &result(ctx.dstvalue(SPECIAL_REG_RESULT));
+	qbrt_value &result(*ctx.dstvalue(SPECIAL_REG_RESULT));
 	qbrt_value::fail(result, f);
 
 	Worker &w(ctx.worker());
@@ -841,7 +883,7 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 	qfunc = dynamic_cast< const QbrtFunction * >(f->func);
 	// check arguments
 	for (uint16_t i(0); i < f->argc; ++i) {
-		const qbrt_value *val(&ctx.srcvalue(PRIMARY_REG(i)));
+		const qbrt_value *val(ctx.srcvalue(PRIMARY_REG(i)));
 		if (!val) {
 			cerr << "wtf null value?\n";
 		}
@@ -890,8 +932,8 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 
 void core_print(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
-	if (! val) {
+	const qbrt_value *val = ctx.srcvalue(PRIMARY_REG(0));
+	if (!val) {
 		cout << "no param for print\n";
 		return;
 	}
@@ -1026,7 +1068,7 @@ ostream & inspect(ostream &out, const qbrt_value &v)
  */
 void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(0);
+	const qbrt_value *val = ctx.srcvalue(0);
 	if (!val) {
 		cerr << "no param for qbrt_type\n";
 		return;
@@ -1075,8 +1117,8 @@ void core_wid(OpContext &ctx, qbrt_value &result)
 
 void core_send(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &pid(ctx.srcvalue(PRIMARY_REG(0)));
-	const qbrt_value &src(ctx.srcvalue(PRIMARY_REG(1)));
+	const qbrt_value &pid(*ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &src(*ctx.srcvalue(PRIMARY_REG(1)));
 
 	// check this worker first, to avoid any locking drama
 	// when they're both on the same worker
@@ -1098,13 +1140,13 @@ void core_send(OpContext &ctx, qbrt_value &out)
 /** Convert a string value to a string, straight copy */
 void core_str_from_str(OpContext &ctx, qbrt_value &result)
 {
-	qbrt_value::copy(result, ctx.srcvalue(PRIMARY_REG(0)));
+	qbrt_value::copy(result, *ctx.srcvalue(PRIMARY_REG(0)));
 }
 
 /** Convert an integer value to a string */
 void core_str_from_int(OpContext &ctx, qbrt_value &result)
 {
-	const qbrt_value &src(ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &src(*ctx.srcvalue(PRIMARY_REG(0)));
 	ostringstream out;
 	out << src.data.i;
 	qbrt_value::str(result, out.str());
@@ -1112,8 +1154,8 @@ void core_str_from_int(OpContext &ctx, qbrt_value &result)
 
 void list_empty(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value *val = &ctx.srcvalue(PRIMARY_REG(0));
-	if (! val) {
+	const qbrt_value *val = ctx.srcvalue(PRIMARY_REG(0));
+	if (!val) {
 		cerr << "no param for list empty\n";
 		return;
 	}
@@ -1130,7 +1172,7 @@ void list_empty(OpContext &ctx, qbrt_value &out)
 
 void list_head(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &val = ctx.srcvalue(PRIMARY_REG(0));
+	const qbrt_value &val = *ctx.srcvalue(PRIMARY_REG(0));
 	switch (val.type->id) {
 		case VT_LIST:
 			out = head(val.data.list);
@@ -1144,7 +1186,7 @@ void list_head(OpContext &ctx, qbrt_value &out)
 
 void list_pop(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &val(ctx.dstvalue(PRIMARY_REG(0)));
+	qbrt_value &val(*ctx.dstvalue(PRIMARY_REG(0)));
 	switch (val.type->id) {
 		case VT_LIST:
 			qbrt_value::list(out, pop(val.data.list));
@@ -1158,8 +1200,8 @@ void list_pop(OpContext &ctx, qbrt_value &out)
 
 void core_open(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &filename(ctx.srcvalue(PRIMARY_REG(0)));
-	const qbrt_value &mode(ctx.srcvalue(PRIMARY_REG(1)));
+	const qbrt_value &filename(*ctx.srcvalue(PRIMARY_REG(0)));
+	const qbrt_value &mode(*ctx.srcvalue(PRIMARY_REG(1)));
 	// these type checks should be done automatically...
 	// once types are working.
 	if (filename.type->id != VT_BSTRING) {
@@ -1179,7 +1221,7 @@ void core_open(OpContext &ctx, qbrt_value &out)
 
 void core_getline(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.dstvalue(PRIMARY_REG(0)));
+	qbrt_value &stream(*ctx.dstvalue(PRIMARY_REG(0)));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to getline is not a stream\n";
 		exit(2);
@@ -1189,8 +1231,8 @@ void core_getline(OpContext &ctx, qbrt_value &out)
 
 void core_write(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &stream(ctx.dstvalue(PRIMARY_REG(0)));
-	const qbrt_value &text(ctx.srcvalue(PRIMARY_REG(1)));
+	qbrt_value &stream(*ctx.dstvalue(PRIMARY_REG(0)));
+	const qbrt_value &text(*ctx.srcvalue(PRIMARY_REG(1)));
 	if (stream.type->id != VT_STREAM) {
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
