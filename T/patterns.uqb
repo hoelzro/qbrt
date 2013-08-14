@@ -10,7 +10,7 @@ match $2 $0 %0 @CHECK2
   call \void $1
   const $1.0 "\n"
   call \void $1
-  goto @ENDMATCH
+  return
 @CHECK2
 const $0 2
 match $2 $0 %0 @CHECK3
@@ -20,11 +20,10 @@ match $2 $0 %0 @CHECK3
   call \void $1
   const $1.0 "\n"
   call \void $1
-  goto @ENDMATCH
+  return
 @CHECK3
 const $1.0 "the number does not match\n"
 call \void $1
-@ENDMATCH
 end.
 
 

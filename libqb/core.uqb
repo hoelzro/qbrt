@@ -6,10 +6,19 @@ datatype Bool
 end.
 
 
-protocol Stringy T
+datatype Maybe *T
+  construct Just
+    dparam value *T
+  end.
+  construct Nothing
+  end.
+end.
+
+
+protocol Stringy *T
 
 abstract str
-dparam val ./T
+dparam val *T
 end.
 
 end.

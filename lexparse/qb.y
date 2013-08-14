@@ -30,7 +30,7 @@
 %type construct_list {Stmt::List *}
 %type construct_block {construct_stmt *}
 %type construct_stmt {construct_stmt *}
-%type typename_list {list< AsmString * > *}
+%type typevar_list {list< AsmString * > *}
 
 
 %include {
@@ -130,7 +130,7 @@ func_list(A) ::= . {
 	A = NULL;
 }
 
-protocol_stmt(A) ::= PROTOCOL TYPENAME(B) typename_list(C). {
+protocol_stmt(A) ::= PROTOCOL TYPENAME(B) typevar_list(C). {
 	A = new protocol_stmt(B->text, C);
 }
 protocol_block(A) ::= protocol_stmt(B) protofunc_list(C) END. {
@@ -184,6 +184,9 @@ datatype_block(A) ::= datatype_stmt(B) construct_list(C) END. {
 	A->constructs = C;
 }
 datatype_stmt(A) ::= DATATYPE TYPENAME(B). {
+	A = new datatype_stmt(B->text);
+}
+datatype_stmt(A) ::= DATATYPE TYPENAME(B) typevar_list. {
 	A = new datatype_stmt(B->text);
 }
 construct_list(A) ::= construct_block(B). {
@@ -307,15 +310,18 @@ stmt(A) ::= RETURN. {
 	A = new return_stmt();
 }
 
-typename_list(A) ::= typename_list(B) TYPENAME(C). {
+typevar_list(A) ::= typevar_list(B) TYPEVAR(C). {
 	A = B;
 	A->push_back(new AsmString(C->text));
 }
-typename_list(A) ::= TYPENAME(B). {
+typevar_list(A) ::= TYPEVAR(B). {
 	A = new list< AsmString * >();
 	A->push_back(new AsmString(B->text));
 }
 
+modtype(A) ::= TYPEVAR(B). {
+	A = new AsmModSym(g_current_module, B->text);
+}
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
 	A = new AsmModSym(B->module_name(), C->text);
 }

@@ -29,7 +29,8 @@ HASHTAG	#[a-zA-Z0-9_]+
 STRC	(\\.|[^\"])
 ID	[a-z_][a-z_0-9]*
 MODNAME	({ID}\/)*
-TYPENAME	_?[A-Z][a-zA-Z0-9_]*
+TYPENAME	[A-Z][a-zA-Z0-9_]*
+TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 
 %x ARGS
 %x STR
@@ -134,6 +135,9 @@ TYPENAME	_?[A-Z][a-zA-Z0-9_]*
 	}
 <ARGS>{TYPENAME}	{
 		lex_token(TOKEN_TYPENAME);
+	}
+<ARGS>{TYPEVAR}	{
+		lex_token(TOKEN_TYPEVAR);
 	}
 
 
