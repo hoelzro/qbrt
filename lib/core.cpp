@@ -27,6 +27,7 @@ static void init_primitive_modules()
 	PRIMITIVE_MODULE[VT_FUNCTION] = "core";
 	PRIMITIVE_MODULE[VT_BSTRING] = "core";
 	PRIMITIVE_MODULE[VT_HASHTAG] = "core";
+	PRIMITIVE_MODULE[VT_PATTERNVAR] = "core";
 	PRIMITIVE_MODULE[VT_REF] = "core";
 	PRIMITIVE_MODULE[VT_TUPLE] = "Tuple";
 	PRIMITIVE_MODULE[VT_LIST] = "list";
@@ -47,6 +48,7 @@ static void init_primitive_names()
 	PRIMITIVE_NAME[VT_FUNCTION] = "Function";
 	PRIMITIVE_NAME[VT_BSTRING] = "String";
 	PRIMITIVE_NAME[VT_HASHTAG] = "HashTag";
+	PRIMITIVE_NAME[VT_PATTERNVAR] = "PatternVar";
 	PRIMITIVE_NAME[VT_REF] = "Ref";
 	PRIMITIVE_NAME[VT_TUPLE] = "Tuple";
 	PRIMITIVE_NAME[VT_LIST] = "List";
@@ -113,6 +115,7 @@ Type TYPE_LIST(VT_LIST);
 Type TYPE_MAP(VT_MAP);
 Type TYPE_VECTOR(VT_VECTOR);
 Type TYPE_STREAM(VT_STREAM);
+Type TYPE_PATTERNVAR(VT_PATTERNVAR);
 Type TYPE_PROMISE(VT_PROMISE);
 Type TYPE_FAILURE(VT_FAILURE);
 
@@ -194,6 +197,11 @@ int type_compare(T a, T b)
 
 int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 {
+	if (a.type->id == VT_PATTERNVAR) {
+		// if first item is a patternvar, then this is a match
+		return 0;
+	}
+
 	int comparison(Type::compare(*a.type, *b.type));
 	if (comparison) {
 		return comparison;

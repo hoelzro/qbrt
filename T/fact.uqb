@@ -23,7 +23,7 @@ end.
 func __main
 
 lfunc $0 ./factorial
-const $0.0 5
+const $0.0 6
 
 lfunc $1 io/print
 call $1.0 $0

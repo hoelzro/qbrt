@@ -47,6 +47,7 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 #define VT_HASHTAG	0x0f
 #define VT_PROMISE	0x10
 #define VT_SET		0x11
+#define VT_PATTERNVAR	0x12
 #define VT_FAILURE	0xff
 
 extern Type TYPE_VOID;
@@ -64,6 +65,7 @@ extern Type TYPE_VECTOR;
 extern Type TYPE_STREAM;
 extern Type TYPE_KIND;
 extern Type TYPE_PROMISE;
+extern Type TYPE_PATTERNVAR;
 extern Type TYPE_FAILURE;
 
 struct qbrt_value
@@ -161,6 +163,11 @@ struct qbrt_value
 	{
 		v.type = t;
 		v.data.cons = cons;
+	}
+	static void patternvar(qbrt_value &v)
+	{
+		v.type = &TYPE_PATTERNVAR;
+		v.data.reg = NULL;
 	}
 	static void promise(qbrt_value &v, Promise *p)
 	{

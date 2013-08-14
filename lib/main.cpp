@@ -649,6 +649,19 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 	qbrt_value::i(pid, proc->pid);
 }
 
+void execute_patternvar(OpContext &ctx, const patternvar_instruction &i)
+{
+	Failure *f;
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+	if (!dst) {
+		cerr << "invalid register for patternvar: " << i.dst << endl;
+		return;
+	}
+
+	qbrt_value::patternvar(*dst);
+	ctx.pc() += patternvar_instruction::SIZE;
+}
+
 void execute_recv(OpContext &ctx, const recv_instruction &i)
 {
 	Worker &w(ctx.worker());
@@ -779,6 +792,7 @@ void init_executioners()
 	x[OP_LPFUNC] = (executioner) execute_lpfunc;
 	x[OP_MATCH] = (executioner) execute_match;
 	x[OP_NEWPROC] = (executioner) execute_newproc;
+	x[OP_PATTERNVAR] = (executioner) execute_patternvar;
 	x[OP_RECV] = (executioner) execute_recv;
 	x[OP_STRACC] = (executioner) execute_stracc;
 	x[OP_LOADOBJ] = (executioner) execute_loadobj;
