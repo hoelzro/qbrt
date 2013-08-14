@@ -105,6 +105,7 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 "match"		{ BEGIN(ARGS); lex_token(TOKEN_MATCH); }
 "module"	{ BEGIN(ARGS); lex_token(TOKEN_MODULE); }
 "newproc"	{ BEGIN(ARGS); lex_token(TOKEN_NEWPROC); }
+"patternvar"	{ BEGIN(ARGS); lex_token(TOKEN_PATTERNVAR); }
 "protocol"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOCOL); }
 "abstract"	{ BEGIN(ARGS); lex_token(TOKEN_ABSTRACT); }
 "recv"		{ BEGIN(ARGS); lex_token(TOKEN_RECV); }

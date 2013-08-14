@@ -1,0 +1,35 @@
+
+func factorial
+dparam i core/Int
+
+const $0 0
+match $1 $0 %0 @NOT_ZERO
+const \result 1
+return
+
+@NOT_ZERO
+patternvar $0
+match $1 $0 %0 @NO_MATCH
+const $3 1
+lfunc $2 ./factorial
+isub $2.0 $1 $3
+call $4 $2
+imult \result $4 $1
+
+@NO_MATCH
+end.
+
+
+func __main
+
+lfunc $0 ./factorial
+const $0.0 5
+
+lfunc $1 io/print
+call $1.0 $0
+call \void $1
+
+const $1.0 "\n"
+call \void $1
+
+end.

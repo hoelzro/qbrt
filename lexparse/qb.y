@@ -293,6 +293,9 @@ stmt(A) ::= MATCH reg(B) reg(C) reg(D) LABEL(E). {
 stmt(A) ::= NEWPROC reg(B) reg(C). {
 	A = new newproc_stmt(B, C);
 }
+stmt(A) ::= PATTERNVAR reg(B). {
+	A = new patternvar_stmt(B);
+}
 stmt(A) ::= RECV reg(B) reg(C). {
 	A = new recv_stmt(B, C);
 }

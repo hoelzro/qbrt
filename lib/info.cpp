@@ -118,6 +118,12 @@ uint8_t print_newproc_instruction(const newproc_instruction &i)
 	return newproc_instruction::SIZE;
 }
 
+uint8_t print_patternvar_instruction(const patternvar_instruction &i)
+{
+	cout << "patternvar " << pretty_reg(i.dst) << endl;
+	return patternvar_instruction::SIZE;
+}
+
 uint8_t print_recv_instruction(const recv_instruction &i)
 {
 	cout << "recv " << pretty_reg(i.dst)
@@ -300,6 +306,8 @@ void set_printers()
 	PRINTER[OP_IFFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_IFNOTFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;
+	PRINTER[OP_PATTERNVAR] =
+		(instruction_printer) print_patternvar_instruction;
 	PRINTER[OP_RECV] = (instruction_printer) print_recv_instruction;
 	PRINTER[OP_STRACC] = (instruction_printer) print_stracc_instruction;
 	PRINTER[OP_WAIT] = (instruction_printer) print_wait_instruction;

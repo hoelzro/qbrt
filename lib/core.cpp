@@ -276,6 +276,7 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_CLIST] = clist_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONS] = cons_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_NEWPROC] = newproc_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_PATTERNVAR] = patternvar_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RECV] = recv_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_STRACC] = stracc_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_WAIT] = wait_instruction::SIZE;

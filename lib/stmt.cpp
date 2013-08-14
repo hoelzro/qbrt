@@ -667,6 +667,21 @@ void newproc_stmt::pretty(std::ostream &out) const
 	out << "newproc " << *pid <<' '<< *func;
 }
 
+void patternvar_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*dst);
+}
+
+void patternvar_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new patternvar_instruction(*dst));
+}
+
+void patternvar_stmt::pretty(ostream &out) const
+{
+	out << "patternvar " << *dst;
+}
+
 void recv_stmt::allocate_registers(RegAlloc *r)
 {
 	r->alloc(*dst);

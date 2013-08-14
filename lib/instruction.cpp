@@ -38,6 +38,7 @@ DEFINE_IWRITER(loadobj);
 DEFINE_IWRITER(lpfunc);
 DEFINE_IWRITER(match);
 DEFINE_IWRITER(newproc);
+DEFINE_IWRITER(patternvar);
 DEFINE_IWRITER(recv);
 DEFINE_IWRITER(stracc);
 DEFINE_IWRITER(move);
@@ -79,6 +80,8 @@ void init_writers()
 	WRITER[OP_LPFUNC] = (instruction_writer)iwriter<lpfunc_instruction>;
 	WRITER[OP_MATCH] = (instruction_writer)iwriter<match_instruction>;
 	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
+	WRITER[OP_PATTERNVAR] =
+		(instruction_writer)iwriter<patternvar_instruction>;
 	WRITER[OP_RECV] = (instruction_writer)iwriter<recv_instruction>;
 	WRITER[OP_STRACC] = (instruction_writer)iwriter<stracc_instruction>;
 	WRITER[OP_MOVE] = (instruction_writer) iwriter<move_instruction>;

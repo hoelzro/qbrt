@@ -571,6 +571,20 @@ struct newproc_stmt
 	void generate_code(AsmFunc &);
 	void pretty(std::ostream &) const;
 };
+
+/** Set a register to match a pattern */
+struct patternvar_stmt
+: public Stmt
+{
+	patternvar_stmt(AsmReg *dst)
+	: dst(dst)
+	{}
+	AsmReg *dst;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
  
 /** Create a new process
  *
