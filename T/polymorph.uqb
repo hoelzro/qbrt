@@ -1,13 +1,13 @@
 
-protocol ProtoShow _ProtoShow_T
+protocol ProtoShow *T
 
 abstract abstrakt
-dparam a ./_ProtoShow_T
+dparam a *T
 dparam b core/Int
 end.
 
 func fshow
-dparam val ./_ProtoShow_T
+dparam val *T
 lfunc $0 io/print
 const $0.0 "execute default ProtoShow.fshow\n"
 call \void $0

@@ -1,9 +1,9 @@
 
-protocol Multi A B
+protocol Multi *A *B
 
 abstract dispatch
-dparam a ./A
-dparam b ./B
+dparam a *A
+dparam b *B
 end.
 
 end.

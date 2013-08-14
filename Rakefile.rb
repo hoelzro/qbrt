@@ -118,6 +118,7 @@ end
 TestFiles = ['hello.uqb',
 	'arithmetic.uqb',
 	'bool.uqb',
+	'fact.uqb',
 	'fork_hello.uqb',
 	'multimethod.uqb',
 	'newproc.uqb',
