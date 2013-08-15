@@ -105,6 +105,31 @@ struct AsmModSym
 };
 
 
+struct AsmTypeSpec
+: public AsmResource
+{
+	AsmModSym *name;
+	AsmTypeSpecList *args;
+
+	AsmTypeSpec(AsmModSym *name)
+	: AsmResource(RESOURCE_TYPESPEC)
+	, name(name)
+	, args(NULL)
+	{}
+
+	bool empty() const { return !args || args->empty(); }
+	uint32_t write(std::ostream &o) const;
+	std::ostream & serialize(std::ostream &o) const;
+	std::ostream & pretty(std::ostream &o) const;
+
+	friend inline std::ostream & operator << (
+			std::ostream &o, const AsmTypeSpec &t)
+	{
+		return t.pretty(o);
+	}
+};
+
+
 struct AsmFunc;
 
 struct AsmProtocol
@@ -202,6 +227,7 @@ struct AsmCmp {
 bool collect_resource(ResourceSet &, AsmResource &);
 bool collect_string(ResourceSet &, AsmString &);
 bool collect_modsym(ResourceSet &, AsmModSym &);
+bool collect_typespec(ResourceSet &, AsmTypeSpec &);
 void collect_resources(ResourceSet &, Stmt::List &);
 
 
@@ -227,13 +253,13 @@ struct jump_data
 
 struct AsmParam
 {
-	AsmParam(const AsmString &name, const AsmModSym &typ)
+	AsmParam(const AsmString &name, const AsmTypeSpec &typ)
 	: name(name)
 	, type(typ)
 	{}
 
 	const AsmString &name;
-	const AsmModSym &type;
+	const AsmTypeSpec &type;
 };
 
 struct AsmFunc

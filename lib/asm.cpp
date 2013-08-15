@@ -162,6 +162,33 @@ int AsmCmp< AsmPolymorph >::cmp(const AsmPolymorph &a, const AsmPolymorph &b)
 }
 
 template <>
+int AsmCmp< AsmTypeSpec >::cmp(const AsmTypeSpec &a, const AsmTypeSpec &b)
+{
+	int comparison(AsmCmp< AsmModSym >::cmp(*a.name, *b.name));
+	if (comparison) {
+		return comparison;
+	}
+
+	uint16_t argca(a.args->size());
+	uint16_t argcb(b.args->size());
+	if (argca < argcb) {
+		return -1;
+	}
+	if (argca > argcb) {
+		return 1;
+	}
+	AsmTypeSpecList::const_iterator ita(a.args->begin());
+	AsmTypeSpecList::const_iterator itb(b.args->begin());
+	while (ita!=a.args->end() && itb!=b.args->end()) {
+		comparison = AsmCmp< AsmTypeSpec >::cmp(**ita, **itb);
+		if (comparison) {
+			return comparison;
+		}
+	}
+	return 0;
+}
+
+template <>
 int AsmCmp< AsmConstruct >::cmp(const AsmConstruct &a, const AsmConstruct &b)
 {
 	return AsmCmp< AsmString >::cmp(a.name, b.name);
@@ -265,6 +292,8 @@ int AsmCmp< AsmResource >::cmp(const AsmResource &a, const AsmResource &b)
 			return compare_asm< AsmProtocol >(a, b);
 		case RESOURCE_POLYMORPH:
 			return compare_asm< AsmPolymorph >(a, b);
+		case RESOURCE_TYPESPEC:
+			return compare_asm< AsmTypeSpec >(a, b);
 	}
 	cerr << "what type is this? not supported man.\n";
 	return 0;
@@ -436,6 +465,18 @@ bool collect_modsym(ResourceSet &rs, AsmModSym &modsym)
 	return collect_resource(rs, modsym);
 }
 
+bool collect_typespec(ResourceSet &rs, AsmTypeSpec &type)
+{
+	collect_modsym(rs, *type.name);
+	if (type.args && !type.args->empty()) {
+		AsmTypeSpecList::iterator it(type.args->begin());
+		for (; it!=type.args->end(); ++it) {
+			collect_typespec(rs, **it);
+		}
+	}
+	return collect_resource(rs, type);
+}
+
 
 int16_t count_jump_bytes(codeblock::const_iterator &it, int16_t jump_count
 		, int16_t jump_bytes)
@@ -555,6 +596,50 @@ void write_resource_header(ostream &out, const ResourceTableHeader &h)
 	uint16_t count_plus_1 = h.resource_count + 1;
 	out.write((char *) &h.data_size, 4);
 	out.write((char *) &count_plus_1, 2);
+}
+
+
+ostream & AsmTypeSpec::serialize(ostream &out) const
+{
+	out << *name;
+	if (this->empty()) {
+		return out;
+	}
+	out << '(';
+	AsmTypeSpecList::const_iterator it(args->begin());
+	bool first(true);
+	for (; it!=args->end(); ++it) {
+		if (!first) {
+			out << ',';
+		} else {
+			first = false;
+		}
+		(*it)->serialize(out);
+	}
+	out << ')';
+	return out;
+}
+
+ostream & AsmTypeSpec::pretty(ostream &out) const
+{
+	out << "typespec:";
+	return this->serialize(out);
+}
+
+uint32_t AsmTypeSpec::write(ostream &out) const
+{
+	out.write((const char *) name->index, 2);
+	uint32_t bytes(2);
+	if (this->empty()) {
+		return bytes;
+	}
+
+	AsmTypeSpecList::const_iterator it(args->begin());
+	for (; it!=args->end(); ++it) {
+		out.write((const char *) (*it)->index, 2);
+		bytes += 2;
+	}
+	return bytes;
 }
 
 

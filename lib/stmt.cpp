@@ -306,7 +306,7 @@ void datatype_stmt::pretty(ostream &out) const
 void dparam_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
-	collect_modsym(rs, *type);
+	collect_typespec(rs, *type);
 }
 
 void dparam_stmt::pretty(std::ostream &out) const
@@ -324,14 +324,14 @@ void dparam_stmt::collect(AsmParamList &apl, string &param_types
 		return;
 	}
 
+	ostringstream out;
 	dparam_stmt::List::const_iterator it(stmts->begin());
 	for (; it!=stmts->end(); ++it) {
 		apl.push_back(new AsmParam((*it)->name, *(*it)->type));
-		param_types += (*it)->type->module.value;
-		param_types += '/';
-		param_types += (*it)->type->symbol.value;
-		param_types += ';';
+		(*it)->type->serialize(out);
+		out << ';';
 	}
+	param_types = out.str();
 }
 
 void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)

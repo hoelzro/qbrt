@@ -31,6 +31,8 @@
 %type construct_block {construct_stmt *}
 %type construct_stmt {construct_stmt *}
 %type typevar_list {list< AsmString * > *}
+%type typespec {AsmTypeSpec *}
+%type typespec_list {AsmTypeSpecList *}
 
 
 %include {
@@ -114,7 +116,7 @@ dparam_list(A) ::= dparam_list(B) dparam_stmt(C). {
 dparam_list(A) ::= . {
 	A = NULL;
 }
-dparam_stmt(A) ::= DPARAM ID(B) modtype(C). {
+dparam_stmt(A) ::= DPARAM ID(B) typespec(C). {
 	A = new dparam_stmt(B->strval(), C);
 }
 
@@ -315,15 +317,31 @@ stmt(A) ::= RETURN. {
 
 typevar_list(A) ::= typevar_list(B) TYPEVAR(C). {
 	A = B;
-	A->push_back(new AsmString(C->text));
+	A->push_back(new AsmString(C->label()));
 }
 typevar_list(A) ::= TYPEVAR(B). {
 	A = new list< AsmString * >();
-	A->push_back(new AsmString(B->text));
+	A->push_back(new AsmString(B->label()));
+}
+typespec_list(A) ::= typespec_list(B) COMMA typespec(C). {
+	A = B;
+	A->push_back(C);
+}
+typespec_list(A) ::= typespec(B). {
+	A = new AsmTypeSpecList();
+	A->push_back(B);
+}
+
+typespec(A) ::= modtype(B). {
+	A = new AsmTypeSpec(B);
+}
+typespec(A) ::= modtype(B) LPAREN typespec_list(C) RPAREN. {
+	A = new AsmTypeSpec(B);
+	A->args = C;
 }
 
 modtype(A) ::= TYPEVAR(B). {
-	A = new AsmModSym(g_current_module, B->text);
+	A = new AsmModSym("*", B->label());
 }
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
 	A = new AsmModSym(B->module_name(), C->text);

@@ -1,0 +1,42 @@
+
+
+func maybe_check
+dparam val core/Maybe(core/Int)
+
+lconstruct $0 core/Nothing
+match $1 $0 %0 @IS_SOMETHING
+  const \result -1
+  return
+
+@IS_SOMETHING
+lconstruct $0 core/Just
+patternvar $0.0
+match $1 $0 %0 @NO_MATCH
+  copy \result $0.0
+  return
+
+@NO_MATCH
+
+end.
+
+
+func __main
+
+lfunc $0 ./maybe_check
+lconstruct $1 core/Just
+const $1 5
+copy $1 $0.0
+
+lfunc $2 core/str
+call $2.0 $0
+call $3 $2
+
+lfunc $4 io/print
+const $4.0 "the answer is: "
+stracc $4.0 $3
+const $5 "\n"
+
+stracc $4.0 $5
+call \void $4
+
+end.

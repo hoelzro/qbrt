@@ -142,6 +142,9 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 	}
 
 
+<ARGS>"("	{ lex_token(TOKEN_LPAREN); }
+<ARGS>","	{ lex_token(TOKEN_COMMA); }
+<ARGS>")"	{ lex_token(TOKEN_RPAREN); }
 <ARGS>[ \t]	{
 	/* eat whitespace */
 	++Token::s_column;

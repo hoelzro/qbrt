@@ -18,9 +18,11 @@ class AsmProtocol;
 class AsmReg;
 class AsmResource;
 class AsmString;
+class AsmTypeSpec;
 class RegAlloc;
 typedef std::list< AsmModSym * > AsmModSymList;
 typedef std::list< AsmParam * > AsmParamList;
+typedef std::list< AsmTypeSpec * > AsmTypeSpecList;
 
 
 struct AsmResource
@@ -112,12 +114,12 @@ struct Stmt
 struct dparam_stmt
 : public Stmt
 {
-	dparam_stmt(const std::string &name, AsmModSym *type)
+	dparam_stmt(const std::string &name, AsmTypeSpec *type)
 	: name(name)
 	, type(type)
 	{}
 	AsmString name;
-	AsmModSym *type;
+	AsmTypeSpec *type;
 
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
