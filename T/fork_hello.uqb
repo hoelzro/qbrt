@@ -1,4 +1,4 @@
-func ask_name
+func ask_name core/String
 dparam in io/Stream
 dparam out io/Stream
 
@@ -12,7 +12,7 @@ call \result $1
 end.
 
 
-func __main
+func __main core/Void
 fork $2
   lfunc $1 ./ask_name
   lcontext $1.0 #stdin

@@ -1,6 +1,6 @@
 
 
-func maybe_check
+func maybe_check core/Int
 dparam val core/Maybe(core/Int)
 
 lconstruct $0 core/Nothing
@@ -20,7 +20,7 @@ match $1 $0 %0 @NO_MATCH
 end.
 
 
-func __main
+func __main core/Void
 
 lfunc $0 ./maybe_check
 lconstruct $1 core/Just

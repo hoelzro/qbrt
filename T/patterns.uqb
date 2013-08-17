@@ -1,4 +1,4 @@
-func numbers
+func numbers core/Void
 dparam val core/Int
 
 lfunc $1 io/print
@@ -27,7 +27,7 @@ call \void $1
 end.
 
 
-func __main
+func __main core/Void
 lfunc $0 ./numbers
 const $0.0 2
 call \void $0

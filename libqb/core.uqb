@@ -17,7 +17,7 @@ end.
 
 protocol Stringy *T
 
-abstract str
+abstract str core/String
 dparam val *T
 end.
 
@@ -27,7 +27,7 @@ end.
 bind ./Stringy
 bindtype core/Bool
 
-func str
+func str core/String
 dparam val ./Bool
 
 lconstruct $0 ./True
@@ -44,7 +44,7 @@ end.
 bind ./Stringy
 bindtype core/Void
 
-func str
+func str core/String
 dparam val ./Void
 const \result "void"
 end.

@@ -1,14 +1,14 @@
 
-protocol Printable T
+protocol Printable *T
 
-abstract print
-dparam val ./T
+abstract print core/Void
+dparam val *T
 end.
 
 end.
 
 
-func __main
+func __main core/Void
 
 lfunc $0 ./print
 const $0.0 "hello world "

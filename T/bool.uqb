@@ -1,5 +1,5 @@
 
-func __main
+func __main core/Void
 
 lfunc $0 io/print
 lfunc $1 core/str

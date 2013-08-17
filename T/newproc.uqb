@@ -1,4 +1,4 @@
-func ask_name
+func ask_name core/Void
 dparam in io/Stream
 dparam out io/Stream
 dparam pid core/Int
@@ -25,7 +25,7 @@ call \void $2
 end.
 
 
-func __main
+func __main core/Void
 lfunc $1 ./ask_name
 lcontext $1.0 #stdin
 lcontext $1.1 #stdout

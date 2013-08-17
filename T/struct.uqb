@@ -10,7 +10,7 @@ datatype Animal
 end.
 
 
-func __main
+func __main core/Void
 
 lconstruct $0 ./Dog
 lconstruct $0.0 core/True

@@ -1,4 +1,4 @@
-func print_wid
+func print_wid core/Void
 lfunc $1 io/print
 const $1.0 "worker: "
 call \void $1
@@ -19,7 +19,7 @@ call \void $1
 end.
 
 
-func __main
+func __main core/Void
 lfunc $1 io/print
 const $1.0 "main:\n"
 call \void $1

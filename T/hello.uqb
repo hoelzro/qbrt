@@ -1,4 +1,4 @@
-func __main
+func __main core/Void
 lfunc $1 io/print
 const $1.0 "hello world\n"
 call \void $1

@@ -1,12 +1,12 @@
 
 protocol ProtoShow *T
 
-abstract abstrakt
-dparam a *T
-dparam b core/Int
+abstract abstrakt core/Void
+dparam psa *T
+dparam psb core/Int
 end.
 
-func fshow
+func fshow core/Void
 dparam val *T
 lfunc $0 io/print
 const $0.0 "execute default ProtoShow.fshow\n"
@@ -19,8 +19,8 @@ end.
 bind ./ProtoShow
 bindtype core/String
 
-func fshow
-dparam val core/String
+func fshow core/Void
+dparam sval core/String
 lfunc $0 io/print
 const $0.0 "execute String version of ProtoShow.fshow\n"
 call \void $0
@@ -31,8 +31,8 @@ end.
 bind ./ProtoShow
 bindtype core/Int
 
-func fshow
-dparam val core/Int
+func fshow core/Void
+dparam ival core/Int
 lfunc $0 io/print
 const $0.0 "execute Int version of ProtoShow.fshow\n"
 call \void $0
@@ -41,7 +41,7 @@ end.
 end.
 
 
-func __main
+func __main core/Void
 dparam argc core/Int
 lfunc $2 ./fshow
 const $2.0 18

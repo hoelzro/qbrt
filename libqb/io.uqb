@@ -1,5 +1,5 @@
 
-func print
+func print core/Void
 
 lfunc $0 core/str
 ref $0.0 %0
@@ -11,15 +11,15 @@ call \void $1
 end.
 
 
-protocol ProtoStream T
+protocol ProtoStream *T
 
-abstract write
-dparam out ./T
+abstract write core/Void
+dparam out *T
 dparam text core/String
 end.
 
-abstract readline
-dparam in ./T
+abstract readline core/String
+dparam in *T
 end.
 
 end.
