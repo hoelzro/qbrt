@@ -592,28 +592,6 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	ctx.pc() += lfunc_instruction::SIZE;
 }
 
-void execute_lpfunc(OpContext &ctx, const lpfunc_instruction &i)
-{
-	const ModSym &modsym(fetch_modsym(ctx.resource(), i.modsym));
-	const char *modname =
-		fetch_string(ctx.resource(), modsym.mod_name);
-	const char *protoname =
-		fetch_string(ctx.resource(), modsym.sym_name);
-	const char *fname = fetch_string(ctx.resource(), i.funcname);
-	const Module *mod = NULL;
-	if (modname && *modname) {
-		mod = find_module(ctx.worker(), modname);
-	} else {
-		mod = ctx.worker().current->function_call().mod;
-	}
-
-	const QbrtFunction *qbrt;
-	qbrt = mod->fetch_protocol_function(protoname, fname);
-	qbrt_value &dst(*ctx.dstvalue(i.reg));
-	qbrt_value::f(dst, new function_value(qbrt));
-	ctx.pc() += lpfunc_instruction::SIZE;
-}
-
 void execute_match(OpContext &ctx, const match_instruction &i)
 {
 	qbrt_value &result(*ctx.dstvalue(i.result));
@@ -789,7 +767,6 @@ void init_executioners()
 	x[OP_LCONTEXT] = (executioner) execute_lcontext;
 	x[OP_LCONSTRUCT] = (executioner) execute_lconstruct;
 	x[OP_LFUNC] = (executioner) execute_loadfunc;
-	x[OP_LPFUNC] = (executioner) execute_lpfunc;
 	x[OP_MATCH] = (executioner) execute_match;
 	x[OP_NEWPROC] = (executioner) execute_newproc;
 	x[OP_PATTERNVAR] = (executioner) execute_patternvar;

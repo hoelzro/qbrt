@@ -285,10 +285,6 @@ stmt(A) ::= LFUNC reg(B) modsym(C). {
 	A = new lfunc_stmt(B, C);
 	C = NULL;
 }
-stmt(A) ::= LPFUNC reg(B) modsym(C) STR(D). {
-	A = new lpfunc_stmt(B, C, D->strval());
-	C = NULL;
-}
 stmt(A) ::= MATCH reg(B) reg(C) reg(D) LABEL(E). {
 	A = new match_stmt(B, C, D, E->label());
 }

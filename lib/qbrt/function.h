@@ -91,26 +91,6 @@ struct lfunc_instruction
 	static const uint8_t SIZE = 5;
 };
 
-struct lpfunc_instruction
-: public instruction
-{
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t modsym : 16;
-	uint64_t funcname : 16;
-	uint64_t reserved : 8;
-
-	lpfunc_instruction(reg_t r, uint16_t modsym, uint16_t func)
-		: opcode_data(OP_LPFUNC)
-		, reg(r)
-		, modsym(modsym)
-		, funcname(func)
-		, reserved(0)
-	{}
-
-	static const uint8_t SIZE = 7;
-};
-
 struct loadtype_instruction
 : public instruction
 {

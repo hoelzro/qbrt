@@ -514,24 +514,6 @@ struct lfunc_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct lpfunc_stmt
-: public Stmt
-{
-	lpfunc_stmt(AsmReg *dst, AsmModSym *ms, const std::string &fname)
-	: dst(dst)
-	, protocol(ms)
-	, function(fname)
-	{}
-	AsmReg *dst;
-	AsmModSym *protocol;
-	AsmString function;
-
-	void allocate_registers(RegAlloc *);
-	void collect_resources(ResourceSet &);
-	void generate_code(AsmFunc &);
-	void pretty(std::ostream &) const;
-};
-
 /**
  * Pattern match on a given register value
  */

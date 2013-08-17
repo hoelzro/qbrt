@@ -90,15 +90,6 @@ uint8_t print_lfunc_instruction(const lfunc_instruction &i)
 	return lfunc_instruction::SIZE;
 }
 
-uint8_t print_lpfunc_instruction(const lpfunc_instruction &i)
-{
-	cout << "lpfunc";
-	print_register(i.reg);
-	cout << " s" << i.modsym;
-	cout << " s" << i.funcname << endl;
-	return lpfunc_instruction::SIZE;
-}
-
 uint8_t print_match_instruction(const match_instruction &i)
 {
 	cout << "match";
@@ -287,7 +278,6 @@ void set_printers()
 		(instruction_printer) print_lconstruct_instruction;
 	PRINTER[OP_LFUNC] = (instruction_printer) print_lfunc_instruction;
 	PRINTER[OP_LOADOBJ] = (instruction_printer) print_loadobj_instruction;
-	PRINTER[OP_LPFUNC] = (instruction_printer) print_lpfunc_instruction;
 	PRINTER[OP_MATCH] = (instruction_printer) print_match_instruction;
 	PRINTER[OP_CONSTS] = (instruction_printer) print_consts_instruction;
 	PRINTER[OP_CONSTHASH] =

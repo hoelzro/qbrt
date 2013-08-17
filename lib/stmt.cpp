@@ -614,30 +614,6 @@ void lfunc_stmt::pretty(std::ostream &out) const
 	out << "lfunc " << *dst << " " << *modsym;
 }
 
-void lpfunc_stmt::collect_resources(ResourceSet &rs)
-{
-	collect_modsym(rs, *protocol);
-	collect_string(rs, function);
-}
-
-void lpfunc_stmt::allocate_registers(RegAlloc *r)
-{
-	r->alloc(*dst);
-}
-
-void lpfunc_stmt::generate_code(AsmFunc &f)
-{
-	instruction *i;
-	i = new lpfunc_instruction(*dst, *protocol->index, *function.index);
-	asm_instruction(f, i);
-}
-
-void lpfunc_stmt::pretty(std::ostream &out) const
-{
-	out << "lpfunc " << *dst <<' '<< *protocol
-		<<' '<< function.value;
-}
-
 void match_stmt::allocate_registers(RegAlloc *r)
 {
 	r->alloc(*result);
