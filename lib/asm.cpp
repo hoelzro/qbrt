@@ -831,7 +831,7 @@ uint32_t AsmDataType::write(std::ostream &out) const
 
 ostream & AsmDataType::pretty(ostream &o) const
 {
-	o << "datatype:" << name.value;
+	o << "datatype:" << name.value << '/' << (int) argc;
 }
 
 

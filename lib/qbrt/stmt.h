@@ -22,6 +22,7 @@ class AsmTypeSpec;
 class RegAlloc;
 typedef std::list< AsmModSym * > AsmModSymList;
 typedef std::list< AsmParam * > AsmParamList;
+typedef std::list< AsmString * > AsmStringList;
 typedef std::list< AsmTypeSpec * > AsmTypeSpecList;
 
 
@@ -357,15 +358,18 @@ struct datatype_stmt
 : public Stmt
 {
 	AsmString name;
+	AsmStringList *args;
 	Stmt::List *constructs;
 	AsmDataType *datatype;
 
-	datatype_stmt(const std::string &name)
+	datatype_stmt(const std::string &name, AsmStringList *args)
 	: name(name)
+	, args(args)
 	, constructs(NULL)
 	, datatype(NULL)
 	{}
 
+	uint8_t argc() const { return args ? args->size() : 0; }
 	void set_function_context(uint8_t, AsmResource *);
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;

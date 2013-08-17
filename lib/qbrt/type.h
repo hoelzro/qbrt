@@ -100,9 +100,10 @@ struct Type
 	std::string module;
 	std::string name;
 	uint8_t id;
+	uint8_t argc;
 
 	Type(uint8_t id);
-	Type(const std::string &mod, const std::string &name, uint16_t flds);
+	Type(const std::string &mod, const std::string &name, uint8_t argc);
 
 	static int compare(const Type &a, const Type &b)
 	{

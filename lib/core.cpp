@@ -88,17 +88,29 @@ static const std::string & get_primitive_name(uint8_t id)
 	return name;
 }
 
+static const uint8_t get_type_id(const string &mod, const string &name)
+{
+	for (uint16_t id(0); id<=0xff; ++id) {
+		if (PRIMITIVE_MODULE[id] == mod && PRIMITIVE_NAME[id] == name) {
+			return id;
+		}
+	}
+	return VT_CONSTRUCT;
+}
+
 
 Type::Type(uint8_t id)
-	: module(get_primitive_module(id))
-	, name(get_primitive_name(id))
-	, id(id)
+: module(get_primitive_module(id))
+, name(get_primitive_name(id))
+, id(id)
+, argc(0)
 {}
 
-Type::Type(const std::string &mod, const std::string &name, uint16_t flds)
-	: module(mod)
-	, name(name)
-	, id(VT_CONSTRUCT)
+Type::Type(const string &mod, const string &name, uint8_t argc)
+: module(mod)
+, name(name)
+, id(get_type_id(mod, name))
+, argc(0)
 {}
 
 Type TYPE_VOID(VT_VOID);

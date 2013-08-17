@@ -287,7 +287,7 @@ void copy_stmt::pretty(std::ostream &out) const
 
 void datatype_stmt::set_function_context(uint8_t, AsmResource *)
 {
-	datatype = new AsmDataType(name);
+	datatype = new AsmDataType(name, argc());
 	::set_function_context(*constructs, 0, datatype);
 }
 

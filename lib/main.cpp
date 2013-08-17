@@ -897,7 +897,8 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 				<< " expected to be " << type_mod << '/'
 				<< type_name << ", instead received "
 				<< valtype->module << '/' << valtype->name
-				<< endl;
+				<< " " << w.current->function_call().name()
+				<< ':' << w.current->pc << endl;
 			exit(1);
 		}
 	}

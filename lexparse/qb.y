@@ -186,10 +186,10 @@ datatype_block(A) ::= datatype_stmt(B) construct_list(C) END. {
 	A->constructs = C;
 }
 datatype_stmt(A) ::= DATATYPE TYPENAME(B). {
-	A = new datatype_stmt(B->text);
+	A = new datatype_stmt(B->text, NULL);
 }
-datatype_stmt(A) ::= DATATYPE TYPENAME(B) typevar_list. {
-	A = new datatype_stmt(B->text);
+datatype_stmt(A) ::= DATATYPE TYPENAME(B) typevar_list(C). {
+	A = new datatype_stmt(B->text, C);
 }
 construct_list(A) ::= construct_block(B). {
 	A = new Stmt::List();

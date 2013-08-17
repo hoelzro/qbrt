@@ -1,6 +1,6 @@
 
 
-func maybe_check core/Int
+func maybe_get_int core/Int
 dparam val core/Maybe(core/Int)
 
 lconstruct $0 core/Nothing
@@ -12,7 +12,7 @@ match $1 $0 %0 @IS_SOMETHING
 lconstruct $0 core/Just
 patternvar $0.0
 match $1 $0 %0 @NO_MATCH
-  copy \result $0.0
+  copy \result $1
   return
 
 @NO_MATCH
@@ -22,7 +22,7 @@ end.
 
 func __main core/Void
 
-lfunc $0 ./maybe_check
+lfunc $0 ./maybe_get_int
 lconstruct $1 core/Just
 const $1.0 5
 copy $0.0 $1

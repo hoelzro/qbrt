@@ -207,11 +207,11 @@ struct AsmDataType
 	uint16_t line_no;
 	uint8_t argc;
 
-	AsmDataType(const AsmString &name)
+	AsmDataType(const AsmString &name, uint8_t argc)
 	: AsmResource(RESOURCE_DATATYPE)
 	, name(name)
 	, line_no(0)
-	, argc(0)
+	, argc(argc)
 	{}
 
 	virtual uint32_t write(std::ostream &) const;
