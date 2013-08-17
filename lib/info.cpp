@@ -506,6 +506,14 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	printf("\t% 2u modsym(%s/%s)\n", index, mod.value, sym.value);
 }
 
+void print_typespec(const ResourceTable &tbl, uint16_t index)
+{
+	const TypeSpecResource &typespec(tbl.obj< TypeSpecResource >(index));
+	const StringResource &fullname(
+			tbl.obj< StringResource >(typespec.fullname_idx));
+	printf("\t% 2u typespec(%s)\n", index, fullname.value);
+}
+
 void print_construct(const ResourceTable &tbl, uint16_t index)
 {
 	const ConstructResource &cons(tbl.obj< ConstructResource >(index));
@@ -601,6 +609,8 @@ static inline void print_resource_line(const ResourceTable &tbl, uint16_t i)
 		print_construct(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_DATATYPE) {
 		print_datatype(tbl, i);
+	} else if (tbl.type(i) == RESOURCE_TYPESPEC) {
+		print_typespec(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_FUNCTION) {
 		print_function_resource_line(tbl, i);
 	} else if (tbl.type(i) == RESOURCE_PROTOCOL) {

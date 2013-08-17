@@ -467,6 +467,11 @@ bool collect_modsym(ResourceSet &rs, AsmModSym &modsym)
 
 bool collect_typespec(ResourceSet &rs, AsmTypeSpec &type)
 {
+	ostringstream fmt;
+	type.serialize(fmt);
+	type.fullname.value = fmt.str();
+
+	collect_string(rs, type.fullname);
 	collect_modsym(rs, *type.name);
 	if (type.args && !type.args->empty()) {
 		AsmTypeSpecList::iterator it(type.args->begin());
@@ -629,7 +634,8 @@ ostream & AsmTypeSpec::pretty(ostream &out) const
 uint32_t AsmTypeSpec::write(ostream &out) const
 {
 	out.write((const char *) name->index, 2);
-	uint32_t bytes(2);
+	out.write((const char *) fullname.index, 2);
+	uint32_t bytes(4);
 	if (this->empty()) {
 		return bytes;
 	}

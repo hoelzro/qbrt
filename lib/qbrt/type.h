@@ -12,6 +12,13 @@ struct ParamResource
 	uint16_t type_idx;
 };
 
+struct TypeSpecResource
+{
+	uint16_t name_idx;
+	uint16_t fullname_idx;
+	uint16_t args[];
+};
+
 struct ConstructResource
 {
 	uint16_t name_idx;

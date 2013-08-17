@@ -248,6 +248,12 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 	return tbl.obj< ModSym >(i);
 }
 
+static inline const TypeSpecResource & fetch_typespec(const ResourceTable &tbl
+		, uint16_t idx)
+{
+	return tbl.obj< TypeSpecResource >(idx);
+}
+
 
 CFunction * add_c_function(Module &, c_function
 		, const std::string &name, uint8_t argc

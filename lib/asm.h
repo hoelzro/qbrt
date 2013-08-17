@@ -110,6 +110,7 @@ struct AsmTypeSpec
 {
 	AsmModSym *name;
 	AsmTypeSpecList *args;
+	mutable AsmString fullname;
 
 	AsmTypeSpec(AsmModSym *name)
 	: AsmResource(RESOURCE_TYPESPEC)

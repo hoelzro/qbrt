@@ -24,8 +24,8 @@ func __main
 
 lfunc $0 ./maybe_check
 lconstruct $1 core/Just
-const $1 5
-copy $1 $0.0
+const $1.0 5
+copy $0.0 $1
 
 lfunc $2 core/str
 call $2.0 $0
