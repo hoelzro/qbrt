@@ -207,6 +207,8 @@ struct qbrt_value
 	}
 	static bool is_value_index(qbrt_value &);
 
+	static void append_type(std::ostringstream &, const qbrt_value &);
+
 	~qbrt_value() {}
 };
 

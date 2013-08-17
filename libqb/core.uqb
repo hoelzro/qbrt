@@ -50,3 +50,7 @@ const \result "void"
 end.
 
 end.
+
+bind ./Stringy
+bindtype core/Int
+end.

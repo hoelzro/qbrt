@@ -8,10 +8,12 @@ QBC.name = 'qbc'
 QBC.include 'lib'
 QBC.compile_files("lib/asm.cpp", \
 		  "lib/core.cpp", \
+		  "lib/function.cpp", \
 		  "lib/instruction.cpp", \
 		  "lib/qbparse.c", \
 		  "lib/qblex.c", \
 		  "lib/stmt.cpp", \
+		  "lib/type.cpp", \
 		 )
 QBC.obj_dir = 'o/qbc'
 QBC.debug!
@@ -23,7 +25,9 @@ QBI.include 'lib'
 QBI.compile_files("lib/info.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
-		  "lib/module.cpp")
+		  "lib/module.cpp", \
+		  "lib/type.cpp", \
+		 )
 QBI.obj_dir = 'o/qbi'
 QBI.debug!
 
@@ -35,7 +39,9 @@ QBRT.compile_files("lib/main.cpp", \
 		  "lib/function.cpp", \
 		  "lib/io.cpp", \
 		  "lib/module.cpp", \
-		  "lib/schedule.cpp")
+		  "lib/schedule.cpp", \
+		  "lib/type.cpp", \
+		  )
 QBRT.obj_dir = 'o/qbrt'
 QBRT.link 'pthread'
 QBRT.debug!
@@ -120,6 +126,7 @@ TestFiles = ['hello.uqb',
 	'bool.uqb',
 	'fact.uqb',
 	'fork_hello.uqb',
+	'maybe.uqb',
 	'multimethod.uqb',
 	'newproc.uqb',
 	'param_types.uqb',

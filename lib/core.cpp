@@ -196,6 +196,21 @@ bool qbrt_value::is_value_index(qbrt_value &val)
 	return dynamic_cast< qbrt_value_index * >(val.data.reg);
 }
 
+void qbrt_value::append_type(ostringstream &out, const qbrt_value &val)
+{
+	switch (val.type->id) {
+		case VT_CONSTRUCT:
+			load_construct_value_types(out, *val.data.cons);
+			break;
+		case VT_FUNCTION:
+			load_function_value_types(out, *val.data.f);
+			break;
+		default:
+			out << val.type->module << '/' << val.type->name;
+			break;
+	}
+}
+
 template < typename T >
 int type_compare(T a, T b)
 {

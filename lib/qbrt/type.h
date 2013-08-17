@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <list>
 
+class Module;
+
 
 struct ParamResource
 {
@@ -17,6 +19,17 @@ struct TypeSpecResource
 	uint16_t name_idx;	// modsym
 	uint16_t fullname_idx;	// string
 	uint16_t args[];	// other TypeSpecResource indexes
+};
+
+struct DataTypeResource
+{
+	uint16_t name_idx;
+	uint16_t doc_idx;
+	uint16_t filename_idx;
+	uint16_t lineno;
+	uint8_t argc;
+
+	static const uint32_t SIZE = 9;
 };
 
 struct ConstructResource
@@ -33,25 +46,16 @@ struct ConstructResource
 	static const uint32_t SIZE = 12;
 };
 
-struct DataTypeResource
-{
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t filename_idx;
-	uint16_t lineno;
-	uint8_t argc;
-
-	static const uint32_t SIZE = 9;
-};
-
 struct Construct
 : public qbrt_value_index
 {
+	const Module &mod;
 	const ConstructResource &resource;
 	qbrt_value *fields;
 
-	Construct(const ConstructResource &cr)
-	: resource(cr)
+	Construct(const Module &m, const ConstructResource &cr)
+	: mod(m)
+	, resource(cr)
 	, fields(new qbrt_value[cr.fld_count])
 	{}
 	~Construct()
@@ -71,7 +75,11 @@ struct Construct
 	uint8_t num_values() const { return resource.fld_count; }
 	qbrt_value & value(uint8_t i) { return fields[i]; }
 	const qbrt_value & value(uint8_t i) const { return fields[i]; }
+
+	const DataTypeResource * datatype() const;
 };
+
+void load_construct_value_types(std::ostringstream &, const Construct &);
 
 struct StructFieldResource
 {

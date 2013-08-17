@@ -12,7 +12,7 @@ match $1 $0 %0 @IS_SOMETHING
 lconstruct $0 core/Just
 patternvar $0.0
 match $1 $0 %0 @NO_MATCH
-  copy \result $1
+  copy \result $1.0
   return
 
 @NO_MATCH
@@ -32,11 +32,22 @@ call $2.0 $0
 call $3 $2
 
 lfunc $4 io/print
-const $4.0 "the answer is: "
+const $4.0 "the answer is "
 stracc $4.0 $3
-const $5 "\n"
 
+const $5 "\n"
 stracc $4.0 $5
+call \void $4
+
+lconstruct $0.0 core/Nothing
+call $2.0 $0
+call $3 $2
+
+const $4.0 "or is it "
+stracc $4.0 $3
+const $5 "?\n"
+stracc $4.0 $5
+
 call \void $4
 
 end.

@@ -548,7 +548,7 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 
 	const Type *typ = indexed_datatype(*mod, construct_r->datatype_idx);
 
-	Construct *cons = new Construct(*construct_r);
+	Construct *cons = new Construct(*mod, *construct_r);
 	qbrt_value::construct(dst, typ, cons);
 
 	ctx.pc() += lcontext_instruction::SIZE;
@@ -823,8 +823,9 @@ void override_function(Worker &w, function_value &funcval)
 		reassign_func(funcval, def_func);
 	}
 
-	string value_types;
-	load_function_value_types(value_types, funcval);
+	ostringstream value_type_stream;
+	load_function_value_types(value_type_stream, funcval);
+	string value_types(value_type_stream.str());
 
 	const Function &func(*funcval.func);
 	const QbrtFunction *qfunc;
@@ -1269,9 +1270,9 @@ int main(int argc, const char **argv)
 	add_type(*mod_core, "String", TYPE_BSTRING);
 	add_type(*mod_core, "ByteString", TYPE_BSTRING);
 	add_c_override(*mod_core, core_str_from_str, "core", "Stringy", "str", 1
-			, "core/String;");
+			, "core/String");
 	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
-			, "core/Int;");
+			, "core/Int");
 
 	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, list_empty, "empty", 1, "core/List;");
