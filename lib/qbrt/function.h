@@ -421,7 +421,7 @@ struct function_value
 	const qbrt_value & value(uint8_t r) const { return regv[r]; }
 };
 
-void load_function_param_types(std::string &typestr, const function_value &);
+void load_function_value_types(std::string &typestr, const function_value &);
 void reassign_func(function_value &funcval, const Function *newfunc);
 
 

@@ -203,11 +203,11 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		const char *ptypes = fetch_string(tbl, f->param_types_idx);
-		if (param_types < ptypes) {
+		const char *param_types = fetch_string(tbl, f->param_types_idx);
+		if (value_types < param_types) {
 			return -1;
 		}
-		if (param_types > ptypes) {
+		if (value_types > param_types) {
 			return 1;
 		}
 		return 0;
@@ -216,15 +216,15 @@ struct PolymorphFunctionSearch
 	const std::string &proto_mod;
 	const std::string &proto_name;
 	const std::string &function;
-	const std::string &param_types;
+	const std::string &value_types;
 
 	PolymorphFunctionSearch(const std::string &pmod
 			, const std::string &pname, const std::string &f
-			, const string &param_types)
+			, const string &value_types)
 		: proto_mod(pmod)
 		, proto_name(pname)
 		, function(f)
-		, param_types(param_types)
+		, value_types(value_types)
 	{}
 };
 
@@ -300,10 +300,10 @@ const QbrtFunction * Module::fetch_protocol_function(
 
 const QbrtFunction * Module::fetch_override(const string &protomod
 		, const string &protoname, const string &fname
-		, const string &param_types) const
+		, const string &value_types) const
 {
 	const FunctionHeader *f;
-	PolymorphFunctionSearch query(protomod, protoname, fname, param_types);
+	PolymorphFunctionSearch query(protomod, protoname, fname, value_types);
 	f = resource.find(query);
 	if (!f) {
 		return NULL;
@@ -433,7 +433,7 @@ const CFunction * fetch_c_function(const Module &m, const std::string &name)
 
 const CFunction * fetch_c_override(const Module &m, const std::string &protomod
 		, const std::string &protoname, const std::string &name
-		, const std::string &param_types)
+		, const std::string &value_types)
 {
 	pair< multimap< string, CFunction >::const_iterator
 		, multimap< string, CFunction >::const_iterator > range;
@@ -449,7 +449,7 @@ const CFunction * fetch_c_override(const Module &m, const std::string &protomod
 		if (it->second.proto_name != protoname) {
 			continue;
 		}
-		if (it->second.param_types != param_types) {
+		if (it->second.param_types != value_types) {
 			continue;
 		}
 		return &it->second;

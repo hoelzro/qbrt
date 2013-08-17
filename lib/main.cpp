@@ -846,8 +846,8 @@ void override_function(Worker &w, function_value &funcval)
 		reassign_func(funcval, def_func);
 	}
 
-	string param_types;
-	load_function_param_types(param_types, funcval);
+	string value_types;
+	load_function_value_types(value_types, funcval);
 
 	const Function &func(*funcval.func);
 	const QbrtFunction *qfunc;
@@ -859,13 +859,13 @@ void override_function(Worker &w, function_value &funcval)
 
 	const char *proto_name = func.protocol_name();
 	const QbrtFunction *overridef(find_override(w, func.mod->name.c_str()
-				, proto_name, funcval.name(), param_types));
+				, proto_name, funcval.name(), value_types));
 	if (overridef) {
 		reassign_func(funcval, overridef);
 	} else {
 		const CFunction *cfunc = find_c_override(w
 				, func.mod->name.c_str()
-				, proto_name, funcval.name(), param_types);
+				, proto_name, funcval.name(), value_types);
 		if (cfunc) {
 			reassign_func(funcval, cfunc);
 		}
@@ -896,9 +896,9 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		return;
 	}
 
-	const ResourceTable &resource(f->func->mod->resource);
 	const QbrtFunction *qfunc;
 	qfunc = dynamic_cast< const QbrtFunction * >(f->func);
+	const ResourceTable &resource(f->func->mod->resource);
 	// check arguments
 	for (uint16_t i(0); i < f->argc; ++i) {
 		const qbrt_value *val(ctx.srcvalue(PRIMARY_REG(i)));
@@ -908,9 +908,13 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		const Type *valtype = val->type;
 		const ParamResource &param(qfunc->header->params[i]);
 		const char *name = fetch_string(resource, param.name_idx);
-		const ModSym &type(fetch_modsym(resource, param.type_idx));
-		const char *type_mod = fetch_string(resource, type.mod_name);
-		const char *type_name = fetch_string(resource, type.sym_name);
+		const TypeSpecResource &type(
+			resource.obj< TypeSpecResource >(param.type_idx));
+		const ModSym &type_ms(fetch_modsym(resource, type.name_idx));
+		const char *type_mod =
+			fetch_string(resource, type_ms.mod_name);
+		const char *type_name =
+			fetch_string(resource, type_ms.sym_name);
 		if (valtype->module != type_mod || valtype->name != type_name) {
 			cerr << "Type Mismatch: parameter " << name << '/' << i
 				<< " expected to be " << type_mod << '/'

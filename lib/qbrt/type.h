@@ -14,9 +14,9 @@ struct ParamResource
 
 struct TypeSpecResource
 {
-	uint16_t name_idx;
-	uint16_t fullname_idx;
-	uint16_t args[];
+	uint16_t name_idx;	// modsym
+	uint16_t fullname_idx;	// string
+	uint16_t args[];	// other TypeSpecResource indexes
 };
 
 struct ConstructResource

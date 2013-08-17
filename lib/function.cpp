@@ -95,17 +95,21 @@ void function_value::realloc(uint8_t new_regc)
 	this->regc = new_regc;
 }
 
-void load_function_param_types(string &paramstr, const function_value &func)
+void load_function_value_types(string &paramstr, const function_value &func)
 {
-	paramstr = "";
+	ostringstream values;
+	bool first(true);
 	for (int i(0); i<func.argc; ++i) {
 		const qbrt_value &val(func.value(i));
 		const Type *typ(val.type);
-		paramstr += typ->module;
-		paramstr += '/';
-		paramstr += typ->name;
-		paramstr += ';';
+		if (first) {
+			first = false;
+		} else {
+			values << " -> ";
+		}
+		values << typ->module << '/' << typ->name;
 	}
+	paramstr = values.str();
 }
 
 void reassign_func(function_value &funcval, const Function *newfunc)
