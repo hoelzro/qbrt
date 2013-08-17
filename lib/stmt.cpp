@@ -324,19 +324,24 @@ void dparam_stmt::collect(AsmParamList &apl, string &param_types
 		return;
 	}
 
+	bool first(true);
 	ostringstream out;
 	dparam_stmt::List::const_iterator it(stmts->begin());
 	for (; it!=stmts->end(); ++it) {
+		if (first) {
+			first = false;
+		} else {
+			out << " -> ";
+		}
 		apl.push_back(new AsmParam((*it)->name, *(*it)->type));
 		(*it)->type->serialize(out);
-		out << ';';
 	}
 	param_types = out.str();
 }
 
 void dfunc_stmt::set_function_context(uint8_t afc, AsmResource *ctx)
 {
-	AsmFunc *f = new AsmFunc(this->name);
+	AsmFunc *f = new AsmFunc(this->name, *this->result);
 	f->regc = 0;
 	f->stmts = code;
 	switch (afc) {
@@ -372,6 +377,7 @@ void dfunc_stmt::allocate_registers(RegAlloc *)
 void dfunc_stmt::collect_resources(ResourceSet &rs)
 {
 	collect_string(rs, name);
+	collect_typespec(rs, *this->result);
 	collect_string(rs, this->func->param_types);
 	if (params) {
 		// this should be safe right? :-P

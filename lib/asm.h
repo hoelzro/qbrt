@@ -119,6 +119,7 @@ struct AsmTypeSpec
 	{}
 
 	bool empty() const { return !args || args->empty(); }
+	int argc() const { return args ? args->size() : 0; }
 	uint32_t write(std::ostream &o) const;
 	std::ostream & serialize(std::ostream &o) const;
 	std::ostream & pretty(std::ostream &o) const;
@@ -130,8 +131,6 @@ struct AsmTypeSpec
 	}
 };
 
-
-struct AsmFunc;
 
 struct AsmProtocol
 : public AsmResource
@@ -273,6 +272,7 @@ struct AsmFunc
 	AsmResource *ctx;
 	AsmParamList params;
 	AsmString param_types;
+	const AsmTypeSpec &result_type;
 	const AsmString &name;
 	AsmString doc;
 	AsmString filename;
@@ -281,7 +281,7 @@ struct AsmFunc
 	uint8_t argc;
 	uint8_t regc;
 
-	AsmFunc(const AsmString &name);
+	AsmFunc(const AsmString &name, const AsmTypeSpec &result);
 
 	bool has_code() const;
 	virtual uint32_t write(std::ostream &) const;

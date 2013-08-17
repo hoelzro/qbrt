@@ -374,9 +374,10 @@ struct datatype_stmt
 struct dfunc_stmt
 : public Stmt
 {
-	dfunc_stmt(const std::string &fname, bool abstract)
+	dfunc_stmt(const std::string &fname, AsmTypeSpec *result, bool abstract)
 		: name(fname)
 		, protocol_name(NULL)
+		, result(result)
 		, params(NULL)
 		, code(NULL)
 		, func(NULL)
@@ -385,6 +386,7 @@ struct dfunc_stmt
 	{}
 	AsmString name;
 	AsmString *protocol_name;
+	AsmTypeSpec *result;
 	dparam_stmt::List *params;
 	Stmt::List *code;
 	AsmFunc *func;

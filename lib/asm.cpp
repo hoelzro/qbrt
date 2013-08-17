@@ -168,9 +168,12 @@ int AsmCmp< AsmTypeSpec >::cmp(const AsmTypeSpec &a, const AsmTypeSpec &b)
 	if (comparison) {
 		return comparison;
 	}
+	if (a.empty() && b.empty()) {
+		return 0;
+	}
 
-	uint16_t argca(a.args->size());
-	uint16_t argcb(b.args->size());
+	uint16_t argca(a.argc());
+	uint16_t argcb(b.argc());
 	if (argca < argcb) {
 		return -1;
 	}
@@ -649,11 +652,12 @@ uint32_t AsmTypeSpec::write(ostream &out) const
 }
 
 
-AsmFunc::AsmFunc(const AsmString &name)
+AsmFunc::AsmFunc(const AsmString &name, const AsmTypeSpec &result)
 	: AsmResource(RESOURCE_FUNCTION)
 	, stmts(NULL)
 	, ctx(NULL)
 	, name(name)
+	, result_type(result)
 	, doc()
 	, line_no(0)
 	, fcontext(PFC_NULL)
@@ -679,6 +683,7 @@ uint32_t AsmFunc::write(ostream &out) const
 		out.write((const char *) &zero, 2);
 	}
 	out.write((const char *) param_types.index, 2);
+	out.write((const char *) result_type.index, 2);
 	out.put(this->fcontext);
 	out.put(argc);
 	out.put(regc);
@@ -717,7 +722,10 @@ ostream & AsmFunc::pretty(ostream &o) const
 			this->ctx->pretty(o);
 			break;
 	}
-	o << " " << param_types.value;
+	if (!param_types.value.empty()) {
+		o << " " << param_types.value << " ->";
+	}
+	o << " " << result_type.fullname.value;
 	return o;
 }
 

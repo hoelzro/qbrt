@@ -1,5 +1,5 @@
 
-func factorial
+func factorial core/Int
 dparam i core/Int
 
 const $0 0
@@ -20,7 +20,7 @@ imult \result $4 $1
 end.
 
 
-func __main
+func __main core/Void
 
 lfunc $0 ./factorial
 const $0.0 6

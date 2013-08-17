@@ -351,7 +351,14 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	cout << fname << "/" << (int) f.argc << ',' << (int) f.regc << ":\n";
 
 	const char *param_types = fetch_string(tbl, f.param_types_idx);
-	cout << "param types: " << param_types << endl;
+	cout << "function type: ";
+	if (param_types && *param_types) {
+		cout << param_types << " -> ";
+	}
+	const TypeSpecResource &result_type(
+			tbl.obj< TypeSpecResource >(f.result_type_idx));
+	const char *fullresult = fetch_string(tbl, result_type.fullname_idx);
+	cout << fullresult << endl;
 
 	if (poly) {
 		cout << "types:";
@@ -398,11 +405,11 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 		for (int i(0); i<f.argc; ++i) {
 			const ParamResource &p(f.params[i]);
 			const char *name = fetch_string(tbl, p.name_idx);
-			const ModSym &type = fetch_modsym(tbl, p.type_idx);
-			const char *typemod = fetch_string(tbl, type.mod_name);
-			const char *typesym = fetch_string(tbl, type.sym_name);
-			cout << '\t' << name <<' '
-				<< typemod <<'/'<< typesym << endl;
+			const TypeSpecResource &type(
+				tbl.obj< TypeSpecResource >(p.type_idx));
+			const char *fullname =
+				fetch_string(tbl, type.fullname_idx);
+			cout << '\t' << name << ' ' << fullname << endl;
 		}
 	}
 

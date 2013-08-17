@@ -101,8 +101,8 @@ func_block(A) ::= dfunc_stmt(B) dparam_list(D) block(C). {
 	A = B;
 	A->code->push_back(new return_stmt());
 }
-dfunc_stmt(A) ::= FUNC ID(B). {
-	A = new dfunc_stmt(B->text, false);
+dfunc_stmt(A) ::= FUNC ID(B) typespec(C). {
+	A = new dfunc_stmt(B->text, C, false);
 }
 
 dparam_list(A) ::= dparam_list(B) dparam_stmt(C). {
@@ -152,8 +152,8 @@ protofunc_list(A) ::= protofunc_list(B) func_block(C). {
 	A->push_back(C);
 }
 
-abstract_stmt(A) ::= ABSTRACT ID(B). {
-	A = new dfunc_stmt(B->text, true);
+abstract_stmt(A) ::= ABSTRACT ID(B) typespec(C). {
+	A = new dfunc_stmt(B->text, C, true);
 }
 abstract_block(A) ::= abstract_stmt(B) dparam_list(C) END. {
 	A = B;
