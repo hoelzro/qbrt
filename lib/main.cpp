@@ -862,7 +862,8 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 
 	if (f->abstract()) {
 		// can't execute the function if it's abstract
-		cerr << "cannot execute abstract function\n";
+		cerr << "cannot execute abstract function: "
+			<< f->name() << endl;
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
@@ -891,6 +892,10 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		const ModSym &type_ms(fetch_modsym(resource, type.name_idx));
 		const char *type_mod =
 			fetch_string(resource, type_ms.mod_name);
+		// */anything means it's a type variable. it's fine so proceed
+		if (type_mod[0] == '*' && type_mod[1] == '\0') {
+			continue;
+		}
 		const char *type_name =
 			fetch_string(resource, type_ms.sym_name);
 		if (valtype->module != type_mod || valtype->name != type_name) {
@@ -1262,6 +1267,10 @@ int main(int argc, const char **argv)
 	if (!mod_core) {
 		return -1;
 	}
+	Module *mod_list = const_cast< Module * >(load_module(app, "list"));
+	if (!mod_list) {
+		return -1;
+	}
 	add_c_function(*mod_core, core_pid, "pid", 0, "");
 	add_c_function(*mod_core, core_send, "send", 2
 			, "io/Stream;core/String;");
@@ -1274,7 +1283,6 @@ int main(int argc, const char **argv)
 	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
 			, "core/Int");
 
-	Module *mod_list = new Module("list");
 	add_c_function(*mod_list, list_empty, "empty", 1, "core/List;");
 	add_c_function(*mod_list, list_head, "head", 1, "core/List;");
 	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");

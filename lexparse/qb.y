@@ -163,7 +163,7 @@ abstract_block(A) ::= abstract_stmt(B) dparam_list(C) END. {
 bind_stmt(A) ::= BIND modtype(B). {
 	A = new bind_stmt(B);
 }
-bindtype_stmt(A) ::= BINDTYPE modtype(B). {
+bindtype_stmt(A) ::= BINDTYPE typespec(B). {
 	A = new bindtype_stmt(B);
 }
 bindtype_block(A) ::= bindtype_stmt(B). {

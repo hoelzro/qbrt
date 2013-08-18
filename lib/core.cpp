@@ -200,6 +200,7 @@ void qbrt_value::append_type(ostringstream &out, const qbrt_value &val)
 {
 	switch (val.type->id) {
 		case VT_CONSTRUCT:
+		case VT_LIST:
 			load_construct_value_types(out, *val.data.cons);
 			break;
 		case VT_FUNCTION:

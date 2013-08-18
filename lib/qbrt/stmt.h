@@ -156,11 +156,11 @@ struct binaryop_stmt
 struct bindtype_stmt
 : public Stmt
 {
-	bindtype_stmt(AsmModSym *type)
+	bindtype_stmt(AsmTypeSpec *type)
 	: bindtype(type)
 	{}
 
-	AsmModSym *bindtype;
+	AsmTypeSpec *bindtype;
 
 	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;

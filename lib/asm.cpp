@@ -151,6 +151,10 @@ int AsmCmp< AsmProtocol >::cmp(const AsmProtocol &a, const AsmProtocol &b)
 }
 
 template <>
+int AsmCmp< AsmTypeSpecList >::cmp(
+		const AsmTypeSpecList &, const AsmTypeSpecList &);
+
+template <>
 int AsmCmp< AsmPolymorph >::cmp(const AsmPolymorph &a, const AsmPolymorph &b)
 {
 	int comparison(AsmCmp< AsmModSym >::cmp(a.protocol, b.protocol));
@@ -158,7 +162,7 @@ int AsmCmp< AsmPolymorph >::cmp(const AsmPolymorph &a, const AsmPolymorph &b)
 		return comparison;
 	}
 
-	return AsmCmp< AsmModSymList >::cmp(a.type, b.type);
+	return AsmCmp< AsmTypeSpecList >::cmp(a.type, b.type);
 }
 
 template <>
@@ -168,25 +172,34 @@ int AsmCmp< AsmTypeSpec >::cmp(const AsmTypeSpec &a, const AsmTypeSpec &b)
 	if (comparison) {
 		return comparison;
 	}
+	return compare_asmptr< AsmTypeSpecList >(a.args, b.args);
+}
+
+template <>
+int AsmCmp< AsmTypeSpecList >::cmp(
+		const AsmTypeSpecList &a, const AsmTypeSpecList &b)
+{
 	if (a.empty() && b.empty()) {
 		return 0;
 	}
-
-	uint16_t argca(a.argc());
-	uint16_t argcb(b.argc());
+	uint16_t argca(a.size());
+	uint16_t argcb(b.size());
 	if (argca < argcb) {
 		return -1;
 	}
 	if (argca > argcb) {
 		return 1;
 	}
-	AsmTypeSpecList::const_iterator ita(a.args->begin());
-	AsmTypeSpecList::const_iterator itb(b.args->begin());
-	while (ita!=a.args->end() && itb!=b.args->end()) {
-		comparison = AsmCmp< AsmTypeSpec >::cmp(**ita, **itb);
+
+	AsmTypeSpecList::const_iterator ita(a.begin());
+	AsmTypeSpecList::const_iterator itb(b.begin());
+	while (ita!=a.end() && itb!=b.end()) {
+		int comparison(AsmCmp< AsmTypeSpec >::cmp(**ita, **itb));
 		if (comparison) {
 			return comparison;
 		}
+		++ita;
+		++itb;
 	}
 	return 0;
 }
@@ -476,13 +489,17 @@ bool collect_typespec(ResourceSet &rs, AsmTypeSpec &type)
 
 	collect_string(rs, type.fullname);
 	collect_modsym(rs, *type.name);
-	if (type.args && !type.args->empty()) {
-		AsmTypeSpecList::iterator it(type.args->begin());
-		for (; it!=type.args->end(); ++it) {
-			collect_typespec(rs, **it);
-		}
+	collect_resource(rs, type);
+
+	if (!type.args || type.args->empty()) {
+		return true;
 	}
-	return collect_resource(rs, type);
+
+	AsmTypeSpecList::iterator it(type.args->begin());
+	for (; it!=type.args->end(); ++it) {
+		collect_typespec(rs, **it);
+	}
+	return true;
 }
 
 
@@ -768,7 +785,7 @@ uint32_t AsmPolymorph::write(ostream &out) const
 	out.write((const char *) &num_funcs, 2);
 
 	uint32_t poly_size(12);
-	list< AsmModSym * >::const_iterator it(type.begin());
+	list< AsmTypeSpec * >::const_iterator it(type.begin());
 	for (; it!=type.end(); ++it) {
 		out.write((const char *) (*it)->index, 2);
 		poly_size += 2;
@@ -780,9 +797,9 @@ ostream & AsmPolymorph::pretty(std::ostream &o) const
 {
 	o << "polymorph:" << protocol.module.value << '/'
 		<< protocol.symbol.value;
-	AsmModSymList::const_iterator it(type.begin());
+	AsmTypeSpecList::const_iterator it(type.begin());
 	for (; it!=type.end(); ++it) {
-		o << ' ' << (*it)->module.value << '/' << (*it)->symbol.value;
+		o << ' ' << (*it)->fullname.value;
 	}
 	return o;
 }

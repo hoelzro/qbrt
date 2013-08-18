@@ -1,0 +1,48 @@
+
+datatype List *T
+  construct Node
+    dparam value *T
+    dparam next ./List(*T)
+  end.
+  construct Empty
+  end.
+end.
+
+
+func insert ./List(*T)
+dparam val *T
+dparam l ./List(*T)
+
+lconstruct $0 ./Node
+copy $0.0 %0
+copy $0.1 %1
+copy \result $0
+end.
+
+
+bind core/Stringy
+bindtype ./List(*T)
+
+func str core/String
+dparam l ./List(*T)
+
+lfunc $3 core/str
+const \result "["
+copy $0 %0
+lconstruct $1 ./Empty
+@START
+ifeq $0 $1 @NOT_EMPTY
+const $2 "]"
+stracc \result $2
+return
+
+@NOT_EMPTY
+copy $3.0 $0.0
+call $2 $3
+stracc \result $2
+copy $0 $0.1
+goto @START
+
+end.
+
+end.

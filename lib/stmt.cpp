@@ -137,9 +137,9 @@ void bind_stmt::collect_resources(ResourceSet &rs)
 	if (this->functions) {
 		::collect_resources(rs, *functions);
 	}
-	AsmModSymList::iterator it(this->polymorph->type.begin());
+	AsmTypeSpecList::iterator it(this->polymorph->type.begin());
 	for (; it!=polymorph->type.end(); ++it) {
-		collect_modsym(rs, **it);
+		collect_typespec(rs, **it);
 	}
 	collect_resource(rs, *this->polymorph);
 }
@@ -151,7 +151,7 @@ void bind_stmt::pretty(std::ostream &out) const
 
 void bindtype_stmt::collect_resources(ResourceSet &rs)
 {
-	collect_modsym(rs, *bindtype);
+	collect_typespec(rs, *bindtype);
 }
 
 void bindtype_stmt::pretty(std::ostream &out) const

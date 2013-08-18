@@ -1,0 +1,19 @@
+
+
+func __main core/Void
+
+lfunc $0 list/insert
+const $0.0 "tacos"
+lconstruct $0.1 list/Empty
+call $1 $0
+
+const $0.0 "burritos"
+copy $0.1 $1
+call $1 $0
+
+lfunc $2 io/print
+lfunc $3 core/str
+copy $3.0 $1
+call $2.0 $3
+
+end.

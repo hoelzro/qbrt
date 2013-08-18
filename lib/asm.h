@@ -165,7 +165,7 @@ struct AsmPolymorph
 	AsmString doc;
 	AsmString filename;
 	uint16_t line_no;
-	AsmModSymList type;
+	AsmTypeSpecList type;
 
 	AsmPolymorph(const AsmModSym &proto)
 		: AsmResource(RESOURCE_POLYMORPH)
