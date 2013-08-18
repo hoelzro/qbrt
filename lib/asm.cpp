@@ -835,13 +835,11 @@ ostream & AsmConstruct::pretty(ostream &o) const
 
 uint32_t AsmDataType::write(std::ostream &out) const
 {
-	uint8_t argc(0);
-
 	out.write((const char *) name.index, 2);
 	out.write((const char *) doc.index, 2);
 	out.write((const char *) filename.index, 2);
 	out.write((const char *) &line_no, 2);
-	out.write((const char *) &argc, 1);
+	out.put(argc);
 
 	return 9;
 }

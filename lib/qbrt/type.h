@@ -10,13 +10,13 @@ class Module;
 
 struct ParamResource
 {
-	uint16_t name_idx;
-	uint16_t type_idx;
+	uint16_t name_idx;	// String index
+	uint16_t type_idx;	// TypeSpecResource index
 };
 
 struct TypeSpecResource
 {
-	uint16_t name_idx;	// modsym
+	uint16_t name_idx;	// type modsym
 	uint16_t fullname_idx;	// string
 	uint16_t args[];	// other TypeSpecResource indexes
 };
