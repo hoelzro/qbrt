@@ -86,27 +86,28 @@ struct Construct
 
 void load_construct_value_types(std::ostringstream &, const Construct &);
 
-struct StructFieldResource
-{
-	uint16_t type_mod_id;
-	uint16_t type_name_id;
-	uint16_t field_name_id;
 
-	static const uint32_t SIZE = 6;
+struct Tuple
+: public qbrt_value_index
+{
+	qbrt_value *data;
+	uint8_t size;
+
+	Tuple(uint8_t sz)
+		: data(new qbrt_value[sz])
+		, size(sz)
+	{}
+
+	~Tuple()
+	{
+		delete[] data;
+	}
+
+	virtual uint8_t num_values() const { return size; }
+	virtual qbrt_value & value(uint16_t i) { return data[i]; }
+	virtual const qbrt_value & value(uint16_t i) const { return data[i]; }
 };
 
-struct StructResource
-{
-	uint16_t name_id;
-	uint16_t field_count;
-	StructFieldResource field[];
-};
-
-struct StructField
-{
-	Type* type;
-	std::string name;
-};
 
 struct Type
 {

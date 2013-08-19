@@ -538,6 +538,7 @@ void measure_jump_bytes(codeblock &code)
 			case OP_IFFAIL:
 			case OP_IFNOTFAIL:
 			case OP_MATCH:
+			case OP_MATCHARGS:
 			case OP_FORK:
 				count_jump_bytes(it);
 				break;

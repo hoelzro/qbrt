@@ -238,6 +238,9 @@ stmt(A) ::= CONST reg(B) HASHTAG(C). {
 stmt(A) ::= COPY reg(B) reg(C). {
 	A = new copy_stmt(B, C);
 }
+stmt(A) ::= CTUPLE reg(B) INT(C). {
+	A = new ctuple_stmt(B, C->intval());
+}
 stmt(A) ::= GOTO LABEL(B). {
 	A = new goto_stmt(B->label());
 }
@@ -287,6 +290,9 @@ stmt(A) ::= LFUNC reg(B) modsym(C). {
 }
 stmt(A) ::= MATCH reg(B) reg(C) reg(D) LABEL(E). {
 	A = new match_stmt(B, C, D, E->label());
+}
+stmt(A) ::= MATCHARGS reg(B) reg(C) LABEL(E). {
+	A = new matchargs_stmt(B, C, E->label());
 }
 stmt(A) ::= NEWPROC reg(B) reg(C). {
 	A = new newproc_stmt(B, C);

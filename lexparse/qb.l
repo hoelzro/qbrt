@@ -84,6 +84,7 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 "const"		{ BEGIN(ARGS); lex_token(TOKEN_CONST); }
 "construct"	{ BEGIN(ARGS); lex_token(TOKEN_CONSTRUCT); }
 "copy"		{ BEGIN(ARGS); lex_token(TOKEN_COPY); }
+"ctuple"	{ BEGIN(ARGS); lex_token(TOKEN_CTUPLE); }
 "datatype"	{ BEGIN(ARGS); lex_token(TOKEN_DATATYPE); }
 "dparam"	{ BEGIN(ARGS); lex_token(TOKEN_DPARAM); }
 "fork"		{ BEGIN(ARGS); lex_token(TOKEN_FORK); }
@@ -103,6 +104,7 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 "lconstruct"	{ BEGIN(ARGS); lex_token(TOKEN_LCONSTRUCT); }
 "lfunc"		{ BEGIN(ARGS); lex_token(TOKEN_LFUNC); }
 "match"		{ BEGIN(ARGS); lex_token(TOKEN_MATCH); }
+"matchargs"	{ BEGIN(ARGS); lex_token(TOKEN_MATCHARGS); }
 "module"	{ BEGIN(ARGS); lex_token(TOKEN_MODULE); }
 "newproc"	{ BEGIN(ARGS); lex_token(TOKEN_NEWPROC); }
 "patternvar"	{ BEGIN(ARGS); lex_token(TOKEN_PATTERNVAR); }

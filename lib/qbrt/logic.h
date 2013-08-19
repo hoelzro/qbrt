@@ -98,6 +98,24 @@ struct match_instruction
 	static const uint8_t SIZE = 9;
 };
 
+struct matchargs_instruction
+: public jump_instruction
+{
+	int64_t opcode_data : 8;
+	int64_t jump_data :16;
+	int64_t result : 16;
+	int64_t pattern : 16;
+
+	matchargs_instruction(reg_t result, reg_t patt)
+	: opcode_data(OP_MATCHARGS)
+	, jump_data(0)
+	, result(result)
+	, pattern(patt)
+	{}
+
+	static const uint8_t SIZE = 7;
+};
+
 struct fork_instruction
 : public jump_instruction
 {

@@ -354,6 +354,22 @@ struct copy_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct ctuple_stmt
+: public Stmt
+{
+	ctuple_stmt(AsmReg *dst, uint8_t size)
+	: dst(dst)
+	, size(size)
+	{}
+
+	AsmReg *dst;
+	uint8_t size;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
 struct datatype_stmt
 : public Stmt
 {
@@ -535,6 +551,28 @@ struct match_stmt
 	AsmReg *result;
 	AsmReg *pattern;
 	AsmReg *input;
+	AsmLabel nonmatch;
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
+/**
+ * Pattern match on the function arguments
+ */
+struct matchargs_stmt
+: public Stmt
+{
+	matchargs_stmt(AsmReg *result, AsmReg *patt
+			, const std::string &nonmatch)
+	: result(result)
+	, pattern(patt)
+	, nonmatch(nonmatch)
+	{}
+
+	AsmReg *result;
+	AsmReg *pattern;
 	AsmLabel nonmatch;
 
 	void allocate_registers(RegAlloc *);

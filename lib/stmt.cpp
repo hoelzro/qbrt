@@ -285,6 +285,21 @@ void copy_stmt::pretty(std::ostream &out) const
 	out << "copy " << *dst << " " << *src;
 }
 
+void ctuple_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*dst);
+}
+
+void ctuple_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new ctuple_instruction(*dst, size));
+}
+
+void ctuple_stmt::pretty(ostream &out) const
+{
+	out << "ctuple " << *dst << ' ' << (int) size;
+}
+
 void datatype_stmt::set_function_context(uint8_t, AsmResource *)
 {
 	datatype = new AsmDataType(name, argc());
@@ -630,6 +645,24 @@ void match_stmt::generate_code(AsmFunc &f)
 void match_stmt::pretty(std::ostream &out) const
 {
 	out << "match " << *result << ' ' << *pattern << ' ' << *input
+		<< ' ' << nonmatch.name;
+}
+
+void matchargs_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc(*result);
+	r->alloc(*pattern);
+}
+
+void matchargs_stmt::generate_code(AsmFunc &f)
+{
+	asm_jump(f, nonmatch.name
+			, new matchargs_instruction(*result, *pattern));
+}
+
+void matchargs_stmt::pretty(ostream &out) const
+{
+	out << "matchargs " << *result << ' ' << *pattern
 		<< ' ' << nonmatch.name;
 }
 

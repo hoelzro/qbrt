@@ -4,6 +4,22 @@
 #include "qbrt/core.h"
 
 
+struct ctuple_instruction
+: public instruction
+{
+	uint32_t opcode_data : 8;
+	uint32_t dst : 16;
+	uint32_t size : 8;
+
+	ctuple_instruction(reg_t dst, uint8_t siz)
+		: opcode_data(OP_CTUPLE)
+		, dst(dst)
+		, size(siz)
+	{}
+
+	static const uint8_t SIZE = 4;
+};
+
 struct lconstruct_instruction
 : public instruction
 {

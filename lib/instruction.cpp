@@ -36,6 +36,7 @@ DEFINE_IWRITER(lfunc);
 DEFINE_IWRITER(loadtype);
 DEFINE_IWRITER(loadobj);
 DEFINE_IWRITER(match);
+DEFINE_IWRITER(matchargs);
 DEFINE_IWRITER(newproc);
 DEFINE_IWRITER(patternvar);
 DEFINE_IWRITER(recv);
@@ -77,6 +78,8 @@ void init_writers()
 	WRITER[OP_LOADTYPE] = (instruction_writer)iwriter<loadtype_instruction>;
 	WRITER[OP_LOADOBJ] = (instruction_writer)iwriter<loadobj_instruction>;
 	WRITER[OP_MATCH] = (instruction_writer)iwriter<match_instruction>;
+	WRITER[OP_MATCHARGS] =
+		(instruction_writer)iwriter<matchargs_instruction>;
 	WRITER[OP_NEWPROC] = (instruction_writer)iwriter<newproc_instruction>;
 	WRITER[OP_PATTERNVAR] =
 		(instruction_writer)iwriter<patternvar_instruction>;
