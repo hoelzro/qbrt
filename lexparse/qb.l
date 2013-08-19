@@ -34,6 +34,7 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 
 %x ARGS
 %x STR
+%x COMMENT
 
 %option noyywrap
 %option outfile="lib/qblex.c"
@@ -120,6 +121,10 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 
 "end."		{ lex_token(TOKEN_END); }
 {LABEL}		{ lex_token(TOKEN_LABEL); }
+"##"	{
+	Token::s_column += yyleng; // start the comment
+	BEGIN(COMMENT);
+}
 [ \t]	{
 	++Token::s_column; // eat whitespace
 }
@@ -147,6 +152,10 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 <ARGS>[ \t]	{
 	/* eat whitespace */
 	++Token::s_column;
+}
+<ARGS>"##"	{
+	Token::s_column += yyleng; // start an end of line comment
+	BEGIN(COMMENT);
 }
 
 <ARGS>.	{
@@ -184,6 +193,10 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 <STR>.	{
 	cerr << "Unrecognized string char:\t" << yytext << endl;
 	exit(1);
+}
+
+<COMMENT>.*	{
+	Token::s_column += yyleng;
 }
 
 %%
