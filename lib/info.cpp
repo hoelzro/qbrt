@@ -102,6 +102,17 @@ uint8_t print_match_instruction(const match_instruction &i)
 	return match_instruction::SIZE;
 }
 
+uint8_t print_matchargs_instruction(const matchargs_instruction &i)
+{
+	cout << "matchargs";
+	print_register(i.result);
+	print_register(i.pattern);
+	cout << ' ';
+	print_jump_delta(i.jump_data);
+	cout << endl;
+	return matchargs_instruction::SIZE;
+}
+
 uint8_t print_newproc_instruction(const newproc_instruction &i)
 {
 	cout << "newproc " << pretty_reg(i.pid)
@@ -199,6 +210,14 @@ uint8_t print_consti_instruction(const consti_instruction &i)
 	return consti_instruction::SIZE;
 }
 
+uint8_t print_ctuple_instruction(const ctuple_instruction &i)
+{
+	cout << "ctuple";
+	print_register(i.dst);
+	cout << (int) i.size << endl;
+	return ctuple_instruction::SIZE;
+}
+
 uint8_t print_fork_instruction(const fork_instruction &i)
 {
 	cout << "fork ";
@@ -279,9 +298,12 @@ void set_printers()
 	PRINTER[OP_LFUNC] = (instruction_printer) print_lfunc_instruction;
 	PRINTER[OP_LOADOBJ] = (instruction_printer) print_loadobj_instruction;
 	PRINTER[OP_MATCH] = (instruction_printer) print_match_instruction;
+	PRINTER[OP_MATCHARGS] =
+		(instruction_printer) print_matchargs_instruction;
 	PRINTER[OP_CONSTS] = (instruction_printer) print_consts_instruction;
 	PRINTER[OP_CONSTHASH] =
 		(instruction_printer) print_consthash_instruction;
+	PRINTER[OP_CTUPLE] = (instruction_printer) print_ctuple_instruction;
 	PRINTER[OP_RETURN] = (instruction_printer) print_return_instruction;
 	PRINTER[OP_MOVE] = (instruction_printer) print_move_instruction;
 	PRINTER[OP_REF] = (instruction_printer) print_ref_instruction;
