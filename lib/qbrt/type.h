@@ -65,11 +65,15 @@ struct Construct
 
 	friend bool operator < (const Construct &a, const Construct &b)
 	{
-		return a.resource.name_idx < b.resource.name_idx;
+		return Construct::compare(a, b) < 0;
 	}
 	friend bool operator > (const Construct &a, const Construct &b)
 	{
-		return a.resource.name_idx > b.resource.name_idx;
+		return Construct::compare(a, b) > 0;
+	}
+	friend bool operator == (const Construct &a, const Construct &b)
+	{
+		return Construct::compare(a, b) == 0;
 	}
 
 	uint8_t num_values() const { return resource.fld_count; }
@@ -77,6 +81,7 @@ struct Construct
 	const qbrt_value & value(uint8_t i) const { return fields[i]; }
 
 	const DataTypeResource * datatype() const;
+	static bool compare(const Construct &, const Construct &);
 };
 
 void load_construct_value_types(std::ostringstream &, const Construct &);

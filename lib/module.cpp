@@ -204,11 +204,40 @@ struct PolymorphFunctionSearch
 		}
 
 		const char *param_types = fetch_string(tbl, f->param_types_idx);
-		if (value_types < param_types) {
+		return compare_types(value_types.c_str(), param_types);
+	}
+
+	static int compare_types(const char *values, const char *params)
+	{
+		int value_len(strlen(values));
+		int param_len(strlen(params));
+		int cmp_len(value_len < param_len ? value_len : param_len);
+		int vi(0), pi(0);
+		while (vi < value_len && pi < param_len) {
+			if (values[vi] == params[pi]) {
+				++vi;
+				++pi;
+				continue;
+			}
+			if (strncmp(params + pi, "*/", 2) == 0) {
+				while (values[++vi] != ')');
+				while (params[++pi] != ')');
+				continue;
+			}
+			if (values[vi] < params[pi]) {
+				return -1;
+			}
+			// values[vi] must be > params[pi]
+			return 1;
+		}
+
+		int value_rem(value_len - vi);
+		int param_rem(param_len - pi);
+		if (value_rem < param_rem) {
 			return -1;
 		}
-		if (value_types > param_types) {
-			return 1;
+		if (value_rem > param_rem) {
+			return +1;
 		}
 		return 0;
 	}

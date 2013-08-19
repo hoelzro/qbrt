@@ -15,5 +15,9 @@ lfunc $2 io/print
 lfunc $3 core/str
 copy $3.0 $1
 call $2.0 $3
+call \void $2
+
+const $2.0 "\n"
+call \void $2
 
 end.

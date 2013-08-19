@@ -9,6 +9,25 @@ const DataTypeResource * Construct::datatype() const
 	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx);
 }
 
+bool Construct::compare(const Construct &a, const Construct &b)
+{
+	if (a.mod.name < b.mod.name) {
+		return -1;
+	}
+	if (a.mod.name > b.mod.name) {
+		return +1;
+	}
+	const char *aname = fetch_string(a.mod.resource, a.resource.name_idx);
+	const char *bname = fetch_string(b.mod.resource, b.resource.name_idx);
+	if (aname < bname) {
+		return -1;
+	}
+	if (aname > bname) {
+		return +1;
+	}
+	return 0;
+}
+
 void load_construct_value_types(ostringstream &out, const Construct &c)
 {
 	bool first(true);

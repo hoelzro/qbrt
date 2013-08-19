@@ -402,9 +402,12 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
 			return a.data.i == b.data.i;
 		case VT_HASHTAG:
 			return *a.data.hashtag == *b.data.hashtag;
+		case VT_LIST:
+		case VT_CONSTRUCT:
+			return *a.data.cons == *b.data.cons;
 		default:
-			cerr << "unsupport type comparison: " << a.type->id
-				<< endl;
+			cerr << "unsupported type comparison: "
+				<< (int) a.type->id << endl;
 			break;
 	}
 	return false;

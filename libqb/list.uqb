@@ -40,6 +40,8 @@ return
 copy $3.0 $0.0
 call $2 $3
 stracc \result $2
+const $4 ","
+stracc \result $4
 copy $0 $0.1
 goto @START
 
