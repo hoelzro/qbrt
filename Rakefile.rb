@@ -122,6 +122,7 @@ end
 
 
 TestFiles = ['hello.uqb',
+	'argc.uqb',
 	'arithmetic.uqb',
 	'bool.uqb',
 	'fact.uqb',
