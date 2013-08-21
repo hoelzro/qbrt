@@ -516,5 +516,6 @@ struct Failure
 #define DUPE_FAILURE(fail, fname, pc) (new Failure(fail, fname, pc))
 #define FAIL_TYPE(fname, pc) (NEW_FAILURE("typefailure", fname, pc))
 #define FAIL_NOFUNCTION(fname, pc) (NEW_FAILURE("nofunction", fname, pc))
+#define FAIL_BADREGISTER(fname, pc) (NEW_FAILURE("badregister", fname, pc))
 
 #endif

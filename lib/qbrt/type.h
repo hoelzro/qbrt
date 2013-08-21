@@ -103,9 +103,9 @@ struct Tuple
 		delete[] data;
 	}
 
-	virtual uint8_t num_values() const { return size; }
-	virtual qbrt_value & value(uint16_t i) { return data[i]; }
-	virtual const qbrt_value & value(uint16_t i) const { return data[i]; }
+	uint8_t num_values() const { return size; }
+	qbrt_value & value(uint8_t i) { return data[i]; }
+	const qbrt_value & value(uint8_t i) const { return data[i]; }
 };
 
 

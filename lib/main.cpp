@@ -72,6 +72,7 @@ qbrt_value & get_special_reg(CodeFrame &f, reg_t reg)
 
 struct OpContext
 {
+	virtual uint8_t argc() const = 0;
 	virtual uint8_t regc() const = 0;
 	virtual const qbrt_value * srcvalue(uint16_t) const = 0;
 	virtual qbrt_value * dstvalue(uint16_t) = 0;
@@ -97,6 +98,7 @@ public:
 	virtual Worker & worker() const { return w; }
 	virtual const char * function_name() const { return func.name(); }
 	virtual int & pc() const { return frame.pc; }
+	virtual uint8_t argc() const { return func.header->argc; }
 	virtual uint8_t regc() const { return func.num_values(); }
 	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
@@ -230,6 +232,7 @@ public:
 	virtual Worker & worker() const { return w; }
 	virtual const char * function_name() const { return "cfunction"; }
 	virtual int & pc() const { return *(int *) NULL; }
+	virtual uint8_t argc() const { return cfunc.argc; }
 	virtual uint8_t regc() const { return cfunc.regc; }
 	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
@@ -513,6 +516,22 @@ void execute_consthash(OpContext &ctx, const consthash_instruction &i)
 	ctx.pc() += consthash_instruction::SIZE;
 }
 
+void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
+{
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+	if (!dst) {
+		Failure *f = FAIL_BADREGISTER(ctx.function_name(), ctx.pc());
+		f->debug << "invalid register: " << i.dst;
+		qbrt_value::fail(*ctx.dstvalue(SPECIAL_REG_RESULT), f);
+		ctx.worker().current->cfstate = CFS_FAILED;
+		cerr << f->debug_msg() << endl;
+		return;
+	}
+
+	qbrt_value::tuple(*dst, new Tuple(i.size));
+	ctx.pc() += ctuple_instruction::SIZE;
+}
+
 void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 {
 	const char *name = fetch_string(ctx.resource(), i.hashtag);
@@ -572,7 +591,7 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	const QbrtFunction *qbrt(mod->fetch_function(fname));
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		cerr << "invalid register: " << i.reg << endl;
+		cerr << "invalid register in lfunc: " << i.reg << endl;
 		return;
 	}
 	c_function cf = NULL;
@@ -609,6 +628,44 @@ void execute_match(OpContext &ctx, const match_instruction &i)
 	} else {
 		ctx.pc() += i.jump();
 	}
+}
+
+void execute_matchargs(OpContext &ctx, const matchargs_instruction &i)
+{
+	const qbrt_value &pattern_val(*ctx.srcvalue(i.pattern));
+	qbrt_value &result_val(*ctx.dstvalue(i.result));
+	if (!qbrt_value::is_value_index(pattern_val)) {
+		cerr << "invalid pattern argument in matchargs\n";
+		ctx.pc() += i.jump();
+		return;
+	}
+	if (!qbrt_value::is_value_index(result_val)) {
+		cerr << "invalid result argument in matchargs\n";
+		ctx.pc() += i.jump();
+		return;
+	}
+	const qbrt_value_index &pattern(*pattern_val.data.reg);
+	qbrt_value_index &result(*result_val.data.reg);
+
+	int cmp;
+	int argc(ctx.argc());
+	int j;
+	for (j=0; j<argc; ++j) {
+		cmp = qbrt_compare(pattern.value(j)
+				, *ctx.srcvalue(PRIMARY_REG(j)));
+		if (cmp != 0) {
+			ctx.pc() += i.jump();
+			return;
+		}
+	}
+
+	for (j=0; j<argc; ++j) {
+		if (pattern.value(j).type->id == VT_PATTERNVAR) {
+			qbrt_value::copy(result.value(j)
+					, *ctx.srcvalue(PRIMARY_REG(j)));
+		}
+	}
+	ctx.pc() += matchargs_instruction::SIZE;
 }
 
 void execute_newproc(OpContext &ctx, const newproc_instruction &i)
@@ -763,6 +820,7 @@ void init_executioners()
 	x[OP_CONSTI] = (executioner) execute_consti;
 	x[OP_CONSTS] = (executioner) execute_consts;
 	x[OP_CONSTHASH] = (executioner) execute_consthash;
+	x[OP_CTUPLE] = (executioner) execute_ctuple;
 	x[OP_IADD] = (executioner) execute_binaryop;
 	x[OP_IDIV] = (executioner) execute_divide;
 	x[OP_IMULT] = (executioner) execute_binaryop;
@@ -771,6 +829,7 @@ void init_executioners()
 	x[OP_LCONSTRUCT] = (executioner) execute_lconstruct;
 	x[OP_LFUNC] = (executioner) execute_loadfunc;
 	x[OP_MATCH] = (executioner) execute_match;
+	x[OP_MATCHARGS] = (executioner) execute_matchargs;
 	x[OP_NEWPROC] = (executioner) execute_newproc;
 	x[OP_PATTERNVAR] = (executioner) execute_patternvar;
 	x[OP_RECV] = (executioner) execute_recv;

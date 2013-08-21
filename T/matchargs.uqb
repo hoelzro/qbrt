@@ -4,6 +4,7 @@ dparam x core/Int
 dparam y core/Int
 
 ctuple $0 2
+ctuple $1 2
 const $0.0 0
 const $0.1 0
 matchargs $1 $0 @NOT_ORIGIN
@@ -36,7 +37,7 @@ const $1.0 "\n(0,0) is origin\n"
 call \void $1
 
 const $0.0 0
-const $0.0 0
+const $0.1 0
 call $2.0 $0
 call $1.0 $2
 call \void $1

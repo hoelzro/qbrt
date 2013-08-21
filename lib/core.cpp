@@ -188,7 +188,7 @@ void qbrt_value::copy(qbrt_value &dst, const qbrt_value &src)
 	}
 }
 
-bool qbrt_value::is_value_index(qbrt_value &val)
+bool qbrt_value::is_value_index(const qbrt_value &val)
 {
 	if (!val.data.reg) {
 		return false;

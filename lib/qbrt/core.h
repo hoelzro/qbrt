@@ -180,6 +180,11 @@ struct qbrt_value
 		v.type = &TYPE_MAP;
 		v.data.map = m;
 	}
+	static void tuple(qbrt_value &v, Tuple *tup)
+	{
+		v.type = &TYPE_TUPLE;
+		v.data.tuple = tup;
+	}
 	static void vect(qbrt_value &dst, Vector *v)
 	{
 		set_void(dst);
@@ -205,7 +210,7 @@ struct qbrt_value
 		copy(*dst, src);
 		return dst;
 	}
-	static bool is_value_index(qbrt_value &);
+	static bool is_value_index(const qbrt_value &);
 
 	static void append_type(std::ostringstream &, const qbrt_value &);
 
