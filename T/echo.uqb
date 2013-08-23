@@ -1,0 +1,21 @@
+
+
+func __main core/Int
+dparam argc core/Int
+dparam argv list/List(core/String)
+
+lfunc $0 core/str
+lfunc $1 io/print
+
+const $1.0 "arguments are: "
+call \void $1
+
+copy $0.0 %1
+call $1.0 $0
+call \void $1
+
+const $1.0 "\n"
+call \void $1
+copy \result %0
+
+end.

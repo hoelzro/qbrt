@@ -80,6 +80,7 @@ struct Construct
 	qbrt_value & value(uint8_t i) { return fields[i]; }
 	const qbrt_value & value(uint8_t i) const { return fields[i]; }
 
+	const char * name() const;
 	const DataTypeResource * datatype() const;
 	static bool compare(const Construct &, const Construct &);
 };
@@ -106,6 +107,17 @@ struct Tuple
 	uint8_t num_values() const { return size; }
 	qbrt_value & value(uint8_t i) { return data[i]; }
 	const qbrt_value & value(uint8_t i) const { return data[i]; }
+};
+
+
+/** Static class for operating on list.List constructs */
+struct List
+{
+	static void push(qbrt_value &head, const qbrt_value &item);
+	static void reverse(qbrt_value &head);
+	static void head(qbrt_value &result, const qbrt_value &head);
+	static void pop(qbrt_value &head);
+	static void is_empty(qbrt_value &result, const qbrt_value &head);
 };
 
 

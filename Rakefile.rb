@@ -10,6 +10,7 @@ QBC.compile_files("lib/asm.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/instruction.cpp", \
+		  "lib/module.cpp", \
 		  "lib/qbparse.c", \
 		  "lib/qblex.c", \
 		  "lib/stmt.cpp", \
@@ -125,6 +126,7 @@ TestFiles = ['hello.uqb',
 	'argc.uqb',
 	'arithmetic.uqb',
 	'bool.uqb',
+	'echo.uqb',
 	'fact.uqb',
 	'fork_hello.uqb',
 	'listprint.uqb',

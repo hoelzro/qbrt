@@ -411,6 +411,7 @@ ProcessRoot * new_process(Application &app, FunctionCall *call)
 Worker & new_worker(Application &app)
 {
 	Worker *w = new Worker(app, app.next_workerid++);
+	w->module = app.module;
 	app.worker[w->id] = w;
 	return *w;
 }

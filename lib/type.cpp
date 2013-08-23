@@ -9,6 +9,11 @@ const DataTypeResource * Construct::datatype() const
 	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx);
 }
 
+const char * Construct::name() const
+{
+	return fetch_string(mod.resource, resource.name_idx);
+}
+
 bool Construct::compare(const Construct &a, const Construct &b)
 {
 	if (a.mod.name < b.mod.name) {
@@ -17,15 +22,9 @@ bool Construct::compare(const Construct &a, const Construct &b)
 	if (a.mod.name > b.mod.name) {
 		return +1;
 	}
-	const char *aname = fetch_string(a.mod.resource, a.resource.name_idx);
-	const char *bname = fetch_string(b.mod.resource, b.resource.name_idx);
-	if (aname < bname) {
-		return -1;
-	}
-	if (aname > bname) {
-		return +1;
-	}
-	return 0;
+	const char *aname = a.name();
+	const char *bname = b.name();
+	return strcmp(aname, bname);
 }
 
 void load_construct_value_types(ostringstream &out, const Construct &c)
@@ -66,4 +65,46 @@ void load_construct_value_types(ostringstream &out, const Construct &c)
 		cerr << "(what type is this?)";
 	}
 	out << ')';
+}
+
+
+void List::push(qbrt_value &head, const qbrt_value &item)
+{
+	qbrt_value tmp(head);
+	Module::load_construct(head, head.data.cons->mod, "Node");
+	head.data.cons->value(0) = item;
+	head.data.cons->value(1) = tmp;
+}
+
+void List::head(qbrt_value &result, const qbrt_value &head)
+{
+	if (head.type->id != VT_CONSTRUCT) {
+		cerr <<"head arg not a list: "<< (int) head.type->id << endl;
+		// set failure in result
+		return;
+	}
+	result = head.data.cons->value(0);
+}
+
+void List::is_empty(qbrt_value &result, const qbrt_value &head)
+{
+	if (head.type->module != "list") {
+		qbrt_value::fail(result, FAIL_TYPE("list/is_empty", 0));
+		return;
+	}
+	if (head.type->name != "List") {
+		qbrt_value::fail(result, FAIL_TYPE("list/is_empty", 0));
+		return;
+	}
+	bool empty(strcmp(head.data.cons->name(), "") == 0);
+	qbrt_value::b(result, empty);
+}
+
+void List::pop(qbrt_value &head)
+{
+}
+
+void List::reverse(qbrt_value &head)
+{
+	// nothing for now
 }

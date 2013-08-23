@@ -7,7 +7,6 @@
 #include "qbrt/logic.h"
 #include "qbrt/string.h"
 #include "qbrt/tuple.h"
-#include "qbrt/list.h"
 #include "instruction/schedule.h"
 #include "instruction/type.h"
 #include <cstdlib>

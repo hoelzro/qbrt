@@ -220,6 +220,9 @@ struct Module
 	friend void add_type(Module &, const std::string &name, const Type &);
 	friend const Type * indexed_datatype(const Module &, uint16_t idx);
 
+	static void load_construct(qbrt_value &, const Module &
+			, const char *name);
+
 private:
 	const QbrtFunction * qbrt_function(const FunctionHeader *) const;
 	mutable std::map< const FunctionHeader *, const QbrtFunction * >

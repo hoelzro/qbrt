@@ -497,3 +497,14 @@ const ConstructResource * find_construct(const Module &m
 	}
 	return cons;
 }
+
+void Module::load_construct(qbrt_value &dst, const Module &m, const char *name)
+{
+	const ConstructResource *construct_r;
+	construct_r = find_construct(m, name);
+
+	const Type *typ = indexed_datatype(m, construct_r->datatype_idx);
+
+	Construct *cons = new Construct(m, *construct_r);
+	qbrt_value::construct(dst, typ, cons);
+}

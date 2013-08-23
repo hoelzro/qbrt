@@ -6,7 +6,6 @@
 #include "qbrt/function.h"
 #include "qbrt/logic.h"
 #include "qbrt/tuple.h"
-#include "qbrt/list.h"
 #include "qbrt/map.h"
 #include "qbrt/vector.h"
 #include "qbrt/module.h"
@@ -563,16 +562,13 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 		exit(1);
 	}
 	Failure *fail;
-	qbrt_value &dst(*ctx.dstvalue(i.reg));
+	qbrt_value *dst(ctx.dstvalue(i.reg));
+	if (!dst) {
+		cerr << "Invalidate lconstruct register: " << i.reg << endl;
+		exit(1);
+	}
 
-	const ConstructResource *construct_r;
-	construct_r = find_construct(*mod, name);
-
-	const Type *typ = indexed_datatype(*mod, construct_r->datatype_idx);
-
-	Construct *cons = new Construct(*mod, *construct_r);
-	qbrt_value::construct(dst, typ, cons);
-
+	Module::load_construct(*dst, *mod, name);
 	ctx.pc() += lcontext_instruction::SIZE;
 }
 
@@ -924,8 +920,10 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 
 	if (f->abstract()) {
 		// can't execute the function if it's abstract
+		ostringstream types;
+		load_function_value_types(types, *f);
 		cerr << "cannot execute abstract function: "
-			<< f->name() << endl;
+			<< f->name() << "; " << types.str() << endl;
 		w.current->cfstate = CFS_FAILED;
 		return;
 	}
@@ -1080,17 +1078,6 @@ ostream & inspect_ref(ostream &out, qbrt_value &ref)
 	return inspect(out, val);
 }
 
-ostream & inspect_list(ostream &out, const List *l) {
-	out << '[';
-	while (l) {
-		inspect(out, l->value);
-		out << ',';
-		l = l->next;
-	}
-	out << "]\n";
-	return out;
-}
-
 ostream & inspect(ostream &out, const qbrt_value &v)
 {
 	switch (v.type->id) {
@@ -1120,9 +1107,6 @@ ostream & inspect(ostream &out, const qbrt_value &v)
 			break;
 		case VT_REF:
 			inspect_ref(out, *v.data.ref);
-			break;
-		case VT_LIST:
-			inspect_list(out, v.data.list);
 			break;
 		case VT_STREAM:
 			out << "stream";
@@ -1227,42 +1211,25 @@ void list_empty(OpContext &ctx, qbrt_value &out)
 		cerr << "no param for list empty\n";
 		return;
 	}
-	switch (val->type->id) {
-		case VT_LIST:
-			qbrt_value::b(out, empty(val->data.list));
-			break;
-		default:
-			cerr << "empty arg not a list: " << (int) val->type->id
-				<< endl;
-			break;
+	if (val->type->id != VT_CONSTRUCT) {
+		cerr << "empty arg not a list: " << (int) val->type->id
+			<< endl;
 	}
+	List::is_empty(out, *val);
 }
 
 void list_head(OpContext &ctx, qbrt_value &out)
 {
-	const qbrt_value &val = *ctx.srcvalue(PRIMARY_REG(0));
-	switch (val.type->id) {
-		case VT_LIST:
-			out = head(val.data.list);
-			break;
-		default:
-			cerr <<"head arg not a list: "<< (int)val.type->id
-				<< endl;
-			break;
-	}
+	const qbrt_value *val = ctx.srcvalue(PRIMARY_REG(0));
+	List::head(out, *val);
 }
 
 void list_pop(OpContext &ctx, qbrt_value &out)
 {
-	qbrt_value &val(*ctx.dstvalue(PRIMARY_REG(0)));
-	switch (val.type->id) {
-		case VT_LIST:
-			qbrt_value::list(out, pop(val.data.list));
-			break;
-		default:
-			cerr <<"pop arg not a list: "<< (int)val.type->id
-				<< endl;
-			break;
+	const qbrt_value *val = ctx.srcvalue(PRIMARY_REG(0));
+	if (!val) {
+		cerr << "no param for list pop\n";
+		return;
 	}
 }
 
@@ -1345,7 +1312,7 @@ int main(int argc, const char **argv)
 	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
 			, "core/Int");
 
-	add_c_function(*mod_list, list_empty, "empty", 1, "core/List;");
+	add_c_function(*mod_list, list_empty, "is_empty", 1, "core/List;");
 	add_c_function(*mod_list, list_head, "head", 1, "core/List;");
 	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");
 
@@ -1378,15 +1345,17 @@ int main(int argc, const char **argv)
 		qbrt_value::i(main_func->regv[0], argc - 1);
 	}
 	if (main_func_argc >= 2) {
-		qbrt_value::list(main_func->regv[1], NULL);
+		qbrt_value head;
+		Module::load_construct(head, *mod_list, "Empty");
 		for (int i(1); i<argc; ++i) {
-			qbrt_value arg;
-			string strarg(argv[i]);
-			qbrt_value::str(arg, argv[i]);
-			cons(arg, main_func->regv[1].data.list);
+			qbrt_value node;
+			Module::load_construct(node, *mod_list, "Node");
+			qbrt_value::str(node.data.reg->value(0), argv[i]);
+			node.data.reg->value(1) = head;
+			head = node;
 		}
-		qbrt_value::list(main_func->regv[1]
-				, reverse(main_func->regv[1].data.list));
+		main_func->regv[1] = head;
+		//List::reverse(main_func->regv[1]);
 	}
 
 	Stream *stream_stdin = NULL;
