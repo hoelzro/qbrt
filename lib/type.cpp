@@ -102,6 +102,22 @@ void List::is_empty(qbrt_value &result, const qbrt_value &head)
 
 void List::pop(qbrt_value &head)
 {
+	/*
+	if (head.type->id != VT_CONSTRUCT) {
+		cerr <<"head arg not a construct: "<< (int)head.type->id<< endl;
+		// set failure in result
+		return;
+	}
+	switch (val.type->id) {
+		case VT_LIST:
+			qbrt_value::list(out, pop(val.data.list));
+			break;
+		default:
+			cerr <<"pop arg not a list: "<< (int)val.type->id
+				<< endl;
+			break;
+	}
+	*/
 }
 
 void List::reverse(qbrt_value &head)

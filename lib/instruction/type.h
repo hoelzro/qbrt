@@ -56,4 +56,36 @@ struct patternvar_instruction
 };
 
 
+/** Construct a list. Don't need this w/ the list.Empty construct */
+struct clist_instruction
+: public instruction
+{
+	uint32_t opcode_data : 8;
+	uint32_t dst : 16;
+
+	clist_instruction(reg_t dst)
+		: opcode_data(OP_CLIST)
+		, dst(dst)
+	{}
+
+	static const uint8_t SIZE = 3;
+};
+
+/** Push an item on to the front of the list */
+struct cons_instruction
+: public instruction
+{
+	uint32_t opcode_data : 8;
+	uint32_t head : 16;
+	uint32_t item : 16;
+
+	cons_instruction(reg_t head, reg_t item)
+		: opcode_data(OP_CLIST)
+		, head(head)
+		, item(item)
+	{}
+
+	static const uint8_t SIZE = 5;
+};
+
 #endif
