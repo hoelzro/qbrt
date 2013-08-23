@@ -145,13 +145,13 @@ def test_uqb(file)
 	mod = file.chomp(File.extname(file))
 	sh "../qbc #{file}"
 	Dir.chdir "../"
-	input_file = "T/INPUT/#{mod}"
+	input_file = "T/DATA/#{mod}.input"
 	if File.exist? input_file
 		output = `cat #{input_file} | QBPATH=libqb:T ./qbrt #{mod} 2>&1`
 	else
 		output = `QBPATH=libqb:T ./qbrt #{mod} 2>&1`
 	end
-	expected = File.read("T/OUTPUT/#{mod}")
+	expected = File.read("T/DATA/#{mod}.output")
 	if (output != expected)
 		puts "Expected output:\n#{expected}..."
 		puts "Actual output:\n#{output}..."
