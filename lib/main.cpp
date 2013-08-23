@@ -1354,8 +1354,7 @@ int main(int argc, const char **argv)
 			node.data.reg->value(1) = head;
 			head = node;
 		}
-		main_func->regv[1] = head;
-		//List::reverse(main_func->regv[1]);
+		List::reverse(main_func->regv[1], head);
 	}
 
 	Stream *stream_stdin = NULL;

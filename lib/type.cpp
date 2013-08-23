@@ -78,7 +78,7 @@ void List::push(qbrt_value &head, const qbrt_value &item)
 
 void List::head(qbrt_value &result, const qbrt_value &head)
 {
-	if (head.type->id != VT_CONSTRUCT) {
+	if (head.type->id != VT_LIST) {
 		cerr <<"head arg not a list: "<< (int) head.type->id << endl;
 		// set failure in result
 		return;
@@ -88,39 +88,36 @@ void List::head(qbrt_value &result, const qbrt_value &head)
 
 void List::is_empty(qbrt_value &result, const qbrt_value &head)
 {
-	if (head.type->module != "list") {
+	if (head.type->id != VT_LIST) {
 		qbrt_value::fail(result, FAIL_TYPE("list/is_empty", 0));
 		return;
 	}
-	if (head.type->name != "List") {
-		qbrt_value::fail(result, FAIL_TYPE("list/is_empty", 0));
-		return;
-	}
-	bool empty(strcmp(head.data.cons->name(), "") == 0);
+	bool empty(strcmp(head.data.cons->name(), "Empty") == 0);
 	qbrt_value::b(result, empty);
 }
 
-void List::pop(qbrt_value &head)
+void List::pop(qbrt_value &result, const qbrt_value &head)
 {
-	/*
-	if (head.type->id != VT_CONSTRUCT) {
+	if (head.type->id != VT_LIST) {
+		qbrt_value::fail(result, FAIL_TYPE("list/pop", 0));
 		cerr <<"head arg not a construct: "<< (int)head.type->id<< endl;
 		// set failure in result
 		return;
 	}
-	switch (val.type->id) {
-		case VT_LIST:
-			qbrt_value::list(out, pop(val.data.list));
-			break;
-		default:
-			cerr <<"pop arg not a list: "<< (int)val.type->id
-				<< endl;
-			break;
-	}
-	*/
+	result = head.data.cons->value(1);
 }
 
-void List::reverse(qbrt_value &head)
+void List::reverse(qbrt_value &result, const qbrt_value &head)
 {
-	// nothing for now
+	Module::load_construct(result, head.data.cons->mod, "Empty");
+	qbrt_value next(head);
+	qbrt_value check;
+	qbrt_value item;
+	List::is_empty(check, next);
+	while (!check.data.b) {
+		List::head(item, next);
+		List::push(result, item);
+		List::pop(next, next);
+		List::is_empty(check, next);
+	}
 }

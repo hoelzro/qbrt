@@ -114,9 +114,9 @@ struct Tuple
 struct List
 {
 	static void push(qbrt_value &head, const qbrt_value &item);
-	static void reverse(qbrt_value &head);
+	static void reverse(qbrt_value &result, const qbrt_value &head);
 	static void head(qbrt_value &result, const qbrt_value &head);
-	static void pop(qbrt_value &head);
+	static void pop(qbrt_value &result, const qbrt_value &head);
 	static void is_empty(qbrt_value &result, const qbrt_value &head);
 };
 
