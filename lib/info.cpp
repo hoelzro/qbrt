@@ -376,15 +376,12 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		cout << "types:";
 		const char *typemod;
 		const char *typesym;
+		const char *fullname;
+		const TypeSpecResource *tspec;
 		for (int i(0); i<poly->type_count; ++i) {
-			ms = &fetch_modsym(tbl, poly->type[i]);
-			typemod = fetch_string(tbl, ms->mod_name);
-			typesym = fetch_string(tbl, ms->sym_name);
-			cout << ' ';
-			if (typemod && *typemod) {
-				cout << typemod << '/';
-			}
-			cout << typesym;
+			tspec = tbl.ptr< TypeSpecResource >(poly->type[i]);
+			fullname = fetch_string(tbl, tspec->fullname_idx);
+			cout << ' ' << fullname;
 		}
 		cout << endl;
 	}
@@ -459,11 +456,10 @@ void print_constructure(const ConstructResource &conres
 	for (int i(0); i<conres.fld_count; ++i) {
 		const ParamResource &p(conres.fields[i]);
 		const char *name = fetch_string(tbl, p.name_idx);
-		const ModSym &type = fetch_modsym(tbl, p.type_idx);
-		const char *typemod = fetch_string(tbl, type.mod_name);
-		const char *typesym = fetch_string(tbl, type.sym_name);
-		cout << '\t' << name <<' '
-			<< typemod <<'/'<< typesym << endl;
+		const TypeSpecResource &tsr(
+				tbl.obj< TypeSpecResource >(p.type_idx));
+		const char *fullname = fetch_string(tbl, tsr.fullname_idx);
+		cout << '\t' << name <<' '<< fullname << endl;
 	}
 }
 
@@ -608,10 +604,10 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 	printf("%s", symname);
 
 	for (uint16_t i(0); i<poly.type_count; ++i) {
-		const ModSym &type(fetch_modsym(tbl, poly.type[i]));
-		const char *modname(fetch_string(tbl, type.mod_name));
-		const char *symname(fetch_string(tbl, type.sym_name));
-		printf(" %s%s", modname, symname);
+		const TypeSpecResource &tspec(tbl.obj< TypeSpecResource >(
+					poly.type[i]));
+		const char *fullname(fetch_string(tbl, tspec.fullname_idx));
+		printf(" %s", fullname);
 	}
 	printf("\n");
 }

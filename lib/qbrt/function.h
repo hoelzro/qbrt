@@ -249,7 +249,7 @@ struct PolymorphResource
 	uint16_t type_count;
 	uint16_t func_count;
 
-	uint16_t type[];
+	uint16_t type[]; // TypeSpec array
 
 	static const uint16_t HEADER_SIZE = 12;
 };
