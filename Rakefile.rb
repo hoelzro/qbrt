@@ -146,10 +146,17 @@ def test_uqb(file)
 	sh "../qbc #{file}"
 	Dir.chdir "../"
 	input_file = "T/DATA/#{mod}.input"
-	if File.exist? input_file
-		output = `cat #{input_file} | QBPATH=libqb:T ./qbrt #{mod} 2>&1`
+	args_file = "T/DATA/#{mod}.args"
+	if File.exist? args_file
+		args = File.read(args_file)
 	else
-		output = `QBPATH=libqb:T ./qbrt #{mod} 2>&1`
+		args = ""
+	end
+	cmd = "QBPATH=libqb:T ./qbrt #{mod} #{args} 2>&1"
+	if File.exist? input_file
+		output = `cat #{input_file} | #{cmd}`
+	else
+		output = `#{cmd}`
 	end
 	expected = File.read("T/DATA/#{mod}.output")
 	if (output != expected)
@@ -157,6 +164,7 @@ def test_uqb(file)
 		puts "Actual output:\n#{output}..."
 		passed = false
 	else
+		puts "Correct output:\n#{output}..."
 		passed = true
 	end
 	return passed
