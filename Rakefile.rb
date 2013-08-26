@@ -125,6 +125,7 @@ end
 TestFiles = ['hello.uqb',
 	'argc.uqb',
 	'arithmetic.uqb',
+	'badmath.uqb',
 	'bool.uqb',
 	'echo.uqb',
 	'fact.uqb',

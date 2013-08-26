@@ -1,0 +1,36 @@
+
+func badmath core/Int
+
+const $0 5
+const $1 "not a number"
+
+iadd $2 $0 $1
+const $0 8
+iadd $3 $0 $2
+
+const $0 13
+iadd \result $0 $3
+
+end.
+
+func __main core/Void
+lfunc $0 io/print
+lfunc $1 ./badmath
+lfunc $2 core/str
+call $2.0 $1
+
+iffail $2.0 @GOOD_STATE
+const $0.0 "badmath failed\n"
+call \void $0
+const $2.0 -1
+
+@GOOD_STATE
+const $0.0 "answer is: "
+call \void $0
+call $0.0 $2
+call \void $0
+
+const $0.0 "\n"
+call \void $0
+
+end.

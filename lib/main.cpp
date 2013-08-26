@@ -367,16 +367,45 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 	const qbrt_value &b(*ctx.srcvalue(i.b));
 	RETURN_FAILURE(ctx, i.a);
 	RETURN_FAILURE(ctx, i.b);
-	qbrt_value &result(*ctx.dstvalue(i.result));
+
+	Failure *fail;
+	qbrt_value *result(ctx.dstvalue(i.result));
 	switch (i.opcode()) {
 		case OP_IADD:
-			qbrt_value::i(result, a.data.i + b.data.i);
+		case OP_ISUB:
+		case OP_IMULT:
+			if (a.type->id != VT_INT) {
+				fail = FAIL_TYPE(ctx.function_name(), ctx.pc());
+				fail->debug << "unexpected type for first "
+					" operand in integer binary operation: "
+					<< a.type->id;
+				qbrt_value::fail(*result, fail);
+				ctx.pc() += binaryop_instruction::SIZE;
+				return;
+			}
+			if (b.type->id != VT_INT) {
+				fail = FAIL_TYPE(ctx.function_name(), ctx.pc());
+				fail->debug << "unexpected type for second "
+					" operand in integer binary operation: "
+					<< b.type->id;
+				qbrt_value::fail(*result, fail);
+				ctx.pc() += binaryop_instruction::SIZE;
+				return;
+			}
+			break;
+		default:
+			cerr << "how'd *that* happen?\n";
+			exit(1);
+	}
+	switch (i.opcode()) {
+		case OP_IADD:
+			qbrt_value::i(*result, a.data.i + b.data.i);
 			break;
 		case OP_ISUB:
-			qbrt_value::i(result, a.data.i - b.data.i);
+			qbrt_value::i(*result, a.data.i - b.data.i);
 			break;
 		case OP_IMULT:
-			qbrt_value::i(result, a.data.i * b.data.i);
+			qbrt_value::i(*result, a.data.i * b.data.i);
 			break;
 	}
 	ctx.pc() += binaryop_instruction::SIZE;
