@@ -1,0 +1,10 @@
+
+func __main core/Int
+
+lfunc $0 io/pront ## intentionally wrong function name
+const $0.0 "hello world\n"
+call \void $0
+
+const \result 0
+
+end.

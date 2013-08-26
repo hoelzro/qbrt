@@ -34,9 +34,12 @@ ostream & inspect_function(ostream &, const Function &);
 ostream & inspect_call_frame(ostream &, const CodeFrame &);
 int inspect_indent(0);
 
-#define CHECK_FAILURE(result, arg) do { \
-	if (arg.type->id == VT_FAILURE) { \
-		qbrt_value::fail(result, arg.data.failure); \
+#define RETURN_FAILURE(ctx, reg) do { \
+	Failure *fail = ctx.failure(reg); \
+	if (fail) { \
+		FunctionCall &call(ctx.worker().current->function_call()); \
+		qbrt_value::fail(*call.result, fail); \
+		call.cfstate = CFS_FAILED; \
 		return; \
 	}} while (0)
 
@@ -76,6 +79,7 @@ struct OpContext
 	virtual const qbrt_value * srcvalue(uint16_t) const = 0;
 	virtual qbrt_value * dstvalue(uint16_t) = 0;
 	virtual qbrt_value & refvalue(uint16_t) = 0;
+	virtual Failure * failure(uint16_t) = 0;
 	virtual const char * function_name() const = 0;
 	virtual int & pc() const = 0;
 	virtual Worker & worker() const = 0;
@@ -119,6 +123,12 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
+			if (qbrt_value::failed(func.value(primary))) {
+				qbrt_value::fail(*func.result
+					, func.value(primary).data.failure);
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
 			secondary = REG_EXTRACT_SECONDARY2(reg);
 			qbrt_value_index *idx(func.value(primary).data.reg);
 			if (secondary >= idx->num_values()) {
@@ -155,6 +165,12 @@ public:
 			if (primary >= regc()) {
 				qbrt_value::fail(*func.result
 					, new Failure("invalidregister"));
+				frame.cfstate = CFS_FAILED;
+				return NULL;
+			}
+			if (qbrt_value::failed(func.value(primary))) {
+				qbrt_value::fail(*func.result
+					, func.value(primary).data.failure);
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -195,6 +211,22 @@ public:
 		}
 		cerr << "Unsupported ref register: " << reg << endl;
 		return *(qbrt_value *) NULL;
+	}
+	Failure * failure(uint16_t reg)
+	{
+		if (REG_IS_PRIMARY(reg)) {
+			uint16_t r(REG_EXTRACT_PRIMARY(reg));
+			if (qbrt_value::failed(func.value(r))) {
+				return func.value(r).data.failure;
+			}
+		} else if (REG_IS_SECONDARY(reg)) {
+			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
+			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
+			if (qbrt_value::failed(func.value(r1))) {
+				return func.value(r1).data.failure;
+			}
+		}
+		return NULL;
 	}
 
 	qbrt_value * get_context(const std::string &name)
@@ -295,6 +327,18 @@ public:
 		return *(qbrt_value *) NULL;
 	}
 
+	Failure * failure(uint16_t reg)
+	{
+		if (REG_IS_PRIMARY(reg)) {
+			uint16_t r(REG_EXTRACT_PRIMARY(reg));
+			return NULL;
+		} else if (REG_IS_SECONDARY(reg)) {
+			uint16_t r1(REG_EXTRACT_SECONDARY1(reg));
+			uint16_t r2(REG_EXTRACT_SECONDARY2(reg));
+		}
+		return NULL;
+	}
+
 	qbrt_value * get_context(const std::string &name)
 	{
 		return add_context(&frame, name);
@@ -321,6 +365,8 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 {
 	const qbrt_value &a(*ctx.srcvalue(i.a));
 	const qbrt_value &b(*ctx.srcvalue(i.b));
+	RETURN_FAILURE(ctx, i.a);
+	RETURN_FAILURE(ctx, i.b);
 	qbrt_value &result(*ctx.dstvalue(i.result));
 	switch (i.opcode()) {
 		case OP_IADD:
@@ -503,8 +549,18 @@ void execute_copy(OpContext &ctx, const copy_instruction &i)
 
 void execute_consts(OpContext &ctx, const consts_instruction &i)
 {
+	RETURN_FAILURE(ctx, i.reg);
+
 	const char *str = fetch_string(ctx.resource(), i.string_id);
-	qbrt_value::str(*ctx.dstvalue(i.reg), str);
+	qbrt_value *dst = ctx.dstvalue(i.reg);
+	if (!dst) {
+		Failure *f = FAIL_BADREGISTER(ctx.function_name(), ctx.pc());
+		f->debug << "invalid register: " << i.reg;
+		qbrt_value::fail(*ctx.dstvalue(SPECIAL_REG_RESULT), f);
+		ctx.worker().current->cfstate = CFS_FAILED;
+		return;
+	}
+	qbrt_value::str(*dst, str);
 	ctx.pc() += consts_instruction::SIZE;
 }
 
@@ -557,18 +613,27 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 	const char *modname = fetch_string(resource, modsym.mod_name);
 	const char *name = fetch_string(resource, modsym.sym_name);
 	const Module *mod(find_module(ctx.worker(), modname));
-	if (!mod) {
-		cerr << "cannot find module: " << modname << endl;
-		exit(1);
-	}
+
 	Failure *fail;
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		cerr << "Invalidate lconstruct register: " << i.reg << endl;
-		exit(1);
+		dst = ctx.dstvalue(SPECIAL_REG_RESULT);
+		fail = FAIL_BADREGISTER("lconstruct", ctx.pc());
+		fail->debug << "invalid register: " << i.reg;
+		qbrt_value::fail(*dst, fail);
+		ctx.worker().current->cfstate = CFS_FAILED;
+		return;
 	}
 
-	Module::load_construct(*dst, *mod, name);
+	if (mod) {
+		Module::load_construct(*dst, *mod, name);
+	} else {
+		fail = FAIL_MODULE404("lconstruct", ctx.pc());
+		fail->debug << "Cannot find module: '" << modname << "'";
+		qbrt_value::fail(*dst, fail);
+		// continue on with execution
+	}
+
 	ctx.pc() += lcontext_instruction::SIZE;
 }
 
@@ -579,17 +644,27 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 	const char *modname = fetch_string(resource, modsym.mod_name);
 	const char *fname = fetch_string(resource, modsym.sym_name);
 	const Module *mod(find_module(ctx.worker(), modname));
-	if (!mod) {
-		cerr << "cannot find module: " << modname << endl;
-		exit(1);
-	}
 	Failure *fail;
-	const QbrtFunction *qbrt(mod->fetch_function(fname));
+
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		cerr << "invalid register in lfunc: " << i.reg << endl;
+		dst = ctx.dstvalue(SPECIAL_REG_RESULT);
+		fail = FAIL_BADREGISTER("lfunc", ctx.pc());
+		fail->debug << "Invalid register: " << i.reg;
+		qbrt_value::fail(*dst, fail);
+		ctx.worker().current->cfstate = CFS_FAILED;
 		return;
 	}
+
+	if (!mod) {
+		fail = FAIL_MODULE404("lfunc", ctx.pc());
+		fail->debug << "Cannot find module: '" << modname << "'";
+		qbrt_value::fail(*dst, fail);
+		ctx.pc() += lfunc_instruction::SIZE;
+		return;
+	}
+	const QbrtFunction *qbrt(mod->fetch_function(fname));
+
 	c_function cf = NULL;
 	if (qbrt) {
 		qbrt_value::f(*dst, new function_value(qbrt));
@@ -598,13 +673,10 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 		if (cf) {
 			qbrt_value::f(*dst, new function_value(cf));
 		} else {
-			cerr << "could not find function: " << modname
-				<<"/"<< fname << endl;
-			fail = FAIL_NOFUNCTION(ctx.function_name(), ctx.pc());
+			fail = FAIL_FUNCTION404(ctx.function_name(), ctx.pc());
 			fail->debug << "could not find function: " << modname
 				<<'.'<< fname;
 			qbrt_value::fail(*dst, fail);
-			ctx.worker().current->cfstate = CFS_FAILED;
 		}
 	}
 	ctx.pc() += lfunc_instruction::SIZE;
@@ -712,15 +784,15 @@ void execute_recv(OpContext &ctx, const recv_instruction &i)
 
 void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 {
+	RETURN_FAILURE(ctx, i.dst);
+	RETURN_FAILURE(ctx, i.src);
+
 	Failure *f;
 	qbrt_value &dst(*ctx.dstvalue(i.dst));
 	const qbrt_value &src(*ctx.srcvalue(i.src));
 
 	int op_pc(ctx.pc());
 	ctx.pc() += stracc_instruction::SIZE;
-
-	CHECK_FAILURE(dst, dst);
-	CHECK_FAILURE(dst, src);
 
 	if (dst.type->id != VT_BSTRING) {
 		f = FAIL_TYPE(ctx.function_name(), op_pc);
@@ -1391,6 +1463,12 @@ int main(int argc, const char **argv)
 			, launch_worker, &w1);
 
 	application_loop(app);
+
+	if (qbrt_value::failed(result)) {
+		Failure *fail = result.data.failure;
+		cerr << fail->debug.str() << endl;
+		return fail->exit_code;
+	}
 
 	return result.data.i;
 }

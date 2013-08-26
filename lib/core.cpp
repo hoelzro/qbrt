@@ -109,7 +109,7 @@ Type::Type(const string &mod, const string &name, uint8_t argc)
 : module(mod)
 , name(name)
 , id(get_type_id(mod, name))
-, argc(0)
+, argc(argc)
 {}
 
 Type TYPE_VOID(VT_VOID);
@@ -193,6 +193,11 @@ bool qbrt_value::is_value_index(const qbrt_value &val)
 		return false;
 	}
 	return dynamic_cast< qbrt_value_index * >(val.data.reg);
+}
+
+bool qbrt_value::failed(const qbrt_value &val)
+{
+	return val.type->id == VT_FAILURE;
 }
 
 void qbrt_value::append_type(ostringstream &out, const qbrt_value &val)
