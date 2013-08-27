@@ -132,21 +132,7 @@ Type TYPE_FAILURE(VT_FAILURE);
 
 void qbrt_value::set_void(qbrt_value &v)
 {
-	switch (v.type->id) {
-		case VT_BSTRING:
-			delete v.data.str;
-			v.data.str = NULL;
-			break;
-		case VT_HASHTAG:
-			delete v.data.hashtag;
-			v.data.hashtag = NULL;
-			break;
-		case VT_BOOL:
-		case VT_INT:
-		case VT_FLOAT:
-		case VT_VOID:
-			break;
-	}
+	v.data.str = NULL;
 	v.type = &TYPE_VOID;
 }
 

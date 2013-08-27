@@ -769,12 +769,20 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 {
 	Failure *f;
 	qbrt_value &pid(*ctx.dstvalue(i.pid));
-	qbrt_value &func(*ctx.dstvalue(i.func));
+	qbrt_value *func(ctx.dstvalue(i.func));
+
+	if (func->type->id != VT_FUNCTION) {
+		f = FAIL_TYPE(ctx.function_name(), ctx.pc());
+		qbrt_value::fail(pid, f);
+		ctx.pc() += newproc_instruction::SIZE;
+		return;
+	}
 
 	ctx.pc() += newproc_instruction::SIZE;
 
-	function_value *fval = func.data.f;
-	qbrt_value::set_void(func);
+	function_value *fval = func->data.f;
+	qbrt_value::set_void(*func);
+
 	Worker &w(ctx.worker());
 
 	const QbrtFunction *qfunc;

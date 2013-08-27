@@ -1,21 +1,25 @@
 func print_wid core/Void
-lfunc $1 io/print
-const $1.0 "worker: "
-call \void $1
 
 lfunc $0 core/pid
+lfunc $1 core/str
 call $1.0 $0
-call \void $1
-
-const $1.0 "@"
-call \void $1
+call $2 $1
 
 lfunc $0 core/wid
 call $1.0 $0
-call \void $1
+call $3 $1
 
-const $1.0 "\n"
-call \void $1
+const $4 "/"
+const $5 "\n"
+
+lfunc $0 io/print
+const $0.0 "process/worker = "
+stracc $0.0 $2
+stracc $0.0 $4
+stracc $0.0 $3
+stracc $0.0 $5
+call \void $0
+
 end.
 
 
@@ -29,11 +33,23 @@ call \void $0
 
 const $1.0 "\nchildren:\n"
 call \void $1
+
+lfunc $0 ./print_wid
 newproc \void $0
+
+lfunc $0 ./print_wid
 newproc \void $0
+
+lfunc $0 ./print_wid
 newproc \void $0
+
+lfunc $0 ./print_wid
 newproc \void $0
+
+lfunc $0 ./print_wid
 newproc \void $0
+
+lfunc $0 ./print_wid
 newproc \void $0
 
 end.
