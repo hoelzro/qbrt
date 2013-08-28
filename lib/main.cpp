@@ -86,6 +86,12 @@ struct OpContext
 	virtual const ResourceTable & resource() const = 0;
 	virtual qbrt_value * get_context(const std::string &) = 0;
 	virtual void io(StreamIO *op) = 0;
+
+	void fail_frame(Failure *f)
+	{
+		qbrt_value::fail(*dstvalue(SPECIAL_REG_RESULT), f);
+		worker().current->cfstate = CFS_FAILED;
+	}
 };
 
 class WorkerOpContext
@@ -544,7 +550,14 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 
 void execute_consti(OpContext &ctx, const consti_instruction &i)
 {
-	qbrt_value::i(*ctx.dstvalue(i.reg), i.value);
+	qbrt_value *dst = ctx.dstvalue(i.reg);
+	Failure *f;
+	if (!dst) {
+		f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		ctx.fail_frame(f);
+		return;
+	}
+	qbrt_value::i(*dst, i.value);
 	ctx.pc() += consti_instruction::SIZE;
 }
 
@@ -583,10 +596,9 @@ void execute_consts(OpContext &ctx, const consts_instruction &i)
 	const char *str = fetch_string(ctx.resource(), i.string_id);
 	qbrt_value *dst = ctx.dstvalue(i.reg);
 	if (!dst) {
-		Failure *f = FAIL_BADREGISTER(ctx.function_name(), ctx.pc());
+		Failure *f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
 		f->debug << "invalid register: " << i.reg;
-		qbrt_value::fail(*ctx.dstvalue(SPECIAL_REG_RESULT), f);
-		ctx.worker().current->cfstate = CFS_FAILED;
+		ctx.fail_frame(f);
 		return;
 	}
 	qbrt_value::str(*dst, str);
@@ -604,10 +616,9 @@ void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
 {
 	qbrt_value *dst(ctx.dstvalue(i.dst));
 	if (!dst) {
-		Failure *f = FAIL_BADREGISTER(ctx.function_name(), ctx.pc());
+		Failure *f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
 		f->debug << "invalid register: " << i.dst;
-		qbrt_value::fail(*ctx.dstvalue(SPECIAL_REG_RESULT), f);
-		ctx.worker().current->cfstate = CFS_FAILED;
+		ctx.fail_frame(f);
 		cerr << f->debug_msg() << endl;
 		return;
 	}
@@ -619,17 +630,24 @@ void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
 void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 {
 	const char *name = fetch_string(ctx.resource(), i.hashtag);
-	qbrt_value &dst(*ctx.dstvalue(i.reg));
+	qbrt_value *dst(ctx.dstvalue(i.reg));
+	Failure *fail;
+	if (!dst) {
+		fail = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		fail->debug << "invalid register: " << i.reg;
+		ctx.fail_frame(fail);
+		return;
+	}
+
 	qbrt_value *src = ctx.get_context(name);
 	if (src) {
-		qbrt_value::ref(dst, *src);
+		qbrt_value::ref(*dst, *src);
 	} else {
-		Failure *f = NEW_FAILURE("unknown_context"
+		fail = NEW_FAILURE("unknown_context"
 				, ctx.function_name(), ctx.pc());
-		f->debug << "cannot find context variable: " << name;
-		qbrt_value::fail(dst, f);
-		ctx.worker().current->cfstate = CFS_FAILED;
-		cerr << f->debug_msg() << endl;
+		fail->debug << "cannot find context variable: " << name;
+		qbrt_value::fail(*dst, fail);
+		cerr << fail->debug_msg() << endl;
 	}
 
 	ctx.pc() += lcontext_instruction::SIZE;
@@ -646,11 +664,9 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 	Failure *fail;
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		dst = ctx.dstvalue(SPECIAL_REG_RESULT);
-		fail = FAIL_BADREGISTER("lconstruct", ctx.pc());
+		fail = FAIL_REGISTER404("lconstruct", ctx.pc());
 		fail->debug << "invalid register: " << i.reg;
-		qbrt_value::fail(*dst, fail);
-		ctx.worker().current->cfstate = CFS_FAILED;
+		ctx.fail_frame(fail);
 		return;
 	}
 
@@ -677,11 +693,9 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		dst = ctx.dstvalue(SPECIAL_REG_RESULT);
-		fail = FAIL_BADREGISTER("lfunc", ctx.pc());
+		fail = FAIL_REGISTER404("lfunc", ctx.pc());
 		fail->debug << "Invalid register: " << i.reg;
-		qbrt_value::fail(*dst, fail);
-		ctx.worker().current->cfstate = CFS_FAILED;
+		ctx.fail_frame(fail);
 		return;
 	}
 
@@ -835,6 +849,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 		f = FAIL_TYPE(ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
 		f->exit_code = 1;
+		ctx.fail_frame(f);
 		return;
 	}
 
@@ -852,7 +867,6 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 			f->debug << "cannot append void to string";
 			cerr << f->debug_msg() << endl;
 			qbrt_value::fail(dst, f);
-			ctx.worker().current->cfstate = CFS_FAILED;
 			break;
 		default:
 			f = FAIL_TYPE(ctx.function_name(), op_pc);
@@ -860,7 +874,6 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 				<< (int) src.type->id;
 			cerr << f->debug_msg() << endl;
 			qbrt_value::fail(dst, f);
-			ctx.worker().current->cfstate = CFS_FAILED;
 			break;
 	}
 }
@@ -1503,7 +1516,8 @@ int main(int argc, const char **argv)
 
 	if (qbrt_value::failed(result)) {
 		Failure *fail = result.data.failure;
-		cerr << fail->debug.str() << endl;
+		cerr << fail->debug_msg()
+			<<"\nexit with: "<< fail->exit_code << endl;
 		return fail->exit_code;
 	}
 
