@@ -13,14 +13,16 @@ struct AsmDataType;
 
 struct RegAlloc
 {
-	typedef std::map< std::string, int > CountMap;
+	typedef std::map< std::string, uint8_t > CountMap;
 
 	CountMap args;
 	CountMap registry;
-	int counter;
+	const uint8_t argc;
+	uint8_t counter;
 
-	RegAlloc(int argc)
-	: counter(argc)
+	RegAlloc(uint8_t argc)
+	: argc(argc)
+	, counter(argc)
 	{}
 	void alloc(AsmReg &);
 

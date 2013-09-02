@@ -1,5 +1,6 @@
 
 func print core/Void
+dparam val *T
 
 lfunc $0 core/str
 ref $0.0 %0

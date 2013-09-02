@@ -350,6 +350,10 @@ void RegAlloc::alloc_arg(AsmReg &reg)
 	istringstream name(reg.name);
 	int reg_idx;
 	name >> reg_idx;
+	if (reg_idx >= argc) {
+		cerr << "argument register out of bounds: " << reg.name << endl;
+		exit(1);
+	}
 	args[reg.name] = reg.idx = reg_idx;
 }
 
