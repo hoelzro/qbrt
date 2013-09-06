@@ -263,12 +263,15 @@ struct call_stmt
 struct cfailure_stmt
 : public Stmt
 {
-	cfailure_stmt(const std::string &type)
+	cfailure_stmt(const std::string &type, AsmReg *msg)
 	: type(type)
+	, msg(msg)
 	{}
 
 	AsmHashTag type;
+	AsmReg *msg;
 
+	void allocate_registers(RegAlloc *);
 	void collect_resources(ResourceSet &);
 	void generate_code(AsmFunc &);
 	void pretty(std::ostream &) const;

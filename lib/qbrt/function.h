@@ -45,14 +45,15 @@ struct cfailure_instruction
 {
 	uint32_t opcode_data : 8;
 	uint32_t hashtag_id : 16;
-	uint32_t reserved : 8;
+	uint32_t msg_reg : 16;
 
-	cfailure_instruction(uint16_t hash_id)
+	cfailure_instruction(uint16_t hash_id, reg_t msg)
 	: opcode_data(OP_CFAILURE)
 	, hashtag_id(hash_id)
+	, msg_reg(msg)
 	{}
 
-	static const uint8_t SIZE = 3;
+	static const uint8_t SIZE = 5;
 };
 
 struct lcontext_instruction
