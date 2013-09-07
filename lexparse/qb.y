@@ -223,8 +223,8 @@ stmt(A) ::= fork_block(B). {
 stmt(A) ::= CALL reg(B) reg(C). {
 	A = new call_stmt(B, C);
 }
-stmt(A) ::= CFAILURE HASHTAG(B) reg(C). {
-	A = new cfailure_stmt(B->label(), C);
+stmt(A) ::= CFAILURE reg(C) HASHTAG(B). {
+	A = new cfailure_stmt(C, B->label());
 }
 stmt(A) ::= CONST reg(B) INT(C). {
 	A = new consti_stmt(B, C->intval());

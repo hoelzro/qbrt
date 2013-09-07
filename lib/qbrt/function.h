@@ -43,14 +43,14 @@ struct return_instruction
 struct cfailure_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t hashtag_id : 16;
-	uint32_t msg_reg : 16;
+	uint64_t opcode_data : 8;
+	uint64_t dst : 16;
+	uint64_t hashtag_id : 16;
 
-	cfailure_instruction(uint16_t hash_id, reg_t msg)
+	cfailure_instruction(reg_t dst, uint16_t hash_id)
 	: opcode_data(OP_CFAILURE)
+	, dst(dst)
 	, hashtag_id(hash_id)
-	, msg_reg(msg)
 	{}
 
 	static const uint8_t SIZE = 5;

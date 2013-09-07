@@ -178,7 +178,7 @@ void call_stmt::pretty(std::ostream &out) const
 
 void cfailure_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*msg);
+	r->alloc(*dst);
 }
 
 void cfailure_stmt::collect_resources(ResourceSet &rs)
@@ -188,12 +188,12 @@ void cfailure_stmt::collect_resources(ResourceSet &rs)
 
 void cfailure_stmt::generate_code(AsmFunc &f)
 {
-	asm_instruction(f, new cfailure_instruction(*type.index, *msg));
+	asm_instruction(f, new cfailure_instruction(*dst, *type.index));
 }
 
 void cfailure_stmt::pretty(std::ostream &out) const
 {
-	out << "cfailure #" << type.value << ' ' << *msg;
+	out << "cfailure " << *dst << " #" << type.value;
 }
 
 void consti_stmt::allocate_registers(RegAlloc *r)

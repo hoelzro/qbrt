@@ -543,7 +543,7 @@ void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
-	qbrt_value &result(*ctx.dstvalue(SPECIAL_REG_RESULT));
+	qbrt_value &result(*ctx.dstvalue(i.dst));
 	qbrt_value::fail(result, new Failure(failtype));
 	ctx.pc() += cfailure_instruction::SIZE;
 }

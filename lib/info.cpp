@@ -34,6 +34,14 @@ void print_jump_delta(int16_t delta)
 	cout << delta;
 }
 
+void print_binary_data(const uint8_t *data, uint16_t len)
+{
+	for (int x(0); x < len; ++x) {
+		printf(" %02x", ((uint16_t) data[x]));
+	}
+	cout << endl;
+}
+
 typedef uint8_t (*instruction_printer)(const instruction &);
 
 uint8_t print_binaryop_instruction(const binaryop_instruction &i)
@@ -198,9 +206,9 @@ uint8_t print_return_instruction(const return_instruction &i)
 
 uint8_t print_cfailure_instruction(const cfailure_instruction &i)
 {
-	cout << "cfailure #" << i.hashtag_id;
-	print_register(i.msg_reg);
-	cout << endl;
+	cout << "cfailure";
+	print_register(i.dst);
+	cout << " #" << i.hashtag_id << endl;
 	return cfailure_instruction::SIZE;
 }
 
