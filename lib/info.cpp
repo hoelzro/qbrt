@@ -198,7 +198,9 @@ uint8_t print_return_instruction(const return_instruction &i)
 
 uint8_t print_cfailure_instruction(const cfailure_instruction &i)
 {
-	cout << "cfailure #" << i.hashtag_id << endl;
+	cout << "cfailure #" << i.hashtag_id;
+	print_register(i.msg_reg);
+	cout << endl;
 	return cfailure_instruction::SIZE;
 }
 
