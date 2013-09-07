@@ -36,30 +36,28 @@ struct RegAlloc
 struct AsmReg
 {
 	std::string name;
+	std::string sub_name;
 	reg_t specialid;
+	const char type;
 	int8_t idx;
 	int8_t ext;
-	const char type;
 
 	AsmReg(char typec)
 	: name()
+	, type(typec)
 	, specialid(0)
 	, idx(-1)
 	, ext(-1)
-	, type(typec)
 	{}
 
 	operator reg_t () const;
 
 	friend std::ostream & operator << (std::ostream &, const AsmReg &);
 
-	static AsmReg * parse_arg(const std::string &arg);
-	static AsmReg * parse_reg(const std::string &reg);
-	static AsmReg * parse_extended_arg(const std::string &arg
-			, const std::string &ext);
-	static AsmReg * parse_extended_reg(const std::string &reg
-			, const std::string &ext);
-	static int parse_regext(const std::string &ext);
+	static AsmReg * var(const std::string &name);
+	static AsmReg * arg(const std::string &name);
+	void parse_subindex(const std::string &idx);
+
 	static inline AsmReg * create_void()
 	{
 		AsmReg *r = new AsmReg('c');

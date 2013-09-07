@@ -6,6 +6,7 @@
 %type modsym {AsmModSym *}
 %type modtype {AsmModSym *}
 %type reg {AsmReg *}
+%type primary_reg {AsmReg *}
 %type stmt {Stmt *}
 %type func_block {dfunc_stmt *}
 %type dfunc_stmt {dfunc_stmt *}
@@ -224,7 +225,7 @@ stmt(A) ::= CALL reg(B) reg(C). {
 	A = new call_stmt(B, C);
 }
 stmt(A) ::= CFAILURE reg(C) HASHTAG(B). {
-	A = new cfailure_stmt(C, B->label());
+	A = new cfailure_stmt(C, B->strip_first());
 }
 stmt(A) ::= CONST reg(B) INT(C). {
 	A = new consti_stmt(B, C->intval());
@@ -233,7 +234,7 @@ stmt(A) ::= CONST reg(B) STR(C). {
 	A = new consts_stmt(B, C->strval());
 }
 stmt(A) ::= CONST reg(B) HASHTAG(C). {
-	A = new consthash_stmt(B, C->label());
+	A = new consthash_stmt(B, C->strip_first());
 }
 stmt(A) ::= COPY reg(B) reg(C). {
 	A = new copy_stmt(B, C);
@@ -242,25 +243,25 @@ stmt(A) ::= CTUPLE reg(B) INT(C). {
 	A = new ctuple_stmt(B, C->intval());
 }
 stmt(A) ::= GOTO LABEL(B). {
-	A = new goto_stmt(B->label());
+	A = new goto_stmt(B->strip_first());
 }
 stmt(A) ::= IF reg(C) LABEL(B). {
-	A = new if_stmt(true, C, B->label());
+	A = new if_stmt(true, C, B->strip_first());
 }
 stmt(A) ::= IFNOT reg(C) LABEL(B). {
-	A = new if_stmt(false, C, B->label());
+	A = new if_stmt(false, C, B->strip_first());
 }
 stmt(A) ::= IFEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::eq(B, C, D->label());
+	A = ifcmp_stmt::eq(B, C, D->strip_first());
 }
 stmt(A) ::= IFNOTEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::ne(B, C, D->label());
+	A = ifcmp_stmt::ne(B, C, D->strip_first());
 }
 stmt(A) ::= IFFAIL reg(B) LABEL(C). {
-	A = new iffail_stmt(true, B, C->label());
+	A = new iffail_stmt(true, B, C->strip_first());
 }
 stmt(A) ::= IFNOTFAIL reg(B) LABEL(C). {
-	A = new iffail_stmt(false, B, C->label());
+	A = new iffail_stmt(false, B, C->strip_first());
 }
 stmt(A) ::= IADD reg(B) reg(C) reg(D). {
 	A = new binaryop_stmt('+', 'i', B, C, D);
@@ -275,10 +276,10 @@ stmt(A) ::= ISUB reg(B) reg(C) reg(D). {
 	A = new binaryop_stmt('-', 'i', B, C, D);
 }
 stmt(A) ::= LABEL(B). {
-	A = new label_stmt(B->label());
+	A = new label_stmt(B->strip_first());
 }
 stmt(A) ::= LCONTEXT reg(B) HASHTAG(C). {
-	A = new lcontext_stmt(B, C->label());
+	A = new lcontext_stmt(B, C->strip_first());
 }
 stmt(A) ::= LCONSTRUCT reg(B) modtype(C). {
 	A = new lconstruct_stmt(B, C);
@@ -289,10 +290,10 @@ stmt(A) ::= LFUNC reg(B) modsym(C). {
 	C = NULL;
 }
 stmt(A) ::= MATCH reg(B) reg(C) reg(D) LABEL(E). {
-	A = new match_stmt(B, C, D, E->label());
+	A = new match_stmt(B, C, D, E->strip_first());
 }
 stmt(A) ::= MATCHARGS reg(B) reg(C) LABEL(E). {
-	A = new matchargs_stmt(B, C, E->label());
+	A = new matchargs_stmt(B, C, E->strip_first());
 }
 stmt(A) ::= NEWPROC reg(B) reg(C). {
 	A = new newproc_stmt(B, C);
@@ -319,11 +320,11 @@ stmt(A) ::= RETURN. {
 
 typevar_list(A) ::= typevar_list(B) TYPEVAR(C). {
 	A = B;
-	A->push_back(new AsmString(C->label()));
+	A->push_back(new AsmString(C->strip_first()));
 }
 typevar_list(A) ::= TYPEVAR(B). {
 	A = new list< AsmString * >();
-	A->push_back(new AsmString(B->label()));
+	A->push_back(new AsmString(B->strip_first()));
 }
 typespec_list(A) ::= typespec_list(B) COMMA typespec(C). {
 	A = B;
@@ -343,7 +344,7 @@ typespec(A) ::= modtype(B) LPAREN typespec_list(C) RPAREN. {
 }
 
 modtype(A) ::= TYPEVAR(B). {
-	A = new AsmModSym("*", B->label());
+	A = new AsmModSym("*", B->strip_first());
 }
 modtype(A) ::= MODNAME(B) TYPENAME(C). {
 	A = new AsmModSym(B->module_name(), C->text);
@@ -359,40 +360,34 @@ modsym(A) ::= CURRENTMOD ID(C). {
 	A = new AsmModSym(g_current_module, C->text);
 }
 
-reg(A) ::= REG(B) REGEXT(C). {
-	A = AsmReg::parse_extended_reg(B->text, C->text);
-	if (A->type != '$') {
-		cerr << "secondary register is not $\n";
-		exit(1);
-	}
-}
-reg(A) ::= PARAM(B) REGEXT(C). {
-	A = AsmReg::parse_extended_arg(B->text, C->text);
-	if (A->type != '%') {
-		cerr << "secondary arg is not %%\n";
-		exit(1);
-	}
-}
-reg(A) ::= REG(B). {
-	A = AsmReg::parse_reg(B->text);
-	if (A->type != '$') {
-		cerr << "primary register is not $\n";
-		exit(1);
-	}
-}
-reg(A) ::= PARAM(B). {
-	A = AsmReg::parse_arg(B->text);
-	if (A->type != '%') {
-		cerr << "primary arg is not %: '" << B->text << "'\n";
-		exit(1);
-	}
-}
 reg(A) ::= PID. {
 	A = AsmReg::create_special(REG_PID);
 }
-reg(A) ::= RESULT. {
-	A = AsmReg::create_result();
-}
 reg(A) ::= VOID. {
 	A = AsmReg::create_void();
+}
+
+reg(A) ::= primary_reg(B) SUBNAME(C). {
+	A = B;
+	A->sub_name = C->strip_first();
+}
+reg(A) ::= primary_reg(B) SUBIDX(C). {
+	A = B;
+	A->parse_subindex(C->strip_first());
+}
+reg(A) ::= primary_reg(B). {
+	A = B;
+}
+
+primary_reg(A) ::= VAR(B). {
+	A = AsmReg::var(B->strip_first());
+}
+primary_reg(A) ::= REG(B). {
+	A = AsmReg::var(B->strip_first());
+}
+primary_reg(A) ::= ARG(B). {
+	A = AsmReg::arg(B->strip_first());
+}
+primary_reg(A) ::= RESULT. {
+	A = AsmReg::create_result();
 }

@@ -23,18 +23,28 @@ using namespace std;
 ostringstream g_strlit;
 }
 
+
+
 DIGIT	[0-9]
-INT	\-?{DIGIT}+
-PARAM	%[0-9]+
-REG	\$[0-9]+
-REGEXT	[0-9]+
-LABEL	@[a-zA-Z0-9_]+
-HASHTAG	#[a-zA-Z0-9_]+
+ALPHA	[a-zA-Z]
+NAMEC	[a-zA-Z0-9_]
 STRC	(\\.|[^\"])
-ID	[a-z_][a-z_0-9]*
+
+ID	[a-z_]{NAMEC}*
+
+VAR	\${ID}+
+ARG	%{DIGIT}+
+REG	\${DIGIT}+
+SUBIDX	\.{DIGIT}+
+SUBNAME	\.{ID}+
+
+LABEL	@{NAMEC}+
+HASHTAG	#{NAMEC}+
+INT	\-?{DIGIT}+
+
 MODNAME	({ID}\/)*
-TYPENAME	[A-Z][a-zA-Z0-9_]*
-TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
+TYPENAME	[A-Z]{NAMEC}*
+TYPEVAR	\*[A-Z]{NAMEC}*
 
 %x ARGS
 %x STR
@@ -51,19 +61,26 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 	BEGIN(STR);
 }
 
-<ARGS>{PARAM}		{
-		return_token(TOKEN_PARAM);
-	}
-<ARGS>{REG}		{
-		return_token(TOKEN_REG);
-	}
-<ARGS>"."{REGEXT}	{
-		return_token(TOKEN_REGEXT);
-	}
+<ARGS>{ARG} {
+	return_token(TOKEN_ARG);
+}
+<ARGS>{VAR} {
+	return_token(TOKEN_VAR);
+}
+<ARGS>{REG} {
+	return_token(TOKEN_REG);
+}
+<ARGS>"\\result" {
+	return_token(TOKEN_RESULT);
+}
 
-<ARGS>"\\result"	{
-		return_token(TOKEN_RESULT);
-	}
+<ARGS>{SUBNAME} {
+	return_token(TOKEN_SUBNAME);
+}
+<ARGS>{SUBIDX} {
+	return_token(TOKEN_SUBIDX);
+}
+
 <ARGS>"\\void"		{
 		return_token(TOKEN_VOID);
 	}

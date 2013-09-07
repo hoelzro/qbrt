@@ -413,47 +413,31 @@ ostream & operator << (ostream &o, const AsmReg &r)
 	return o;
 }
 
-AsmReg * AsmReg::parse_arg(const std::string &t)
+AsmReg * AsmReg::var(const std::string &name)
 {
-	istringstream in(t);
-	char typecode(in.get()); // should be '%'
-	AsmReg *r = new AsmReg(typecode);
-	in >> r->name;
+	AsmReg *r = new AsmReg('$');
+	r->name = name;
 	return r;
 }
 
-AsmReg * AsmReg::parse_reg(const std::string &t)
+AsmReg * AsmReg::arg(const std::string &index)
 {
-	istringstream in(t);
-	char typecode(in.get()); // should be '$'
-	AsmReg *r = new AsmReg(typecode);
-	in >> r->name;
+	istringstream in(index);
+	uint16_t i;
+	in >> i;
+
+	AsmReg *r = new AsmReg('%');
+	r->name = "%"+ index;
+	r->idx = i;
 	return r;
 }
 
-AsmReg * AsmReg::parse_extended_arg(const std::string &arg
-		, const std::string &ext)
+void AsmReg::parse_subindex(const std::string &subindex_str)
 {
-	AsmReg *r = AsmReg::parse_arg(arg);
-	r->ext = AsmReg::parse_regext(ext);
-	return r;
-}
-
-AsmReg * AsmReg::parse_extended_reg(const std::string &reg
-		, const std::string &ext)
-{
-	AsmReg *r = AsmReg::parse_reg(reg);
-	r->ext = AsmReg::parse_regext(ext);
-	return r;
-}
-
-int AsmReg::parse_regext(const std::string &ext)
-{
-	istringstream in(ext);
-	in.get(); // skip the leading .
-	int ext_idx;
-	in >> ext_idx;
-	return ext_idx;
+	istringstream in(subindex_str);
+	uint16_t subindex;
+	in >> subindex;
+	this->ext = subindex;
 }
 
 AsmReg * AsmReg::create_special(uint16_t id)
@@ -909,6 +893,9 @@ void write_object(ostream &out, ObjectBuilder &obj)
 ostream & operator << (ostream &out, const Token &t)
 {
 	switch (t.type) {
+		case TOKEN_ARG:
+			out << "ARG";
+			break;
 		case TOKEN_CALL:
 			out << "call";
 			break;
@@ -951,17 +938,20 @@ ostream & operator << (ostream &out, const Token &t)
 		case TOKEN_REG:
 			out << "REG";
 			break;
-		case TOKEN_REGEXT:
-			out << "REGEXT";
-			break;
 		case TOKEN_RESULT:
 			out << "result";
 			break;
-		case TOKEN_PARAM:
-			out << "PARAM";
-			break;
 		case TOKEN_STRACC:
 			out << "stracc";
+			break;
+		case TOKEN_SUBIDX:
+			out << "SUBIDX";
+			break;
+		case TOKEN_SUBNAME:
+			out << "SUBNAME";
+			break;
+		case TOKEN_VAR:
+			out << "VAR";
 			break;
 		default:
 			out << t.type;

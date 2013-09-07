@@ -90,7 +90,7 @@ struct Token
 	, text(txt)
 	{}
 
-	std::string label() const
+	std::string strip_first() const
 	{
 		// strip off the leading #
 		return text.substr(1);
