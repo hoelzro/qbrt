@@ -17,7 +17,6 @@ struct call_instruction
 	uint64_t opcode_data : 8;
 	uint64_t result_reg : 16;
 	uint64_t func_reg : 16;
-	uint64_t reserved : 24;
 
 	call_instruction(reg_t result, reg_t func)
 		: opcode_data(OP_CALL)
@@ -62,13 +61,11 @@ struct lcontext_instruction
 	uint64_t opcode_data : 8;
 	uint64_t reg : 16;
 	uint64_t hashtag : 16;
-	uint64_t reserved : 24;
 
 	lcontext_instruction(reg_t r, uint16_t hashtag)
 		: opcode_data(OP_LCONTEXT)
 		, reg(r)
 		, hashtag(hashtag)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -80,13 +77,11 @@ struct lfunc_instruction
 	uint64_t opcode_data : 8;
 	uint64_t reg : 16;
 	uint64_t modsym : 16;
-	uint64_t reserved : 24;
 
 	lfunc_instruction(reg_t r, uint16_t modsym)
 		: opcode_data(OP_LFUNC)
 		, reg(r)
 		, modsym(modsym)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -99,14 +94,12 @@ struct loadtype_instruction
 	uint64_t reg : 16;
 	uint64_t modname : 16;
 	uint64_t type : 16;
-	uint64_t reserved : 8;
 
 	loadtype_instruction(reg_t r, uint16_t mod, uint16_t type)
 		: opcode_data(OP_LFUNC)
 		, reg(r)
 		, modname(mod)
 		, type(type)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 7;
@@ -117,12 +110,10 @@ struct loadobj_instruction
 {
 	uint32_t opcode_data : 8;
 	uint32_t modname : 16;
-	uint32_t reserved : 8;
 
 	loadobj_instruction(uint16_t mod)
 		: opcode_data(OP_LOADOBJ)
 		, modname(mod)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 3;
@@ -134,13 +125,11 @@ struct move_instruction
 	uint64_t opcode_data : 8;
 	uint64_t dst : 16;
 	uint64_t src : 16;
-	uint64_t reserved : 24;
 
 	move_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_MOVE)
 		, dst(dst)
 		, src(src)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -152,13 +141,11 @@ struct ref_instruction
 	uint64_t opcode_data : 8;
 	uint64_t dst : 16;
 	uint64_t src : 16;
-	uint64_t reserved : 24;
 
 	ref_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_REF)
 		, dst(dst)
 		, src(src)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -170,13 +157,11 @@ struct copy_instruction
 	uint64_t opcode_data : 8;
 	uint64_t dst : 16;
 	uint64_t src : 16;
-	uint64_t reserved : 24;
 
 	copy_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_COPY)
 		, dst(dst)
 		, src(src)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;

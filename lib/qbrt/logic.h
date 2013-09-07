@@ -9,7 +9,6 @@ struct goto_instruction
 {
 	int32_t opcode_data : 8;
 	int32_t jump_data : 16;
-	int32_t reserved : 8;
 
 	goto_instruction(int16_t jump)
 		: opcode_data(OP_GOTO)
@@ -25,7 +24,6 @@ struct if_instruction
 	int64_t opcode_data : 8;
 	int64_t jump_data : 16;
 	int64_t op : 16;
-	int64_t reserved : 24;
 
 	if_instruction(bool check, reg_t op)
 		: opcode_data(check ? OP_IF : OP_IFNOT)
@@ -45,7 +43,6 @@ struct ifcmp_instruction
 	int64_t jump_data : 16;
 	int64_t ra : 16;
 	int64_t rb : 16;
-	int64_t reserved : 8;
 
 	ifcmp_instruction(int8_t opcode, reg_t a, reg_t b)
 		: opcode_data(opcode)
@@ -63,13 +60,11 @@ struct iffail_instruction
 	int64_t opcode_data : 8;
 	int64_t jump_data : 16;
 	int64_t op : 16;
-	int64_t reserved : 24;
 
 	iffail_instruction(bool check, reg_t op)
 	: opcode_data(check ? OP_IFFAIL : OP_IFNOTFAIL)
 	, jump_data(0)
 	, op(op)
-	, reserved(0)
 	{}
 
 	inline bool iffail() const { return opcode_data == OP_IFFAIL; }
@@ -122,13 +117,11 @@ struct fork_instruction
 	int64_t opcode_data : 8;
 	int64_t jump_data : 16;
 	int64_t result : 16;
-	int64_t reserved : 24;
 
 	fork_instruction(int16_t jmp, reg_t result)
 	: opcode_data(OP_FORK)
 	, jump_data(jmp)
 	, result(result)
-	, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -139,12 +132,10 @@ struct wait_instruction
 {
 	uint32_t opcode_data : 8;
 	uint32_t reg : 16;
-	uint32_t reserved : 8;
 
 	wait_instruction(reg_t r)
 	: opcode_data(OP_WAIT)
 	, reg(r)
-	, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 3;

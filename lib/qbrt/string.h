@@ -11,13 +11,11 @@ struct consts_instruction
 	uint64_t opcode_data : 8;
 	uint64_t reg : 16;
 	uint64_t string_id : 16;
-	uint64_t reserved : 24;
 
 	consts_instruction(reg_t reg, uint16_t str_id)
 		: opcode_data(OP_CONSTS)
 		, reg(reg)
 		, string_id(str_id)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -29,13 +27,11 @@ struct consthash_instruction
 	uint64_t opcode_data : 8;
 	uint64_t reg : 16;
 	uint64_t hash_id : 16;
-	uint64_t reserved : 24;
 
 	consthash_instruction(reg_t reg, uint16_t hash_id)
 		: opcode_data(OP_CONSTHASH)
 		, reg(reg)
 		, hash_id(hash_id)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;
@@ -47,13 +43,11 @@ struct stracc_instruction
 	uint64_t opcode_data : 8;
 	uint64_t dst : 16;
 	uint64_t src : 16;
-	uint64_t reserved : 24;
 
 	stracc_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_STRACC)
 		, dst(dst)
 		, src(src)
-		, reserved(0)
 	{}
 
 	static const uint8_t SIZE = 5;

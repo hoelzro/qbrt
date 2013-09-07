@@ -11,7 +11,6 @@ struct binaryop_instruction
 	uint64_t result : 16;
 	uint64_t a : 16;
 	uint64_t b : 16;
-	uint64_t reserved : 8;
 
 	binaryop_instruction(uint8_t op, reg_t result, reg_t a, reg_t b)
 	: opcode_data(op)
@@ -29,7 +28,6 @@ struct consti_instruction
 	uint64_t opcode_data : 8;
 	uint64_t reg : 16;
 	int64_t value : 32;
-	uint64_t reserved : 8;
 
 	consti_instruction(reg_t reg, uint32_t value)
 		: opcode_data(OP_CONSTI)
