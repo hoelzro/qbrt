@@ -15,20 +15,16 @@ struct RegAlloc
 {
 	typedef std::map< std::string, uint8_t > CountMap;
 
-	CountMap args;
 	CountMap registry;
 	const uint8_t argc;
 	uint8_t counter;
 
 	RegAlloc(uint8_t argc)
 	: argc(argc)
-	, counter(argc)
+	, counter(0)
 	{}
+	void declare_arg(const std::string & name);
 	void alloc(AsmReg &);
-
-// private-ish
-	void alloc_arg(AsmReg &);
-	void alloc_reg(AsmReg &);
 };
 
 

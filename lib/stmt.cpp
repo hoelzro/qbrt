@@ -387,6 +387,13 @@ void dfunc_stmt::allocate_registers(RegAlloc *)
 		return;
 	}
 	RegAlloc regs(func->argc);
+	if (params) {
+		dparam_stmt::List::const_iterator pit(params->begin());
+		for (; pit!=params->end(); ++pit) {
+			regs.declare_arg((*pit)->name.value);
+		}
+	}
+
 	Stmt::List::iterator it(code->begin());
 	for (; it!=code->end(); ++it) {
 		(*it)->allocate_registers(&regs);

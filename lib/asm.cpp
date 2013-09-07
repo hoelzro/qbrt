@@ -321,44 +321,22 @@ bool ResourceLess::operator() (const AsmResource *a, const AsmResource *b) const
 }
 
 
-void RegAlloc::alloc(AsmReg &reg)
+void RegAlloc::declare_arg(const string &name)
 {
-	if (reg.idx >= 0) {
-		return;
-	}
-	switch (reg.type) {
-		case '%':
-			alloc_arg(reg);
-			break;
-		case '$':
-			alloc_reg(reg);
-			break;
-		case 'c':
-		case 's':
-			// these register types are preallocated
-			return;
-	}
+	registry[name] = counter++;
 }
 
-void RegAlloc::alloc_arg(AsmReg &reg)
+void RegAlloc::alloc(AsmReg &reg)
 {
-	CountMap::const_iterator it(args.find(reg.name));
-	if (it != args.end()) {
-		reg.idx = it->second;
-		return;
-	}
-	istringstream name(reg.name);
-	int reg_idx;
-	name >> reg_idx;
-	if (reg_idx >= argc) {
+	// only indexed args already have the idx set
+	if (reg.idx >= argc) {
 		cerr << "argument register out of bounds: " << reg.name << endl;
 		exit(1);
 	}
-	args[reg.name] = reg.idx = reg_idx;
-}
+	if (reg.idx >= 0 || reg.specialid) {
+		return;
+	}
 
-void RegAlloc::alloc_reg(AsmReg &reg)
-{
 	CountMap::const_iterator it(registry.find(reg.name));
 	if (it != registry.end()) {
 		reg.idx = it->second;

@@ -1,15 +1,15 @@
 
 func factorial core/Int
-dparam i core/Int
+dparam n core/Int
 
 const $0 0
-match $1 $0 %0 @NOT_ZERO
+match $1 $0 $n @NOT_ZERO
 const \result 1
 return
 
 @NOT_ZERO
 patternvar $0
-match $1 $0 %0 @NO_MATCH
+match $1 $0 $n @NO_MATCH
 const $3 1
 lfunc $2 ./factorial
 isub $2.0 $1 $3
