@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stdint.h>
 #include <list>
+#include <queue>
 
 typedef size_t yy_size_t;
 extern int yy_start;
@@ -130,7 +131,7 @@ std::ostream & operator << (std::ostream &, const Token &);
 #define QBRTBEGIN (yy_start) = 1 + 2 *
 #define QBRTINITIAL 0
 
-extern Token *lexval;
+extern std::queue< Token * > lexqueue;
 
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 YY_BUFFER_STATE yy_scan_string (const char *);

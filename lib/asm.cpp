@@ -1138,10 +1138,15 @@ Stmt::List * parse(istream &in)
 		getline(in, s);
 		yy_scan_string(s.c_str());
 		while (toktype=yylex()) {
-			const Token *tok = lexval;
-			lexval = NULL;
-			Parse(parser, toktype, tok);
 			Token::s_column += yyleng;
+		}
+
+		while (!lexqueue.empty()) {
+			const Token *tok = lexqueue.front();
+			Token::s_lineno = tok->span_front.lineno;
+			Token::s_column = tok->span_front.column;
+			lexqueue.pop();
+			Parse(parser, tok->type, tok);
 		}
 		++Token::s_lineno;
 		Token::s_column = 1;

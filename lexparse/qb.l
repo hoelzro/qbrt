@@ -5,12 +5,16 @@
 #include <iostream>
 #include <sstream>
 
-Token *lexval;
+std::queue< Token * > lexqueue;
 int32_t Token::s_lineno = 1;
 int32_t Token::s_column = 1;
 
-#define lex_token(t) do { \
-	lexval = new Token(t, yytext); \
+#define queue_token(t) do { \
+	lexqueue.push(new Token(t, yytext)); \
+} while (0)
+
+#define return_token(t) do { \
+	lexqueue.push(new Token(t, yytext)); \
 	return t; \
 } while (0)
 
@@ -48,81 +52,81 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 }
 
 <ARGS>{PARAM}		{
-		lex_token(TOKEN_PARAM);
+		return_token(TOKEN_PARAM);
 	}
 <ARGS>{REG}		{
-		lex_token(TOKEN_REG);
+		return_token(TOKEN_REG);
 	}
 <ARGS>"."{REGEXT}	{
-		lex_token(TOKEN_REGEXT);
+		return_token(TOKEN_REGEXT);
 	}
 
 <ARGS>"\\result"	{
-		lex_token(TOKEN_RESULT);
+		return_token(TOKEN_RESULT);
 	}
 <ARGS>"\\void"		{
-		lex_token(TOKEN_VOID);
+		return_token(TOKEN_VOID);
 	}
-<ARGS>"\\pid"	{ lex_token(TOKEN_PID); }
+<ARGS>"\\pid"	{ return_token(TOKEN_PID); }
 
 <ARGS>{LABEL}		{
-		lex_token(TOKEN_LABEL);
+		return_token(TOKEN_LABEL);
 	}
 
 <ARGS>{HASHTAG}	{
-		lex_token(TOKEN_HASHTAG);
+		return_token(TOKEN_HASHTAG);
 	}
 
 <ARGS>{INT}	{
-		lex_token(TOKEN_INT);
+		return_token(TOKEN_INT);
 	}
 
-"bind"		{ BEGIN(ARGS); lex_token(TOKEN_BIND); }
-"bindtype"	{ BEGIN(ARGS); lex_token(TOKEN_BINDTYPE); }
-"call"		{ BEGIN(ARGS); lex_token(TOKEN_CALL); }
-"cfailure"	{ BEGIN(ARGS); lex_token(TOKEN_CFAILURE); }
-"const"		{ BEGIN(ARGS); lex_token(TOKEN_CONST); }
-"construct"	{ BEGIN(ARGS); lex_token(TOKEN_CONSTRUCT); }
-"copy"		{ BEGIN(ARGS); lex_token(TOKEN_COPY); }
-"ctuple"	{ BEGIN(ARGS); lex_token(TOKEN_CTUPLE); }
-"datatype"	{ BEGIN(ARGS); lex_token(TOKEN_DATATYPE); }
-"dparam"	{ BEGIN(ARGS); lex_token(TOKEN_DPARAM); }
-"fork"		{ BEGIN(ARGS); lex_token(TOKEN_FORK); }
-"func"		{ BEGIN(ARGS); lex_token(TOKEN_FUNC); }
-"goto"		{ BEGIN(ARGS); lex_token(TOKEN_GOTO); }
-"if"		{ BEGIN(ARGS); lex_token(TOKEN_IF); }
-"ifnot"		{ BEGIN(ARGS); lex_token(TOKEN_IFNOT); }
-"ifeq"		{ BEGIN(ARGS); lex_token(TOKEN_IFEQ); }
-"ifnoteq"	{ BEGIN(ARGS); lex_token(TOKEN_IFNOTEQ); }
-"iffail"	{ BEGIN(ARGS); lex_token(TOKEN_IFFAIL); }
-"ifnotfail"	{ BEGIN(ARGS); lex_token(TOKEN_IFNOTFAIL); }
-"iadd"		{ BEGIN(ARGS); lex_token(TOKEN_IADD); }
-"idiv"		{ BEGIN(ARGS); lex_token(TOKEN_IDIV); }
-"imult"		{ BEGIN(ARGS); lex_token(TOKEN_IMULT); }
-"isub"		{ BEGIN(ARGS); lex_token(TOKEN_ISUB); }
-"lcontext"	{ BEGIN(ARGS); lex_token(TOKEN_LCONTEXT); }
-"lconstruct"	{ BEGIN(ARGS); lex_token(TOKEN_LCONSTRUCT); }
-"lfunc"		{ BEGIN(ARGS); lex_token(TOKEN_LFUNC); }
-"match"		{ BEGIN(ARGS); lex_token(TOKEN_MATCH); }
-"matchargs"	{ BEGIN(ARGS); lex_token(TOKEN_MATCHARGS); }
-"module"	{ BEGIN(ARGS); lex_token(TOKEN_MODULE); }
-"newproc"	{ BEGIN(ARGS); lex_token(TOKEN_NEWPROC); }
-"patternvar"	{ BEGIN(ARGS); lex_token(TOKEN_PATTERNVAR); }
-"protocol"	{ BEGIN(ARGS); lex_token(TOKEN_PROTOCOL); }
-"abstract"	{ BEGIN(ARGS); lex_token(TOKEN_ABSTRACT); }
-"recv"		{ BEGIN(ARGS); lex_token(TOKEN_RECV); }
-"stracc"	{ BEGIN(ARGS); lex_token(TOKEN_STRACC); }
-"wait"		{ BEGIN(ARGS); lex_token(TOKEN_WAIT); }
+"bind"		{ BEGIN(ARGS); return_token(TOKEN_BIND); }
+"bindtype"	{ BEGIN(ARGS); return_token(TOKEN_BINDTYPE); }
+"call"		{ BEGIN(ARGS); return_token(TOKEN_CALL); }
+"cfailure"	{ BEGIN(ARGS); return_token(TOKEN_CFAILURE); }
+"const"		{ BEGIN(ARGS); return_token(TOKEN_CONST); }
+"construct"	{ BEGIN(ARGS); return_token(TOKEN_CONSTRUCT); }
+"copy"		{ BEGIN(ARGS); return_token(TOKEN_COPY); }
+"ctuple"	{ BEGIN(ARGS); return_token(TOKEN_CTUPLE); }
+"datatype"	{ BEGIN(ARGS); return_token(TOKEN_DATATYPE); }
+"dparam"	{ BEGIN(ARGS); return_token(TOKEN_DPARAM); }
+"fork"		{ BEGIN(ARGS); return_token(TOKEN_FORK); }
+"func"		{ BEGIN(ARGS); return_token(TOKEN_FUNC); }
+"goto"		{ BEGIN(ARGS); return_token(TOKEN_GOTO); }
+"if"		{ BEGIN(ARGS); return_token(TOKEN_IF); }
+"ifnot"		{ BEGIN(ARGS); return_token(TOKEN_IFNOT); }
+"ifeq"		{ BEGIN(ARGS); return_token(TOKEN_IFEQ); }
+"ifnoteq"	{ BEGIN(ARGS); return_token(TOKEN_IFNOTEQ); }
+"iffail"	{ BEGIN(ARGS); return_token(TOKEN_IFFAIL); }
+"ifnotfail"	{ BEGIN(ARGS); return_token(TOKEN_IFNOTFAIL); }
+"iadd"		{ BEGIN(ARGS); return_token(TOKEN_IADD); }
+"idiv"		{ BEGIN(ARGS); return_token(TOKEN_IDIV); }
+"imult"		{ BEGIN(ARGS); return_token(TOKEN_IMULT); }
+"isub"		{ BEGIN(ARGS); return_token(TOKEN_ISUB); }
+"lcontext"	{ BEGIN(ARGS); return_token(TOKEN_LCONTEXT); }
+"lconstruct"	{ BEGIN(ARGS); return_token(TOKEN_LCONSTRUCT); }
+"lfunc"		{ BEGIN(ARGS); return_token(TOKEN_LFUNC); }
+"match"		{ BEGIN(ARGS); return_token(TOKEN_MATCH); }
+"matchargs"	{ BEGIN(ARGS); return_token(TOKEN_MATCHARGS); }
+"module"	{ BEGIN(ARGS); return_token(TOKEN_MODULE); }
+"newproc"	{ BEGIN(ARGS); return_token(TOKEN_NEWPROC); }
+"patternvar"	{ BEGIN(ARGS); return_token(TOKEN_PATTERNVAR); }
+"protocol"	{ BEGIN(ARGS); return_token(TOKEN_PROTOCOL); }
+"abstract"	{ BEGIN(ARGS); return_token(TOKEN_ABSTRACT); }
+"recv"		{ BEGIN(ARGS); return_token(TOKEN_RECV); }
+"stracc"	{ BEGIN(ARGS); return_token(TOKEN_STRACC); }
+"wait"		{ BEGIN(ARGS); return_token(TOKEN_WAIT); }
 "noop"		{
 		printf("noop token\n");
-		lex_token(TOKEN_NOOP);
+		return_token(TOKEN_NOOP);
 	}
-"ref"		{ BEGIN(ARGS); lex_token(TOKEN_REF); }
-"return"	{ lex_token(TOKEN_RETURN); }
+"ref"		{ BEGIN(ARGS); return_token(TOKEN_REF); }
+"return"	{ return_token(TOKEN_RETURN); }
 
 
-"end."		{ lex_token(TOKEN_END); }
-{LABEL}		{ lex_token(TOKEN_LABEL); }
+"end."		{ return_token(TOKEN_END); }
+{LABEL}		{ return_token(TOKEN_LABEL); }
 "##"	{
 	Token::s_column += yyleng; // start the comment
 	BEGIN(COMMENT);
@@ -132,25 +136,25 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 }
 
 <ARGS>".\/"		{
-	lex_token(TOKEN_CURRENTMOD);
+	return_token(TOKEN_CURRENTMOD);
 }
 <ARGS>{MODNAME}	{
-		lex_token(TOKEN_MODNAME);
+		return_token(TOKEN_MODNAME);
 	}
 <ARGS>{ID}	{
-		lex_token(TOKEN_ID);
+		return_token(TOKEN_ID);
 	}
 <ARGS>{TYPENAME}	{
-		lex_token(TOKEN_TYPENAME);
+		return_token(TOKEN_TYPENAME);
 	}
 <ARGS>{TYPEVAR}	{
-		lex_token(TOKEN_TYPEVAR);
+		return_token(TOKEN_TYPEVAR);
 	}
 
 
-<ARGS>"("	{ lex_token(TOKEN_LPAREN); }
-<ARGS>","	{ lex_token(TOKEN_COMMA); }
-<ARGS>")"	{ lex_token(TOKEN_RPAREN); }
+<ARGS>"("	{ return_token(TOKEN_LPAREN); }
+<ARGS>","	{ return_token(TOKEN_COMMA); }
+<ARGS>")"	{ return_token(TOKEN_RPAREN); }
 <ARGS>[ \t]	{
 	/* eat whitespace */
 	++Token::s_column;
@@ -174,7 +178,7 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 
 
 <STR>"\""	{
-	lexval = new Token(TOKEN_STR, g_strlit.str());
+	lexqueue.push(new Token(TOKEN_STR, g_strlit.str()));
 	++Token::s_column;
 	BEGIN(INITIAL);
 	return TOKEN_STR;
@@ -202,14 +206,3 @@ TYPEVAR	\*[A-Z][a-zA-Z0-9_]*
 }
 
 %%
-
-int not_main()
-{
-	int yt;
-
-	while ((yt = yylex()) != 0) {
-		std::cout << "yylex() -> " << lexval->type <<'/'<<
-			lexval->text << std::endl;
-	}
-	return 0;
-}
