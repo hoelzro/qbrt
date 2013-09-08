@@ -1,5 +1,6 @@
 #include "qbrt/type.h"
 #include "qbrt/module.h"
+#include <string.h>
 
 using namespace std;
 

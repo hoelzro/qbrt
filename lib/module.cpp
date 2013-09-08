@@ -8,6 +8,22 @@
 
 using namespace std;
 
+
+ObjectHeader::ObjectHeader()
+: qbrt_version(0)
+, name(0)
+, version(0)
+, iteration(0)
+, imports(0)
+{
+	magic[0] = 'q';
+	magic[1] = 'b';
+	magic[2] = 'r';
+	magic[3] = 't';
+	flags.raw = 0;
+	flags.f.application = 1;
+}
+
 bool operator < (const PolymorphArg &a, const PolymorphArg &b)
 {
 	// this is totally not the right thing
@@ -397,12 +413,7 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 
 void read_header(ObjectHeader &h, istream &input)
 {
-	input.read(h.magic, 4);
-	input.read((char *) &h.qbrt_version, 4);
-	input.read((char *) &h.flags.raw, 8);
-	input.read(h.library_name, 24);
-	input.read((char *) &h.library_version, 2);
-	input.read(h.library_iteration, 6);
+	input.read((char *) &h, ObjectHeader::SIZE);
 }
 
 void read_resource_table(ResourceTable &tbl, istream &input)
@@ -429,13 +440,16 @@ Module * read_module(const string &objname)
 	}
 	Module *mod = new Module(objname);
 	read_header(mod->header, in);
-	if (mod->header.library_name != objname) {
-		cerr << "module name mismatch: " << mod->header.library_name
-			<< " != " << objname << endl;
-		return NULL;
-	}
 	read_resource_table(mod->resource, in);
 	in.close();
+	if (mod->header.name == 0) {
+		cerr << "module name is not set for: " << objname & DIE;
+	}
+	const char *header_name(fetch_string(mod->resource, mod->header.name));
+	if (header_name != objname) {
+		cerr << "module name mismatch: " << header_name
+			<< " != " << objname & DIE;
+	}
 
 	return mod;
 }

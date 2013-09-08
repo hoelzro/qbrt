@@ -16,6 +16,7 @@
 #include "qbtoken.h"
 #include "qbparse.h"
 #include "asm.h"
+#include <string.h>
 
 using namespace std;
 
@@ -30,6 +31,11 @@ struct ObjectBuilder
 {
 	ObjectHeader header;
 	ResourceSet rs;
+
+	ObjectBuilder(const string &modname)
+	: header()
+	, rs(modname)
+	{}
 };
 
 
@@ -437,11 +443,20 @@ AsmReg * AsmReg::create_special(uint16_t id)
 }
 
 
-ResourceSet::ResourceSet()
+ResourceSet::ResourceSet(const string &modname)
 : index()
 , imports()
+, _module_name(modname)
 {
 	collect(imports);
+	collect(_module_name);
+}
+
+void ResourceSet::set_module_version(uint16_t ver, const std::string &iter)
+{
+	module_version = ver;
+	_module_iteration.value = iter;
+	collect(_module_iteration);
 }
 
 bool ResourceSet::collect(AsmResource &res)
@@ -620,12 +635,7 @@ void init_constant_registers()
  */
 void write_header(ostream &out, const ObjectHeader &h)
 {
-	out.write("qbrt", 4);
-	out.write((const char *) &h.qbrt_version, 4);
-	out.write((const char *) &h.flags.raw, 8);
-	out.write(h.library_name, 24);
-	out.write((const char *) &h.library_version, 2);
-	out.write(h.library_iteration, 6);
+	out.write((const char *) &h, ObjectHeader::SIZE);
 }
 
 /**
@@ -1264,20 +1274,21 @@ int main(int argc, const char **argv)
 	init_writers();
 	init_constant_registers();
 
-	ObjectBuilder obj;
+	ObjectBuilder obj(library_name);
 	obj.header.qbrt_version = 13;
 	obj.header.flags.f.application = 1;
-	strcpy(obj.header.library_name, library_name.c_str());
-	obj.header.library_version = 22;
-	strcpy(obj.header.library_iteration, "bbd");
 
 	cout << "---\n";
 	Stmt::List *stmts = parse(*in);
 	set_function_context(*stmts, FCT_TRADITIONAL, NULL);
 
+	obj.rs.set_module_version(22, "bbd");
 	collect_resources(obj.rs, *stmts);
 	index_resources(obj.rs);
 	print_resources(obj.rs);
+	obj.header.name = obj.rs.module_name();
+	obj.header.version = obj.rs.module_version;
+	obj.header.iteration = obj.rs.module_iteration();
 
 	allocate_registers(*stmts, NULL);
 	cout << "---\n";

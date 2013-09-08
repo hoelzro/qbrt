@@ -50,7 +50,13 @@ struct ResourceSet
 	typedef Indexer::iterator iterator;
 	typedef Indexer::const_iterator const_iterator;
 
-	ResourceSet();
+	uint16_t module_name() const
+		{ return *_module_name.index; }
+	uint16_t module_version;
+	uint16_t module_iteration() const
+		{ return *_module_iteration.index; }
+
+	ResourceSet(const std::string &modname);
 
 	iterator begin() { return index.begin(); }
 	iterator end() { return index.end(); }
@@ -60,10 +66,13 @@ struct ResourceSet
 
 	bool collect(AsmResource &);
 	void import(AsmString &);
+	void set_module_version(uint16_t ver, const std::string &iter);
 
 private:
 	Indexer index;
 	AsmImport imports;
+	AsmString _module_name;
+	AsmString _module_iteration;
 };
 
 

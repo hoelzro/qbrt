@@ -690,9 +690,9 @@ void show_object_info(const char *objname)
 	string isapp(header.flags.f.application ? "yes" : "no");
 	cout << "magic: " << header.magic << endl;
 	cout << "application: " << isapp << endl;
-	cout << "library: " << header.library_name << endl;
-	cout << "version: " << header.library_version
-		<< header.library_iteration << endl;
+	cout << "library: " << fetch_string(resource, header.name) << endl;
+	cout << "version: " << header.version << '.'
+		<< fetch_string(resource, header.iteration) << endl;
 	cout << "bytes of code & data: " << resource.data_size << endl;
 	cout << "# of resources: " << (resource.resource_count - 1) << endl;
 	cout << hex;

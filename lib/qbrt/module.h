@@ -8,7 +8,6 @@
 #include <set>
 #include <list>
 #include <stack>
-#include <string.h>
 #include "string.h"
 #include "function.h"
 
@@ -35,25 +34,14 @@ struct ObjectHeader
 	char magic[4];
 	uint32_t qbrt_version;
 	ObjectFlags flags;
-	char library_name[24];
-	uint16_t library_version;
-	char library_iteration[6];
+	uint16_t name;
+	uint16_t version;
+	uint16_t iteration;
+	uint16_t imports;
 
-	ObjectHeader()
-		: qbrt_version(0)
-		, library_version(0)
-	{
-		magic[0] = 'q';
-		magic[1] = 'b';
-		magic[2] = 'r';
-		magic[3] = 't';
-		flags.raw = 0;
-		flags.f.application = 1;
-		memset(library_name, '\0', sizeof(library_name));
-		memset(library_iteration, '\0', sizeof(library_iteration));
-	}
+	ObjectHeader();
 
-	static const uint32_t SIZE = 48;
+	static const uint32_t SIZE = 24;
 };
 
 struct ResourceName
