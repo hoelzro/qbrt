@@ -67,9 +67,10 @@ void Stmt::generate_code(AsmFunc &)
 
 void binaryop_stmt::allocate_registers(RegAlloc *alloc)
 {
-	alloc->alloc(*result);
-	alloc->alloc(*a);
-	alloc->alloc(*b);
+	const char *datatype = type == 'i' ? "core/Int" : "";
+	alloc->alloc(*result, datatype);
+	alloc->alloc(*a, datatype);
+	alloc->alloc(*b, datatype);
 }
 
 void binaryop_stmt::generate_code(AsmFunc &f)
@@ -389,7 +390,8 @@ void dfunc_stmt::allocate_registers(RegAlloc *)
 	if (params) {
 		dparam_stmt::List::const_iterator pit(params->begin());
 		for (; pit!=params->end(); ++pit) {
-			regs.declare_arg((*pit)->name.value);
+			regs.declare_arg((*pit)->name.value
+					, (*pit)->type->fullname.value);
 		}
 	}
 

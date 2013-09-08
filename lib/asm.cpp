@@ -338,17 +338,16 @@ bool ResourceLess::operator() (const AsmResource *a, const AsmResource *b) const
 }
 
 
-void RegAlloc::declare_arg(const string &name)
+void RegAlloc::declare_arg(const string &name, const string &type)
 {
 	registry[name] = counter++;
 }
 
-void RegAlloc::alloc(AsmReg &reg)
+void RegAlloc::alloc(AsmReg &reg, const string &type)
 {
 	// only indexed args already have the idx set
 	if (reg.idx >= argc) {
-		cerr << "argument register out of bounds: " << reg.name << endl;
-		exit(1);
+		cerr << "argument register out of bounds: " << reg.name & DIE;
 	}
 	if (reg.idx >= 0 || reg.specialid) {
 		return;
@@ -359,6 +358,9 @@ void RegAlloc::alloc(AsmReg &reg)
 		reg.idx = it->second;
 		return;
 	}
+	if (reg.is_src()) {
+		cerr << "src register is not yet allocated: " << reg.name & DIE;
+	}
 	reg.idx = counter++;
 	registry[reg.name] = reg.idx;
 }
@@ -367,7 +369,7 @@ void RegAlloc::alloc(AsmReg &reg)
 AsmReg::operator reg_t () const
 {
 	reg_t id(0);
-	switch (type) {
+	switch (reg_type) {
 		case '%':
 		case '$':
 			if (ext < 0) {
@@ -386,23 +388,23 @@ AsmReg::operator reg_t () const
 
 ostream & operator << (ostream &o, const AsmReg &r)
 {
-	switch (r.type) {
+	switch (r.reg_type) {
 		case '%':
 		case '$':
 			if (r.ext < 0) {
-				o << r.type << (int) r.idx;
+				o << r.reg_type << (int) r.idx;
 			} else {
-				o << r.type << (int) r.idx
+				o << r.reg_type << (int) r.idx
 					<< '.' << (int) r.ext;
 			}
 			break;
 		case 'c':
 		case 's':
-			o << r.type << r.specialid;
+			o << r.reg_type << r.specialid;
 			break;
 		default:
 			cerr << "Unknown register type code: "
-				<< r.type << endl;
+				<< r.reg_type << endl;
 			break;
 	}
 	return o;

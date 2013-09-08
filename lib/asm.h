@@ -24,8 +24,8 @@ struct RegAlloc
 	: argc(argc)
 	, counter(0)
 	{}
-	void declare_arg(const std::string & name);
-	void alloc(AsmReg &);
+	void declare_arg(const std::string &name, const std::string &type);
+	void alloc(AsmReg &, const std::string &type = std::string());
 };
 
 
@@ -83,14 +83,15 @@ struct AsmReg
 {
 	std::string name;
 	std::string sub_name;
+	std::string data_type;
 	reg_t specialid;
-	const char type;
+	const char reg_type;
 	int8_t idx;
 	int8_t ext;
 
 	AsmReg(char typec)
 	: name()
-	, type(typec)
+	, reg_type(typec)
 	, specialid(0)
 	, idx(-1)
 	, ext(-1)
