@@ -23,7 +23,7 @@ using namespace std;
 
 Stmt::List *parsed_stmts;
 uint16_t AsmResource::NULL_INDEX = 0;
-string g_current_module;
+string g_parse_module;
 
 typedef std::list< ResourceInfo > ResourceIndex;
 
@@ -1245,44 +1245,33 @@ void generate_code(ResourceSet &rs)
 	measure_jumps(rs);
 }
 
-int main(int argc, const char **argv)
-{
-	istream *in(&cin);
-	ifstream fin;
-	ofstream out;
-	string library_name;
-
-	if (argc >= 2) {
-		string input_name(argv[1]);
-		int ext_index(input_name.rfind('.'));
-		string base_name(input_name.substr(0, ext_index));
-		string output_name(base_name +".qb");
-		cout << "output_name = " << output_name << endl;
-		fin.open(input_name.c_str());
-		if (!fin) {
-			cerr << "error opening file: " << input_name << endl;
-			return -1;
-		}
-		in = &fin;
-		out.open(output_name.c_str(), ios::binary | ios::out);
-
-		library_name = base_name;
-	} else {
-		out.open("a.qb", ios::binary | ios::out);
-		library_name = "a";
-	}
-	g_current_module = library_name;
-
+void init_compiler() {
 	init_instruction_sizes();
 	init_writers();
 	init_constant_registers();
+}
 
-	ObjectBuilder obj(library_name);
+bool compile_module(const string &module_name)
+{
+	string input_name(module_name +".uqb");
+	string output_name(module_name +".qb");
+
+	cout << "compile " << input_name << " to " << output_name << endl;
+	ifstream fin;
+	fin.open(input_name.c_str());
+	if (!fin) {
+		cerr << "error opening source file: " << input_name << endl;
+		return false;
+	}
+
+	ObjectBuilder obj(module_name);
 	obj.header.qbrt_version = 13;
 	obj.header.flags.f.application = 1;
 
 	cout << "---\n";
-	Stmt::List *stmts = parse(*in);
+	g_parse_module = module_name;
+	Stmt::List *stmts = parse(fin);
+	g_parse_module.clear();
 	set_function_context(*stmts, FCT_TRADITIONAL, NULL);
 
 	obj.rs.set_module_version(22, "bbd");
@@ -1299,8 +1288,26 @@ int main(int argc, const char **argv)
 
 	generate_code(obj.rs);
 
+	ofstream out;
+	out.open(output_name.c_str(), ios::binary | ios::out);
+	if (!out) {
+		cerr << "error opening outputfile: " << output_name << endl;
+		return false;
+	}
 	write_object(out, obj);
 	out.close();
+	return true;
+}
+
+int main(int argc, const char **argv)
+{
+	if (argc != 2) {
+		cerr << "usage: " << argv[0] << " <module>\n";
+		return 1;
+	}
+
+	init_compiler();
+	compile_module(argv[1]);
 
 	return 0;
 }

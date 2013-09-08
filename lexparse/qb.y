@@ -46,7 +46,7 @@
 
 using namespace std;
 
-extern string g_current_module;
+extern string g_parse_module;
 }
 
 %syntax_error {
@@ -350,14 +350,14 @@ modtype(A) ::= MODNAME(B) TYPENAME(C). {
 	A = new AsmModSym(B->module_name(), C->text);
 }
 modtype(A) ::= CURRENTMOD TYPENAME(C). {
-	A = new AsmModSym(g_current_module, C->text);
+	A = new AsmModSym(g_parse_module, C->text);
 }
 
 modsym(A) ::= MODNAME(B) ID(C). {
 	A = new AsmModSym(B->module_name(), C->text);
 }
 modsym(A) ::= CURRENTMOD ID(C). {
-	A = new AsmModSym(g_current_module, C->text);
+	A = new AsmModSym(g_parse_module, C->text);
 }
 
 reg(A) ::= PID. {
