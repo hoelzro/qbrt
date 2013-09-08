@@ -1,6 +1,10 @@
 ## hello world
 func __main core/Void ## Declare a __main function that returns core/Void
 lfunc $pfunc io/print
-const $pfunc.0 "hello world\n"
+const $pfunc.0 "hello world!\n"
+call \void $pfunc
+const $pfunc.0 "нет\n"
+call \void $pfunc
+const $pfunc.0 "hallå världen\n"
 call \void $pfunc
 end.
