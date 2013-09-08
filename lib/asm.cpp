@@ -470,8 +470,12 @@ bool ResourceSet::collect(AsmResource &res)
 
 void ResourceSet::import(AsmString &module)
 {
-	if (module.value != _module_name.value) {
-		// don't both importing *this* module!
+	if (module.value == "*"
+			|| module.value == _module_name.value)
+	{
+		// don't both importing the typevar module (*) or
+		// the current module
+	} else {
 		pair< set< AsmString * >::iterator, bool > result(
 				imports.modules.insert(&module));
 	}
