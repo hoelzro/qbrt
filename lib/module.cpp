@@ -394,12 +394,13 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 	}
 	char *path(strdup(envpath));
 
+	const string qbname(objname +".qb");
 	const char *dir = strtok(path, ":");
 	char truedir[4096];
 	while (dir) {
 		realpath(dir, truedir);
 		string filename(truedir);
-		filename += "/" + objname +".qb";
+		filename += "/" + qbname;
 		objstr.open(filename.c_str(), ios::in | ios::binary);
 		if (objstr) {
 			return true;
@@ -407,7 +408,7 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 		dir = strtok(NULL, ":");
 	}
 	free(path);
-	cerr << "failed to open object: " << objname << endl;
+	cerr << "failed to open: " << qbname << endl;
 	return false;
 }
 
