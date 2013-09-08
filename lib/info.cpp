@@ -458,6 +458,19 @@ void print_code(const ResourceTable &tbl)
 	}
 }
 
+
+/** Enumerate the imported module names */
+void print_imports(const ResourceTable &tbl, uint16_t imports_index)
+{
+	const ImportResource *import = tbl.ptr< ImportResource >(imports_index);
+	cout << "\nimported modules: " << import->count << endl;
+	for (int i(0); i<import->count; ++i) {
+		const char *module = fetch_string(tbl, import->modules[i]);
+		cout << "\t" << module << endl;
+	}
+}
+
+
 void print_constructure(const ConstructResource &conres
 		, const ResourceTable &tbl)
 {
@@ -671,7 +684,7 @@ static inline void print_resource_line(const ResourceTable &tbl, uint16_t i)
 
 void print_resources(const ResourceTable &tbl)
 {
-	cout << "resources:\n";
+	cout << "\nresources:\n";
 	uint16_t index(0);
 	for (uint16_t i(1); i<tbl.resource_count; ++i) {
 		print_resource_line(tbl, i);
@@ -693,6 +706,7 @@ void show_object_info(const char *objname)
 	cout << "library: " << fetch_string(resource, header.name) << endl;
 	cout << "version: " << header.version << '.'
 		<< fetch_string(resource, header.iteration) << endl;
+	cout << "imports: " << header.imports << endl;
 	cout << "bytes of code & data: " << resource.data_size << endl;
 	cout << "# of resources: " << (resource.resource_count - 1) << endl;
 	cout << hex;
@@ -700,6 +714,7 @@ void show_object_info(const char *objname)
 	cout << "index offset: " << resource.index_offset() << endl;
 	cout << dec;
 
+	print_imports(resource, header.imports);
 	print_resources(resource);
 	print_constructs(resource);
 	print_code(resource);

@@ -470,8 +470,11 @@ bool ResourceSet::collect(AsmResource &res)
 
 void ResourceSet::import(AsmString &module)
 {
-	pair< set< AsmString * >::iterator, bool > result(
-			imports.modules.insert(&module));
+	if (module.value != _module_name.value) {
+		// don't both importing *this* module!
+		pair< set< AsmString * >::iterator, bool > result(
+				imports.modules.insert(&module));
+	}
 	collect(module);
 }
 
@@ -1289,6 +1292,7 @@ int main(int argc, const char **argv)
 	obj.header.name = obj.rs.module_name();
 	obj.header.version = obj.rs.module_version;
 	obj.header.iteration = obj.rs.module_iteration();
+	obj.header.imports = obj.rs.imports_index();
 
 	allocate_registers(*stmts, NULL);
 	cout << "---\n";

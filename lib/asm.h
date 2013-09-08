@@ -50,11 +50,10 @@ struct ResourceSet
 	typedef Indexer::iterator iterator;
 	typedef Indexer::const_iterator const_iterator;
 
-	uint16_t module_name() const
-		{ return *_module_name.index; }
+	uint16_t module_name() const { return *_module_name.index; }
 	uint16_t module_version;
-	uint16_t module_iteration() const
-		{ return *_module_iteration.index; }
+	uint16_t module_iteration() const { return *_module_iteration.index; }
+	uint16_t imports_index() const { return *imports.index; }
 
 	ResourceSet(const std::string &modname);
 
