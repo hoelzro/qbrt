@@ -524,7 +524,7 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 	const StringResource &str(
 			tbl.obj< StringResource >(index));
 	ostringstream o;
-	for (int i(0); i<str.length; ++i) {
+	for (int i(0); i<str.bytes; ++i) {
 		switch (str.value[i]) {
 			case '\n':
 				o << "\\n";
@@ -540,7 +540,7 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 				break;
 		}
 	}
-	printf("str(%u) \"%s\"\n", str.length, o.str().c_str());
+	printf("str(%u) \"%s\"\n", str.bytes, o.str().c_str());
 }
 
 void print_modsym(const ResourceTable &tbl, uint16_t index)

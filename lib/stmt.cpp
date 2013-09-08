@@ -14,11 +14,10 @@ using namespace std;
 
 uint32_t AsmString::write(std::ostream &o) const
 {
-	uint16_t strsize(value.size());
-	o.write((const char *) &strsize, 2);
-	o.write(value.c_str(), strsize);
-	o.put('\0');
-	return strsize + 3;
+	uint16_t str_bytes(value.size() + 1);
+	o.write((const char *) &str_bytes, 2);
+	o.write(value.c_str(), str_bytes);
+	return str_bytes + 2;
 }
 
 std::ostream & AsmString::pretty(std::ostream &o) const

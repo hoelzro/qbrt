@@ -56,7 +56,7 @@ struct stracc_instruction
 
 struct StringResource
 {
-	uint16_t length;
+	uint16_t bytes;
 	const char value[];
 };
 
