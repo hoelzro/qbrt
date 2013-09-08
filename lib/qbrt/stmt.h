@@ -472,19 +472,6 @@ struct goto_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct import_stmt
-: public Stmt
-{
-	import_stmt(const std::string &modname)
-	: module(modname)
-	{}
-
-	AsmString module;
-
-	void collect_resources(ResourceSet &);
-	void pretty(std::ostream &) const;
-};
-
 struct label_stmt
 : public Stmt
 {

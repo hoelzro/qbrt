@@ -121,7 +121,6 @@ TYPEVAR	\*[A-Z]{NAMEC}*
 "idiv"		{ BEGIN(ARGS); return_token(TOKEN_IDIV); }
 "imult"		{ BEGIN(ARGS); return_token(TOKEN_IMULT); }
 "isub"		{ BEGIN(ARGS); return_token(TOKEN_ISUB); }
-"import"	{ BEGIN(ARGS); return_token(TOKEN_IMPORT); }
 "lcontext"	{ BEGIN(ARGS); return_token(TOKEN_LCONTEXT); }
 "lconstruct"	{ BEGIN(ARGS); return_token(TOKEN_LCONSTRUCT); }
 "lfunc"		{ BEGIN(ARGS); return_token(TOKEN_LFUNC); }

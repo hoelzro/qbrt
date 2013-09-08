@@ -1,6 +1,3 @@
-import io/
-import math/
-
 ## hello world
 func __main core/Void ## Declare a __main function that returns core/Void
 lfunc $pfunc io/print
