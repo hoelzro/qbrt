@@ -476,8 +476,8 @@ void ResourceSet::import(AsmString &module)
 		// don't both importing the typevar module (*) or
 		// the current module
 	} else {
-		pair< set< AsmString * >::iterator, bool > result(
-				imports.modules.insert(&module));
+		imports.modules.insert(&module);
+		imports.names.insert(module.value);
 	}
 	collect(module);
 }
@@ -1255,7 +1255,29 @@ void init_compiler() {
 	init_constant_registers();
 }
 
-bool compile_module(const string &module_name)
+bool compile_module(ModuleMap &, const string &module_name);
+
+void load_imported_modules(ModuleMap &modmap, const set< string > &modnames)
+{
+	set< string >::const_iterator it(modnames.begin());
+	map< string, Module * > modules;
+	for (; it!=modnames.end(); ++it) {
+		if (modmap.find(*it) != modmap.end()) {
+			continue;
+		}
+		Module *mod = read_module(*it);
+		if (!mod) {
+			compile_module(modmap, *it);
+			mod = read_module(*it);
+			if (!mod) {
+				cerr << "could not load module: "<< (*it) & DIE;
+			}
+			modmap[*it] = mod;
+		}
+	}
+}
+
+bool compile_module(ModuleMap &modmap, const string &module_name)
 {
 	string input_name(module_name +".uqb");
 	string output_name(module_name +".qb");
@@ -1287,6 +1309,8 @@ bool compile_module(const string &module_name)
 	obj.header.iteration = obj.rs.module_iteration();
 	obj.header.imports = obj.rs.imports_index();
 
+	load_imported_modules(modmap, obj.rs.imported_modules());
+
 	allocate_registers(*stmts, NULL);
 	cout << "---\n";
 
@@ -1311,7 +1335,8 @@ int main(int argc, const char **argv)
 	}
 
 	init_compiler();
-	compile_module(argv[1]);
+	ModuleMap modules;
+	compile_module(modules, argv[1]);
 
 	return 0;
 }

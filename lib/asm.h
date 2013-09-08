@@ -38,6 +38,7 @@ struct AsmImport
 : public AsmResource
 {
 	std::set< AsmString *, ResourceLess > modules;
+	std::set< std::string > names;
 
 	AsmImport() : AsmResource(RESOURCE_IMPORT) {}
 	virtual uint32_t write(std::ostream &o) const;
@@ -66,6 +67,9 @@ struct ResourceSet
 	bool collect(AsmResource &);
 	void import(AsmString &);
 	void set_module_version(uint16_t ver, const std::string &iter);
+
+	const std::set< std::string > & imported_modules() const
+		{ return imports.names; }
 
 private:
 	Indexer index;

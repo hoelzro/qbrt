@@ -222,6 +222,8 @@ private:
 		function_cache;
 	mutable std::map< uint16_t, const Type * > indexed_type_cache;
 };
+typedef std::map< std::string, const Module * > ModuleMap;
+
 
 Module * read_module(const std::string &objname);
 
