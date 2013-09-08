@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <set>
 
 
 struct AsmReg;
@@ -27,6 +28,43 @@ struct RegAlloc
 	void alloc(AsmReg &);
 };
 
+
+struct ResourceLess
+{
+	bool operator () (const AsmResource *, const AsmResource *) const;
+};
+
+struct AsmImport
+: public AsmResource
+{
+	std::set< AsmString *, ResourceLess > modules;
+
+	AsmImport() : AsmResource(RESOURCE_IMPORT) {}
+	virtual uint32_t write(std::ostream &o) const;
+	virtual std::ostream & pretty(std::ostream &o) const;
+};
+
+struct ResourceSet
+{
+	typedef std::map< AsmResource *, uint16_t, ResourceLess > Indexer;
+	typedef Indexer::iterator iterator;
+	typedef Indexer::const_iterator const_iterator;
+
+	ResourceSet();
+
+	iterator begin() { return index.begin(); }
+	iterator end() { return index.end(); }
+	const_iterator begin() const { return index.begin(); }
+	const_iterator end() const { return index.end(); }
+	uint16_t size() const { return index.size(); }
+
+	bool collect(AsmResource &);
+	void import(AsmString &);
+
+private:
+	Indexer index;
+	AsmImport imports;
+};
 
 
 struct AsmReg

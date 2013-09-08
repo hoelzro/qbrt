@@ -24,6 +24,7 @@ typedef std::list< AsmModSym * > AsmModSymList;
 typedef std::list< AsmParam * > AsmParamList;
 typedef std::list< AsmString * > AsmStringList;
 typedef std::list< AsmTypeSpec * > AsmTypeSpecList;
+struct ResourceSet;
 
 
 struct AsmResource
@@ -40,17 +41,6 @@ struct AsmResource
 
 	static uint16_t NULL_INDEX;
 };
-
-struct ResourceLess
-{
-	bool operator () (const AsmResource *, const AsmResource *) const;
-};
-
-typedef std::map< AsmResource *, uint16_t, ResourceLess > ResourceSet;
-static inline ResourceSet::value_type asm_resource_pair(AsmResource *r)
-{
-	return ResourceSet::value_type(r, 0);
-}
 
 
 struct AsmString
@@ -69,6 +59,11 @@ struct AsmString
 
 	virtual uint32_t write(std::ostream &) const;
 	virtual std::ostream & pretty(std::ostream &) const;
+
+	friend bool operator < (const AsmString &a, const AsmString &b)
+	{
+		return a.value < b.value;
+	}
 };
 
 struct AsmHashTag
@@ -474,6 +469,19 @@ struct goto_stmt
 	AsmLabel label;
 
 	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
+struct import_stmt
+: public Stmt
+{
+	import_stmt(const std::string &modname)
+	: module(modname)
+	{}
+
+	AsmString module;
+
+	void collect_resources(ResourceSet &);
 	void pretty(std::ostream &) const;
 };
 

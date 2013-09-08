@@ -90,6 +90,12 @@ struct ModSym
 	typedef std::vector< ModSym * > Array;
 };
 
+struct ImportResource
+{
+	uint16_t count;
+	uint16_t modules[];
+};
+
 
 struct ResourceTableHeader
 {
@@ -120,7 +126,7 @@ struct ResourceTable
 	const D * ptr(uint16_t i) const
 	{
 		if (i == 0) {
-			return NULL;
+			std::cerr << "resource id: zero" & DIE;
 		}
 		const ResourceInfo *info;
 		info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
@@ -130,8 +136,7 @@ struct ResourceTable
 	void ptr(const D *&p, uint16_t i) const
 	{
 		if (i == 0) {
-			p = NULL;
-			return;
+			std::cerr << "resource id: zero" & DIE;
 		}
 		const ResourceInfo *info;
 		info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);

@@ -76,6 +76,9 @@ top_stmt(A) ::= MODULE MODNAME. {
 	cerr << "whoops, module declarations are not implemented yet\n";
 	A = NULL;
 }
+top_stmt(A) ::= IMPORT MODNAME(B). {
+	A = new import_stmt(B->module_name());
+}
 top_stmt(A) ::= func_block(B). { A = B; }
 top_stmt(A) ::= protocol_block(B). { A = B; }
 top_stmt(A) ::= bind_block(B). { A = B; }

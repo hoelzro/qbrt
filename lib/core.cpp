@@ -16,6 +16,7 @@ using namespace std;
 static string PRIMITIVE_MODULE[256];
 static string PRIMITIVE_NAME[256];
 uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
+Death DIE;
 
 static void init_primitive_modules()
 {
@@ -318,4 +319,10 @@ uint8_t isize(uint8_t opcode)
 		exit(1);
 	}
 	return sz;
+}
+
+void operator & (std::ostream &out, const Death &)
+{
+	out << endl;
+	exit(1);
 }

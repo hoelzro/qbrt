@@ -487,16 +487,23 @@ void print_constructs(const ResourceTable &tbl)
 	}
 }
 
+
 void print_hashtag(const ResourceTable &tbl, uint16_t index)
 {
 	const HashTagResource &hash(tbl.obj< HashTagResource >(index));
-	printf("\t%u #%s\n", index, hash.value);
+	printf("#%s\n", hash.value);
+}
+
+void print_import_line(const ResourceTable &tbl, uint16_t index)
+{
+	const ImportResource &import(tbl.obj< ImportResource >(index));
+	printf("import %d\n", import.count);
 }
 
 void print_unsupported_resource(const ResourceTable &tbl, uint16_t i)
 {
 	uint16_t type(tbl.type(i));
-	printf("\t% 2u unsupported:0x%x\n", i, type);
+	printf("unsupported:0x%x\n", type);
 }
 
 void print_escaped_string(const ResourceTable &tbl, uint16_t index)
@@ -520,7 +527,7 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 				break;
 		}
 	}
-	printf("\t% 2u str(%u) \"%s\"\n", index, str.length, o.str().c_str());
+	printf("str(%u) \"%s\"\n", str.length, o.str().c_str());
 }
 
 void print_modsym(const ResourceTable &tbl, uint16_t index)
@@ -528,7 +535,7 @@ void print_modsym(const ResourceTable &tbl, uint16_t index)
 	const ModSym &modsym(tbl.obj< ModSym >(index));
 	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
 	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
-	printf("\t% 2u modsym(%s/%s)\n", index, mod.value, sym.value);
+	printf("modsym(%s/%s)\n", mod.value, sym.value);
 }
 
 void print_typespec(const ResourceTable &tbl, uint16_t index)
@@ -536,21 +543,21 @@ void print_typespec(const ResourceTable &tbl, uint16_t index)
 	const TypeSpecResource &typespec(tbl.obj< TypeSpecResource >(index));
 	const StringResource &fullname(
 			tbl.obj< StringResource >(typespec.fullname_idx));
-	printf("\t% 2u typespec(%s)\n", index, fullname.value);
+	printf("typespec(%s)\n", fullname.value);
 }
 
 void print_construct(const ResourceTable &tbl, uint16_t index)
 {
 	const ConstructResource &cons(tbl.obj< ConstructResource >(index));
 	const StringResource &name(tbl.obj< StringResource >(cons.name_idx));
-	printf("\t% 2u construct %s/%d\n", index, name.value, cons.fld_count);
+	printf("construct %s/%d\n", name.value, cons.fld_count);
 }
 
 void print_datatype(const ResourceTable &tbl, uint16_t index)
 {
 	const DataTypeResource &dtr(tbl.obj< DataTypeResource >(index));
 	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx));
-	printf("\t% 2u datatype %s/%d\n", index, name.value, dtr.argc);
+	printf("datatype %s/%d\n", name.value, dtr.argc);
 }
 
 void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
@@ -563,7 +570,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ModSym *proto_ms = NULL;
 	const char *fname = fetch_string(tbl, f.name_idx);
 	const char *fctx = fcontext_name(f.fcontext);
-	printf("\t% 2u %s function ", i, fctx);
+	printf("%s function ", fctx);
 
 	switch (PFC_TYPE(f.fcontext)) {
 		case FCT_PROTOCOL:
@@ -594,7 +601,7 @@ void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const ProtocolResource &p(tbl.obj< ProtocolResource >(i));
 	const StringResource &pname(tbl.obj< StringResource >(p.name_idx));
-	printf("\t%u protocol %s/%u", i, pname.value, p.argc());
+	printf("protocol %s/%u", pname.value, p.argc());
 
 	const StringResource &prototype(
 			tbl.obj< StringResource >(p.typevar_idx(0)));
@@ -607,7 +614,7 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx));
 	const char *modname(fetch_string(tbl, protoname.mod_name));
 	const char *symname(fetch_string(tbl, protoname.sym_name));
-	printf("\t%u polymorph ", i);
+	printf("polymorph ");
 	if (modname && *modname) {
 		printf("%s/", modname);
 	}
@@ -624,26 +631,41 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 
 static inline void print_resource_line(const ResourceTable &tbl, uint16_t i)
 {
-	if (tbl.type(i) == RESOURCE_STRING) {
-		print_escaped_string(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_MODSYM) {
-		print_modsym(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_HASHTAG) {
-		print_hashtag(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_CONSTRUCT) {
-		print_construct(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_DATATYPE) {
-		print_datatype(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_TYPESPEC) {
-		print_typespec(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_FUNCTION) {
-		print_function_resource_line(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_PROTOCOL) {
-		print_protocol_resource_line(tbl, i);
-	} else if (tbl.type(i) == RESOURCE_POLYMORPH) {
-		print_polymorph_resource_line(tbl, i);
-	} else {
-		print_unsupported_resource(tbl, i);
+	printf("\t% 2u ", i);
+	switch (tbl.type(i)) {
+		case RESOURCE_CONSTRUCT:
+			print_construct(tbl, i);
+			break;
+		case RESOURCE_DATATYPE:
+			print_datatype(tbl, i);
+			break;
+		case RESOURCE_FUNCTION:
+			print_function_resource_line(tbl, i);
+			break;
+		case RESOURCE_HASHTAG:
+			print_hashtag(tbl, i);
+			break;
+		case RESOURCE_IMPORT:
+			print_import_line(tbl, i);
+			break;
+		case RESOURCE_MODSYM:
+			print_modsym(tbl, i);
+			break;
+		case RESOURCE_POLYMORPH:
+			print_polymorph_resource_line(tbl, i);
+			break;
+		case RESOURCE_PROTOCOL:
+			print_protocol_resource_line(tbl, i);
+			break;
+		case RESOURCE_STRING:
+			print_escaped_string(tbl, i);
+			break;
+		case RESOURCE_TYPESPEC:
+			print_typespec(tbl, i);
+			break;
+		default:
+			print_unsupported_resource(tbl, i);
+			break;
 	}
 }
 

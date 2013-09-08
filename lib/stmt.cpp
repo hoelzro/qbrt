@@ -560,6 +560,16 @@ void iffail_stmt::pretty(std::ostream &out) const
 		<< *reg << " @" << label.name;
 }
 
+void import_stmt::collect_resources(ResourceSet &rs)
+{
+	rs.import(module);
+}
+
+void import_stmt::pretty(ostream &out) const
+{
+	out << "import " << module.value;
+}
+
 void label_stmt::generate_code(AsmFunc &f)
 {
 	label_next(f, label.name);

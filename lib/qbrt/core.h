@@ -386,4 +386,10 @@ static inline uint16_t endian_swap(uint16_t i)
 	return i;
 }
 
+
+struct Death {
+	friend void operator & (std::ostream &, const Death &);
+};
+extern Death DIE;
+
 #endif

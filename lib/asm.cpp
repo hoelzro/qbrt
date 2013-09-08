@@ -111,6 +111,15 @@ int AsmCmp< AsmHashTag >::cmp(const AsmHashTag &a, const AsmHashTag &b)
 }
 
 template <>
+int AsmCmp< AsmImport >::cmp(const AsmImport &a, const AsmImport &b)
+{
+	// there should only be one of these per module
+	cerr << "too many AsmImport objects\n";
+	exit(1);
+	return 0;
+}
+
+template <>
 int AsmCmp< AsmModSym >::cmp(const AsmModSym &a, const AsmModSym &b)
 {
 	int comparison(AsmCmp< AsmString >::cmp(a.module, b.module));
@@ -304,6 +313,8 @@ int AsmCmp< AsmResource >::cmp(const AsmResource &a, const AsmResource &b)
 			return compare_asm< AsmFunc >(a, b);
 		case RESOURCE_HASHTAG:
 			return compare_asm< AsmHashTag >(a, b);
+		case RESOURCE_IMPORT:
+			return compare_asm< AsmImport >(a, b);
 		case RESOURCE_PROTOCOL:
 			return compare_asm< AsmProtocol >(a, b);
 		case RESOURCE_POLYMORPH:
@@ -426,25 +437,62 @@ AsmReg * AsmReg::create_special(uint16_t id)
 }
 
 
-bool collect_resource(ResourceSet &rs, AsmResource &res)
+ResourceSet::ResourceSet()
+: index()
+, imports()
+{
+	collect(imports);
+}
+
+bool ResourceSet::collect(AsmResource &res)
 {
 	pair< AsmResource *, uint16_t > rp(&res, 0);
 	pair< map< AsmResource *, uint16_t >::iterator, bool > result;
-	result = rs.insert(rp);
+	result = index.insert(rp);
 	res.index = &result.first->second;
 	return result.second;
 }
 
+void ResourceSet::import(AsmString &module)
+{
+	pair< set< AsmString * >::iterator, bool > result(
+			imports.modules.insert(&module));
+	collect(module);
+}
+
+uint32_t AsmImport::write(std::ostream &o) const
+{
+	uint16_t num(modules.size());
+	o.write((const char *) &num, 2);
+	uint32_t bytes(2);
+	set< AsmString * >::const_iterator it(modules.begin());
+	for (; it!=modules.end(); ++it) {
+		o.write((const char *) (*it)->index, 2);
+		bytes += 2;
+	}
+	return bytes;
+}
+
+std::ostream & AsmImport::pretty(std::ostream &o) const
+{
+	return o << "import " << modules.size();
+}
+
+bool collect_resource(ResourceSet &rs, AsmResource &res)
+{
+	return rs.collect(res);
+}
+
 bool collect_string(ResourceSet &rs, AsmString &str)
 {
-	return collect_resource(rs, str);
+	return rs.collect(str);
 }
 
 bool collect_modsym(ResourceSet &rs, AsmModSym &modsym)
 {
-	collect_string(rs, modsym.module);
-	collect_string(rs, modsym.symbol);
-	return collect_resource(rs, modsym);
+	rs.import(modsym.module);
+	rs.collect(modsym.symbol);
+	return rs.collect(modsym);
 }
 
 bool collect_typespec(ResourceSet &rs, AsmTypeSpec &type)
@@ -1226,10 +1274,12 @@ int main(int argc, const char **argv)
 	cout << "---\n";
 	Stmt::List *stmts = parse(*in);
 	set_function_context(*stmts, FCT_TRADITIONAL, NULL);
-	allocate_registers(*stmts, NULL);
+
 	collect_resources(obj.rs, *stmts);
 	index_resources(obj.rs);
 	print_resources(obj.rs);
+
+	allocate_registers(*stmts, NULL);
 	cout << "---\n";
 
 	generate_code(obj.rs);
