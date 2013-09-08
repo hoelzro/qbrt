@@ -25,7 +25,8 @@ struct RegAlloc
 	, counter(0)
 	{}
 	void declare_arg(const std::string &name, const std::string &type);
-	void alloc(AsmReg &, const std::string &type = std::string());
+	void assign_src(AsmReg &);
+	void alloc_dst(AsmReg &, const std::string &type = std::string());
 };
 
 

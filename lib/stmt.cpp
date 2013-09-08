@@ -67,10 +67,11 @@ void Stmt::generate_code(AsmFunc &)
 
 void binaryop_stmt::allocate_registers(RegAlloc *alloc)
 {
+	alloc->assign_src(*a);
+	alloc->assign_src(*b);
+
 	const char *datatype = type == 'i' ? "core/Int" : "";
-	alloc->alloc(*result, datatype);
-	alloc->alloc(*a, datatype);
-	alloc->alloc(*b, datatype);
+	alloc->alloc_dst(*result, datatype);
 }
 
 void binaryop_stmt::generate_code(AsmFunc &f)
@@ -161,8 +162,8 @@ void bindtype_stmt::pretty(std::ostream &out) const
 
 void call_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*result);
-	r->alloc(*function);
+	r->assign_src(*function);
+	r->alloc_dst(*result);
 }
 
 void call_stmt::generate_code(AsmFunc &f)
@@ -178,7 +179,7 @@ void call_stmt::pretty(std::ostream &out) const
 
 void cfailure_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst, "core/Failure");
 }
 
 void cfailure_stmt::collect_resources(ResourceSet &rs)
@@ -198,7 +199,7 @@ void cfailure_stmt::pretty(std::ostream &out) const
 
 void consti_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst, "core/Int");
 }
 
 void consti_stmt::generate_code(AsmFunc &f)
@@ -213,7 +214,7 @@ void consti_stmt::pretty(std::ostream &out) const
 
 void consts_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst, "core/String");
 }
 
 void consts_stmt::collect_resources(ResourceSet &rs)
@@ -234,7 +235,7 @@ void consts_stmt::pretty(std::ostream &out) const
 
 void consthash_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst, "core/HashTag");
 }
 
 void consthash_stmt::collect_resources(ResourceSet &rs)
@@ -276,8 +277,8 @@ void construct_stmt::pretty(ostream &out) const
 
 void copy_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
-	r->alloc(*src);
+	r->assign_src(*src);
+	r->alloc_dst(*dst);
 }
 
 void copy_stmt::generate_code(AsmFunc &f)
@@ -292,7 +293,7 @@ void copy_stmt::pretty(std::ostream &out) const
 
 void ctuple_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst);
 }
 
 void ctuple_stmt::generate_code(AsmFunc &f)
@@ -424,7 +425,7 @@ void dfunc_stmt::pretty(std::ostream &out) const
 
 void fork_stmt::allocate_registers(RegAlloc *ra)
 {
-	ra->alloc(*dst);
+	ra->alloc_dst(*dst);
 	if (code) {
 		::allocate_registers(*code, ra);
 	}
@@ -505,7 +506,7 @@ void goto_stmt::pretty(std::ostream &out) const
 
 void if_stmt::allocate_registers(RegAlloc *alloc)
 {
-	alloc->alloc(*reg);
+	alloc->assign_src(*reg);
 }
 
 void if_stmt::generate_code(AsmFunc &f)
@@ -531,8 +532,8 @@ ifcmp_stmt * ifcmp_stmt::ne(AsmReg *a, AsmReg *b, const std::string &lbl)
 
 void ifcmp_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*a);
-	r->alloc(*b);
+	r->assign_src(*a);
+	r->assign_src(*b);
 }
 
 void ifcmp_stmt::generate_code(AsmFunc &f)
@@ -547,7 +548,7 @@ void ifcmp_stmt::pretty(std::ostream &out) const
 
 void iffail_stmt::allocate_registers(RegAlloc *alloc)
 {
-	alloc->alloc(*reg);
+	alloc->assign_src(*reg);
 }
 
 void iffail_stmt::generate_code(AsmFunc &f)
@@ -578,7 +579,7 @@ void lcontext_stmt::collect_resources(ResourceSet &rs)
 
 void lcontext_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst);
 }
 
 void lcontext_stmt::generate_code(AsmFunc &f)
@@ -598,7 +599,7 @@ void lconstruct_stmt::collect_resources(ResourceSet &rs)
 
 void lconstruct_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst);
 }
 
 void lconstruct_stmt::generate_code(AsmFunc &f)
@@ -629,7 +630,7 @@ void lfunc_stmt::collect_resources(ResourceSet &rs)
 
 void lfunc_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst);
 }
 
 void lfunc_stmt::generate_code(AsmFunc &f)
@@ -644,9 +645,9 @@ void lfunc_stmt::pretty(std::ostream &out) const
 
 void match_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*result);
-	r->alloc(*pattern);
-	r->alloc(*input);
+	r->alloc_dst(*result);
+	r->assign_src(*pattern);
+	r->assign_src(*input);
 }
 
 void match_stmt::generate_code(AsmFunc &f)
@@ -663,8 +664,8 @@ void match_stmt::pretty(std::ostream &out) const
 
 void matchargs_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*result);
-	r->alloc(*pattern);
+	r->alloc_dst(*result);
+	r->assign_src(*pattern);
 }
 
 void matchargs_stmt::generate_code(AsmFunc &f)
@@ -681,8 +682,8 @@ void matchargs_stmt::pretty(ostream &out) const
 
 void newproc_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*pid);
-	r->alloc(*func);
+	r->assign_src(*func);
+	r->alloc_dst(*pid);
 }
 
 void newproc_stmt::generate_code(AsmFunc &f)
@@ -697,7 +698,7 @@ void newproc_stmt::pretty(std::ostream &out) const
 
 void patternvar_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
+	r->alloc_dst(*dst);
 }
 
 void patternvar_stmt::generate_code(AsmFunc &f)
@@ -712,8 +713,8 @@ void patternvar_stmt::pretty(ostream &out) const
 
 void recv_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
-	r->alloc(*tube);
+	r->assign_src(*tube);
+	r->alloc_dst(*dst);
 }
 
 void recv_stmt::generate_code(AsmFunc &f)
@@ -728,8 +729,8 @@ void recv_stmt::pretty(std::ostream &out) const
 
 void ref_stmt::allocate_registers(RegAlloc *rc)
 {
-	rc->alloc(*dst);
-	rc->alloc(*src);
+	rc->assign_src(*src);
+	rc->alloc_dst(*dst);
 }
 
 void ref_stmt::generate_code(AsmFunc &f)
@@ -754,8 +755,8 @@ void return_stmt::pretty(std::ostream &out) const
 
 void stracc_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*dst);
-	r->alloc(*src);
+	r->alloc_dst(*dst);
+	r->assign_src(*src);
 }
 
 void stracc_stmt::generate_code(AsmFunc &f)
@@ -770,7 +771,7 @@ void stracc_stmt::pretty(std::ostream &out) const
 
 void wait_stmt::allocate_registers(RegAlloc *r)
 {
-	r->alloc(*reg);
+	r->assign_src(*reg);
 }
 
 void wait_stmt::generate_code(AsmFunc &f)

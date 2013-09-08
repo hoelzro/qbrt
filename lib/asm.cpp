@@ -343,7 +343,7 @@ void RegAlloc::declare_arg(const string &name, const string &type)
 	registry[name] = counter++;
 }
 
-void RegAlloc::alloc(AsmReg &reg, const string &type)
+void RegAlloc::assign_src(AsmReg &reg)
 {
 	// only indexed args already have the idx set
 	if (reg.idx >= argc) {
@@ -358,8 +358,23 @@ void RegAlloc::alloc(AsmReg &reg, const string &type)
 		reg.idx = it->second;
 		return;
 	}
-	if (reg.is_src()) {
-		cerr << "src register is not yet allocated: " << reg.name & DIE;
+	cerr << "src register is not yet allocated: " << reg.name & DIE;
+}
+
+void RegAlloc::alloc_dst(AsmReg &reg, const string &type)
+{
+	// only indexed args already have the idx set
+	if (reg.idx >= argc) {
+		cerr << "argument register out of bounds: " << reg.name & DIE;
+	}
+	if (reg.idx >= 0 || reg.specialid) {
+		return;
+	}
+
+	CountMap::const_iterator it(registry.find(reg.name));
+	if (it != registry.end()) {
+		reg.idx = it->second;
+		return;
 	}
 	reg.idx = counter++;
 	registry[reg.name] = reg.idx;
