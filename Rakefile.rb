@@ -49,18 +49,32 @@ QBRT.debug!
 QBRT_DIRS = ["o","o/qbrt","o/qbrt/lib"]
 LIBQB = ['libqb/core.qb', 'libqb/io.qb']
 
+TESTQB = CTarget.new()
+TESTQB.name = 'testqb'
+TESTQB.include 'lib'
+TESTQB.include 'testlib'
+TESTQB.compile_files("testlib/test.cpp", \
+		   "testlib/accertion.cpp", \
+		   )
+TESTQB.obj_dir = "o/testqb"
+TESTQB.debug!
+TESTQB_DIRS = ["o", "o/testqb", "o/testqb/lib", "o/testqb/testlib"]
+
 PROJECT = CProject.new()
 PROJECT.cc = CCompiler.new()
-PROJECT.targets = [QBC,QBI,QBRT]
+PROJECT.targets = [QBC,QBI,QBRT,TESTQB]
 
 
 directory 'o'
 directory 'o/qbc'
 directory 'o/qbc/lib'
-directory 'o/qbrt'
-directory 'o/qbrt/lib'
 directory 'o/qbi'
 directory 'o/qbi/lib'
+directory 'o/qbrt'
+directory 'o/qbrt/lib'
+directory 'o/testqb'
+directory 'o/testqb/lib'
+directory 'o/testqb/testlib'
 
 task :default => :all
 
@@ -85,6 +99,14 @@ end
 task :compile_qbrt => QBRT_DIRS + QBRT.objects + LIBQB
 task :qbrt_deps do
 	QBRT.all_dependencies.each { |d| puts d }
+end
+
+file "testqb" => :compile_testqb do
+	PROJECT.link(TESTQB)
+end
+task :compile_testqb => TESTQB_DIRS + TESTQB.objects
+task :testqb_deps do
+	TESTQB.all_dependencies.each { |d| puts d }
 end
 
 
