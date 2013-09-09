@@ -408,7 +408,7 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 		dir = strtok(NULL, ":");
 	}
 	free(path);
-	cerr << "failed to open: " << qbname << endl;
+	cerr << "failed to find " << qbname << " in QBPATH=" << envpath << endl;
 	return false;
 }
 
