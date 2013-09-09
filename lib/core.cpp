@@ -4,10 +4,10 @@
 #include <sstream>
 #include "qbrt/function.h"
 #include "qbrt/logic.h"
-#include "qbrt/string.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
 #include "instruction/schedule.h"
+#include "instruction/string.h"
 #include "instruction/type.h"
 #include <cstdlib>
 
