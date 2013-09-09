@@ -1,7 +1,7 @@
-#ifndef QBRT_ARITHMETIC_H
-#define QBRT_ARITHMETIC_H
+#ifndef QBRT_INSTRUCTION_ARITHMETIC_H
+#define QBRT_INSTRUCTION_ARITHMETIC_H
 
-#include "core.h"
+#include "qbrt/core.h"
 
 #pragma pack(push, 1)
 
