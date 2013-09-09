@@ -15,12 +15,11 @@
 struct call_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t result_reg;
 	uint16_t func_reg;
 
 	call_instruction(reg_t result, reg_t func)
-		: opcode_data(OP_CALL)
+		: instruction(OP_CALL)
 		, result_reg(result)
 		, func_reg(func)
 	{}
@@ -31,10 +30,8 @@ struct call_instruction
 struct return_instruction
 : public instruction
 {
-	uint8_t opcode_data;
-
 	return_instruction()
-		: opcode_data(OP_RETURN)
+	: instruction(OP_RETURN)
 	{}
 
 	static const uint8_t SIZE = 1;
@@ -43,12 +40,11 @@ struct return_instruction
 struct cfailure_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t dst;
 	uint16_t hashtag_id;
 
 	cfailure_instruction(reg_t dst, uint16_t hash_id)
-	: opcode_data(OP_CFAILURE)
+	: instruction(OP_CFAILURE)
 	, dst(dst)
 	, hashtag_id(hash_id)
 	{}
@@ -59,12 +55,11 @@ struct cfailure_instruction
 struct lcontext_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t reg;
 	uint16_t hashtag;
 
 	lcontext_instruction(reg_t r, uint16_t hashtag)
-		: opcode_data(OP_LCONTEXT)
+		: instruction(OP_LCONTEXT)
 		, reg(r)
 		, hashtag(hashtag)
 	{}
@@ -75,12 +70,11 @@ struct lcontext_instruction
 struct lfunc_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t reg;
 	uint16_t modsym;
 
 	lfunc_instruction(reg_t r, uint16_t modsym)
-		: opcode_data(OP_LFUNC)
+		: instruction(OP_LFUNC)
 		, reg(r)
 		, modsym(modsym)
 	{}
@@ -91,13 +85,12 @@ struct lfunc_instruction
 struct loadtype_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t reg;
 	uint16_t modname;
 	uint16_t type;
 
 	loadtype_instruction(reg_t r, uint16_t mod, uint16_t type)
-		: opcode_data(OP_LFUNC)
+		: instruction(OP_LFUNC)
 		, reg(r)
 		, modname(mod)
 		, type(type)
@@ -109,11 +102,10 @@ struct loadtype_instruction
 struct loadobj_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t modname;
 
 	loadobj_instruction(uint16_t mod)
-		: opcode_data(OP_LOADOBJ)
+		: instruction(OP_LOADOBJ)
 		, modname(mod)
 	{}
 
@@ -123,12 +115,11 @@ struct loadobj_instruction
 struct move_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t dst;
 	uint16_t src;
 
 	move_instruction(reg_t dst, reg_t src)
-		: opcode_data(OP_MOVE)
+		: instruction(OP_MOVE)
 		, dst(dst)
 		, src(src)
 	{}
@@ -139,12 +130,11 @@ struct move_instruction
 struct ref_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t dst;
 	uint16_t src;
 
 	ref_instruction(reg_t dst, reg_t src)
-		: opcode_data(OP_REF)
+		: instruction(OP_REF)
 		, dst(dst)
 		, src(src)
 	{}
@@ -155,12 +145,11 @@ struct ref_instruction
 struct copy_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t dst;
 	uint16_t src;
 
 	copy_instruction(reg_t dst, reg_t src)
-		: opcode_data(OP_COPY)
+		: instruction(OP_COPY)
 		, dst(dst)
 		, src(src)
 	{}

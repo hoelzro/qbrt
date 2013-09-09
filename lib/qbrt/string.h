@@ -5,15 +5,16 @@
 #include "qbrt/core.h"
 
 
+#pragma pack(push, 1)
+
 struct consts_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t string_id : 16;
+	uint16_t reg;
+	uint16_t string_id;
 
 	consts_instruction(reg_t reg, uint16_t str_id)
-		: opcode_data(OP_CONSTS)
+		: instruction(OP_CONSTS)
 		, reg(reg)
 		, string_id(str_id)
 	{}
@@ -24,12 +25,11 @@ struct consts_instruction
 struct consthash_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t hash_id : 16;
+	uint16_t reg;
+	uint16_t hash_id;
 
 	consthash_instruction(reg_t reg, uint16_t hash_id)
-		: opcode_data(OP_CONSTHASH)
+		: instruction(OP_CONSTHASH)
 		, reg(reg)
 		, hash_id(hash_id)
 	{}
@@ -40,18 +40,19 @@ struct consthash_instruction
 struct stracc_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t src : 16;
+	uint16_t dst;
+	uint16_t src;
 
 	stracc_instruction(reg_t dst, reg_t src)
-		: opcode_data(OP_STRACC)
+		: instruction(OP_STRACC)
 		, dst(dst)
 		, src(src)
 	{}
 
 	static const uint8_t SIZE = 5;
 };
+
+#pragma pack(pop)
 
 
 struct StringResource

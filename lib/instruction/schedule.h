@@ -8,12 +8,11 @@
 struct newproc_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t pid;
 	uint16_t func;
 
 	newproc_instruction(reg_t pid, reg_t func)
-	: opcode_data(OP_NEWPROC)
+	: instruction(OP_NEWPROC)
 	, pid(pid)
 	, func(func)
 	{}
@@ -24,12 +23,11 @@ struct newproc_instruction
 struct recv_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	uint16_t dst;
 	uint16_t tube;
 
 	recv_instruction(reg_t dst, reg_t tube)
-	: opcode_data(OP_RECV)
+	: instruction(OP_RECV)
 	, dst(dst)
 	, tube(tube)
 	{}

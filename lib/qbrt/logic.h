@@ -56,7 +56,7 @@ struct iffail_instruction
 	{}
 
 	inline bool iffail() const { return opcode_data == OP_IFFAIL; }
-	inline bool ifnotfail() const { return opcode_data == OP_IFNOTFAIL; }
+	inline bool ifnotfail() const { return !iffail(); }
 
 	static const uint8_t SIZE = 5;
 };
@@ -109,11 +109,10 @@ struct fork_instruction
 struct wait_instruction
 : public instruction
 {
-	uint8_t opcode_data : 8;
 	uint16_t reg : 16;
 
 	wait_instruction(reg_t r)
-	: opcode_data(OP_WAIT)
+	: instruction(OP_WAIT)
 	, reg(r)
 	{}
 

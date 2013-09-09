@@ -5,16 +5,17 @@
 #include "core.h"
 
 
+#pragma pack(push, 1)
+
 struct stuple_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t tuple : 16;
-	uint64_t index : 16;
-	uint64_t data  : 16;
+	uint16_t tuple;
+	uint16_t index;
+	uint16_t data;
 
 	stuple_instruction(reg_t tup, uint16_t idx, uint16_t dat)
-		: opcode_data(OP_STUPLE)
+		: instruction(OP_STUPLE)
 		, tuple(tup)
 		, index(idx)
 		, data(dat)
@@ -22,5 +23,7 @@ struct stuple_instruction
 
 	static const uint8_t SIZE = 7;
 };
+
+#pragma pack(pop)
 
 #endif

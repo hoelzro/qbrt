@@ -349,24 +349,26 @@ std::string pretty_reg(uint16_t);
 
 // CODE
 
+#pragma pack(push, 1)
+
 struct instruction
 {
-	inline const uint8_t & opcode() const
-	{
-		return *(const uint8_t *) this;
-	}
-};
+	uint8_t opcode_data;
 
-#pragma pack(push, 1)
+	instruction(uint8_t op)
+	: opcode_data(op)
+	{}
+
+	inline const uint8_t & opcode() const { return opcode_data; }
+};
 
 struct jump_instruction
 : public instruction
 {
-	uint8_t opcode_data;
 	int16_t jump_data;
 
 	jump_instruction(uint8_t op)
-	: opcode_data(op)
+	: instruction(op)
 	, jump_data(0)
 	{}
 
