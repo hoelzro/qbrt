@@ -154,3 +154,26 @@ const qbrt_value & Failure::value(uint8_t i) const
 	exit(1);
 	return *(const qbrt_value *) NULL;
 }
+
+void Failure::write(ostream &out, const Failure &f)
+{
+	out << "Failure: #" << *f.type.data.hashtag;
+	string usage_msg(f.usage_msg());
+	if (!usage_msg.empty()) {
+		out << endl << usage_msg << endl;
+		return;
+	}
+
+	if (f.function_name) {
+		out << " in function " << f.function_name;
+	}
+	if (f.pc >= 0) {
+		out << " @" << f.pc;
+	}
+	out << endl;
+
+	string debug_msg(f.debug_msg());
+	if (!debug_msg.empty()) {
+		out << debug_msg << endl;
+	}
+}

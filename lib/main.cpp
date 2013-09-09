@@ -938,6 +938,7 @@ void execute_call(OpContext &ctx, const call_instruction &i)
 	Worker &w(ctx.worker());
 	qbrt_value &func_reg(*ctx.dstvalue(i.func_reg));
 	qbrt_value &output(*ctx.dstvalue(i.result_reg));
+
 	// increment pc so it's in the right place when we get back
 	ctx.pc() += call_instruction::SIZE;
 
@@ -1073,6 +1074,18 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		cerr << "function is null\n";
 		w.current->cfstate = CFS_FAILED;
 		return;
+	}
+
+	// check that none of the function args are bad first
+	WorkerCContext failctx(w, *f);
+	for (uint16_t i(0); i<f->argc; ++i) {
+		qbrt_value *val(failctx.dstvalue(PRIMARY_REG(i)));
+		if (val->type->id == VT_FAILURE) {
+			qbrt_value::fail(*w.current->function_call().result
+					, val->data.failure);
+			w.current->cfstate = CFS_FAILED;
+			return;
+		}
 	}
 
 	override_function(w, *f);
@@ -1553,8 +1566,7 @@ int main(int argc, const char **argv)
 
 	if (qbrt_value::failed(result)) {
 		Failure *fail = result.data.failure;
-		cerr << fail->debug_msg()
-			<<"\nexit with: "<< fail->exit_code << endl;
+		Failure::write(cerr, *fail);
 		return fail->exit_code.data.i;
 	}
 

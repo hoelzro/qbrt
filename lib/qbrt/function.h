@@ -467,6 +467,8 @@ struct Failure
 	uint8_t num_values() const { return 1; }
 	qbrt_value & value(uint8_t);
 	const qbrt_value & value(uint8_t) const;
+
+	static void write(std::ostream &, const Failure &);
 };
 
 #define NEW_FAILURE(type, fname, pc) (new Failure(type, fname, pc))

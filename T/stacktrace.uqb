@@ -5,8 +5,6 @@ dparam x core/Int
 const $zero 0
 ifeq $x $zero @GOOD
 cfailure \result #divideby0
-const $debug_msg "cannot divide by zero"
-fieldset \result debug $debug_msg
 return
 
 @GOOD
