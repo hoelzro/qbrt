@@ -357,16 +357,24 @@ struct instruction
 	}
 };
 
+#pragma pack(push, 1)
+
 struct jump_instruction
 : public instruction
 {
-	int16_t jump() const { return *(int16_t *) (((char *) this) + 1); }
-	void setjump(int16_t jmp)
-	{
-		(*(int16_t *) (((char *) this) + 1)) = jmp;
-	}
+	uint8_t opcode_data;
+	int16_t jump_data;
+
+	jump_instruction(uint8_t op)
+	: opcode_data(op)
+	, jump_data(0)
+	{}
+
+	int16_t jump() const { return jump_data; }
+	void setjump(int16_t jmp) { jump_data = jmp; }
 };
 
+#pragma pack(pop)
 
 extern uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
 void init_instruction_sizes();

@@ -3,14 +3,15 @@
 
 #include "core.h"
 
+#pragma pack(push, 1)
 
 struct binaryop_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t result : 16;
-	uint64_t a : 16;
-	uint64_t b : 16;
+	uint8_t opcode_data;
+	uint16_t result;
+	uint16_t a;
+	uint16_t b;
 
 	binaryop_instruction(uint8_t op, reg_t result, reg_t a, reg_t b)
 	: opcode_data(op)
@@ -25,9 +26,9 @@ struct binaryop_instruction
 struct consti_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	int64_t value : 32;
+	uint8_t opcode_data;
+	uint16_t reg;
+	int32_t value;
 
 	consti_instruction(reg_t reg, uint32_t value)
 		: opcode_data(OP_CONSTI)
@@ -37,5 +38,7 @@ struct consti_instruction
 
 	static const uint8_t SIZE = 7;
 };
+
+#pragma pack(pop)
 
 #endif

@@ -10,13 +10,14 @@
 #include <sstream>
 
 
+#pragma pack(push, 1)
 
 struct call_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t result_reg : 16;
-	uint64_t func_reg : 16;
+	uint8_t opcode_data;
+	uint16_t result_reg;
+	uint16_t func_reg;
 
 	call_instruction(reg_t result, reg_t func)
 		: opcode_data(OP_CALL)
@@ -42,9 +43,9 @@ struct return_instruction
 struct cfailure_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t hashtag_id : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t hashtag_id;
 
 	cfailure_instruction(reg_t dst, uint16_t hash_id)
 	: opcode_data(OP_CFAILURE)
@@ -58,9 +59,9 @@ struct cfailure_instruction
 struct lcontext_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t hashtag : 16;
+	uint8_t opcode_data;
+	uint16_t reg;
+	uint16_t hashtag;
 
 	lcontext_instruction(reg_t r, uint16_t hashtag)
 		: opcode_data(OP_LCONTEXT)
@@ -74,9 +75,9 @@ struct lcontext_instruction
 struct lfunc_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t modsym : 16;
+	uint8_t opcode_data;
+	uint16_t reg;
+	uint16_t modsym;
 
 	lfunc_instruction(reg_t r, uint16_t modsym)
 		: opcode_data(OP_LFUNC)
@@ -90,10 +91,10 @@ struct lfunc_instruction
 struct loadtype_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t modname : 16;
-	uint64_t type : 16;
+	uint8_t opcode_data;
+	uint16_t reg;
+	uint16_t modname;
+	uint16_t type;
 
 	loadtype_instruction(reg_t r, uint16_t mod, uint16_t type)
 		: opcode_data(OP_LFUNC)
@@ -108,8 +109,8 @@ struct loadtype_instruction
 struct loadobj_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t modname : 16;
+	uint8_t opcode_data;
+	uint16_t modname;
 
 	loadobj_instruction(uint16_t mod)
 		: opcode_data(OP_LOADOBJ)
@@ -122,9 +123,9 @@ struct loadobj_instruction
 struct move_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t src : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t src;
 
 	move_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_MOVE)
@@ -138,9 +139,9 @@ struct move_instruction
 struct ref_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t src : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t src;
 
 	ref_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_REF)
@@ -154,9 +155,9 @@ struct ref_instruction
 struct copy_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t src : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t src;
 
 	copy_instruction(reg_t dst, reg_t src)
 		: opcode_data(OP_COPY)
@@ -166,6 +167,8 @@ struct copy_instruction
 
 	static const uint8_t SIZE = 5;
 };
+
+#pragma pack(pop)
 
 
 struct Module;

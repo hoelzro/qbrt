@@ -3,13 +3,14 @@
 
 #include "qbrt/core.h"
 
+#pragma pack(push, 1)
 
 struct newproc_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t pid : 16;
-	uint64_t func : 16;
+	uint8_t opcode_data;
+	uint16_t pid;
+	uint16_t func;
 
 	newproc_instruction(reg_t pid, reg_t func)
 	: opcode_data(OP_NEWPROC)
@@ -23,9 +24,9 @@ struct newproc_instruction
 struct recv_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t tube : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t tube;
 
 	recv_instruction(reg_t dst, reg_t tube)
 	: opcode_data(OP_RECV)
@@ -36,5 +37,6 @@ struct recv_instruction
 	static const uint8_t SIZE = 5;
 };
 
+#pragma pack(pop)
 
 #endif

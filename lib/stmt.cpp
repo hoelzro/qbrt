@@ -443,7 +443,7 @@ void fork_stmt::generate_code(AsmFunc &f)
 	if (!code) {
 		return;
 	}
-	asm_jump(f, "postfork", new fork_instruction(0, *dst));
+	asm_jump(f, "postfork", new fork_instruction(*dst));
 	::generate_codeblock(f, *code);
 	label_next(f, "postfork");
 }
@@ -541,7 +541,7 @@ void fork_stmt::pretty(std::ostream &out) const
 
 void goto_stmt::generate_code(AsmFunc &f)
 {
-	asm_jump(f, label.name, new goto_instruction(0));
+	asm_jump(f, label.name, new goto_instruction());
 }
 
 void goto_stmt::pretty(std::ostream &out) const

@@ -3,13 +3,14 @@
 
 #include "qbrt/core.h"
 
+#pragma pack(push, 1)
 
 struct ctuple_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t dst : 16;
-	uint32_t size : 8;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint8_t size;
 
 	ctuple_instruction(reg_t dst, uint8_t siz)
 		: opcode_data(OP_CTUPLE)
@@ -23,10 +24,10 @@ struct ctuple_instruction
 struct fieldget_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t src : 16;
-	uint64_t field_name : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t src;
+	uint16_t field_name;
 
 	fieldget_instruction(reg_t dst, reg_t src, uint16_t field_name)
 	: opcode_data(OP_FIELDGET)
@@ -41,10 +42,10 @@ struct fieldget_instruction
 struct fieldset_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t dst : 16;
-	uint64_t field_name : 16;
-	uint64_t src : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
+	uint16_t field_name;
+	uint16_t src;
 
 	fieldset_instruction(reg_t dst, uint16_t field_name, reg_t src)
 	: opcode_data(OP_FIELDSET)
@@ -59,9 +60,9 @@ struct fieldset_instruction
 struct lconstruct_instruction
 : public instruction
 {
-	uint64_t opcode_data : 8;
-	uint64_t reg : 16;
-	uint64_t modsym : 16;
+	uint8_t opcode_data;
+	uint16_t reg;
+	uint16_t modsym;
 
 	lconstruct_instruction(reg_t r, uint16_t modsym)
 		: opcode_data(OP_LCONSTRUCT)
@@ -76,8 +77,8 @@ struct lconstruct_instruction
 struct patternvar_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t dst : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
 
 	patternvar_instruction(reg_t r)
 	: opcode_data(OP_PATTERNVAR)
@@ -92,8 +93,8 @@ struct patternvar_instruction
 struct clist_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t dst : 16;
+	uint8_t opcode_data;
+	uint16_t dst;
 
 	clist_instruction(reg_t dst)
 		: opcode_data(OP_CLIST)
@@ -107,9 +108,9 @@ struct clist_instruction
 struct cons_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t head : 16;
-	uint32_t item : 16;
+	uint8_t opcode_data;
+	uint16_t head;
+	uint16_t item;
 
 	cons_instruction(reg_t head, reg_t item)
 		: opcode_data(OP_CLIST)
@@ -119,5 +120,7 @@ struct cons_instruction
 
 	static const uint8_t SIZE = 5;
 };
+
+#pragma pack(pop)
 
 #endif

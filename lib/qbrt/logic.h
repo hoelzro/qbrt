@@ -3,16 +3,13 @@
 
 #include "core.h"
 
+#pragma pack(push, 1)
 
 struct goto_instruction
 : public jump_instruction
 {
-	int32_t opcode_data : 8;
-	int32_t jump_data : 16;
-
-	goto_instruction(int16_t jump)
-		: opcode_data(OP_GOTO)
-		, jump_data(jump)
+	goto_instruction()
+	: jump_instruction(OP_GOTO)
 	{}
 
 	static const uint8_t SIZE = 3;
@@ -21,14 +18,11 @@ struct goto_instruction
 struct if_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data : 16;
-	int64_t op : 16;
+	uint16_t op;
 
 	if_instruction(bool check, reg_t op)
-		: opcode_data(check ? OP_IF : OP_IFNOT)
-		, jump_data(0)
-		, op(op)
+	: jump_instruction(check ? OP_IF : OP_IFNOT)
+	, op(op)
 	{}
 
 	inline bool ifnot() const { return opcode_data == OP_IFNOT; }
@@ -39,16 +33,13 @@ struct if_instruction
 struct ifcmp_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data : 16;
-	int64_t ra : 16;
-	int64_t rb : 16;
+	uint16_t ra;
+	uint16_t rb;
 
 	ifcmp_instruction(int8_t opcode, reg_t a, reg_t b)
-		: opcode_data(opcode)
-		, jump_data(0)
-		, ra(a)
-		, rb(b)
+	: jump_instruction(opcode)
+	, ra(a)
+	, rb(b)
 	{}
 
 	static const uint8_t SIZE = 7;
@@ -57,13 +48,10 @@ struct ifcmp_instruction
 struct iffail_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data : 16;
-	int64_t op : 16;
+	uint16_t op;
 
 	iffail_instruction(bool check, reg_t op)
-	: opcode_data(check ? OP_IFFAIL : OP_IFNOTFAIL)
-	, jump_data(0)
+	: jump_instruction(check ? OP_IFFAIL : OP_IFNOTFAIL)
 	, op(op)
 	{}
 
@@ -76,15 +64,12 @@ struct iffail_instruction
 struct match_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data :16;
-	int64_t result : 16;
-	int64_t pattern : 16;
-	int64_t input : 16;
+	uint16_t result;
+	uint16_t pattern;
+	uint16_t input;
 
 	match_instruction(reg_t result, reg_t patt, reg_t in)
-	: opcode_data(OP_MATCH)
-	, jump_data(0)
+	: jump_instruction(OP_MATCH)
 	, result(result)
 	, pattern(patt)
 	, input(in)
@@ -96,14 +81,11 @@ struct match_instruction
 struct matchargs_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data :16;
-	int64_t result : 16;
-	int64_t pattern : 16;
+	uint16_t result;
+	uint16_t pattern;
 
 	matchargs_instruction(reg_t result, reg_t patt)
-	: opcode_data(OP_MATCHARGS)
-	, jump_data(0)
+	: jump_instruction(OP_MATCHARGS)
 	, result(result)
 	, pattern(patt)
 	{}
@@ -114,13 +96,10 @@ struct matchargs_instruction
 struct fork_instruction
 : public jump_instruction
 {
-	int64_t opcode_data : 8;
-	int64_t jump_data : 16;
-	int64_t result : 16;
+	uint16_t result;
 
-	fork_instruction(int16_t jmp, reg_t result)
-	: opcode_data(OP_FORK)
-	, jump_data(jmp)
+	fork_instruction(reg_t result)
+	: jump_instruction(OP_FORK)
 	, result(result)
 	{}
 
@@ -130,8 +109,8 @@ struct fork_instruction
 struct wait_instruction
 : public instruction
 {
-	uint32_t opcode_data : 8;
-	uint32_t reg : 16;
+	uint8_t opcode_data : 8;
+	uint16_t reg : 16;
 
 	wait_instruction(reg_t r)
 	: opcode_data(OP_WAIT)
@@ -140,5 +119,7 @@ struct wait_instruction
 
 	static const uint8_t SIZE = 3;
 };
+
+#pragma pack(pop)
 
 #endif
