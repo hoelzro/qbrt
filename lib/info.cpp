@@ -288,6 +288,7 @@ uint8_t print_ifcmp_instruction(const ifcmp_instruction &i)
 			bcname = "unk ";
 			break;
 	}
+	cout << bcname;
 	print_jump_delta(i.jump_data);
 	print_register(i.ra);
 	print_register(i.rb);
