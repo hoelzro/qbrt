@@ -212,6 +212,13 @@ struct qbrt_value
 	}
 	static bool is_value_index(const qbrt_value &);
 	static bool failed(const qbrt_value &);
+	/**
+	 * Get the index of the named field for this value
+	 *
+	 * Return a negative number if the type does not support
+	 * field names or the field name does not exist
+	 */
+	int16_t get_field_index(const std::string &fldname) const;
 
 	static void append_type(std::ostringstream &, const qbrt_value &);
 

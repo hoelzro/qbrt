@@ -116,3 +116,41 @@ void reassign_func(function_value &funcval, const Function *newfunc)
 	}
 	funcval.func = newfunc;
 }
+
+
+string Failure::debug_msg() const
+{
+	std::ostringstream msg;
+	if (function_name) {
+		msg << function_name;
+		msg << ':' << pc << ' ';
+	}
+	msg << debug.str();
+	return msg.str();
+}
+
+qbrt_value & Failure::value(uint8_t i)
+{
+	switch (i) {
+		case 0:
+			return type;
+		case 1:
+			return exit_code;
+	}
+	cerr << "no Failure value at index: " << i << endl;
+	exit(1);
+	return *(qbrt_value *) NULL;
+}
+
+const qbrt_value & Failure::value(uint8_t i) const
+{
+	switch (i) {
+		case 0:
+			return type;
+		case 1:
+			return exit_code;
+	}
+	cerr << "no Failure value at index: " << i << endl;
+	exit(1);
+	return *(const qbrt_value *) NULL;
+}

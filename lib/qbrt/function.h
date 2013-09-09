@@ -422,13 +422,14 @@ static inline const char * fcontext_name(int fc) {
 struct Failure
 : public qbrt_value_index
 {
-	qbrt_value type;
-	std::ostringstream debug;
-	std::ostringstream usage;
+	qbrt_value type;		// 0
+	qbrt_value exit_code;		// 1
+	int http_code;			// 2
+	std::ostringstream debug;	// 3
+	std::ostringstream usage;	// 4
+	// these will go to the call stack
 	const char *function_name;
 	int pc;
-	int exit_code;
-	int http_code;
 
 	Failure(const std::string type_label)
 	: type()
@@ -436,10 +437,10 @@ struct Failure
 	, usage()
 	, function_name(NULL)
 	, pc(-1)
-	, exit_code(-1)
 	, http_code(0)
 	{
 		qbrt_value::hashtag(type, type_label);
+		qbrt_value::i(exit_code, -1);
 	}
 
 	Failure(const std::string type_label, const char *fname, int pc)
@@ -448,10 +449,10 @@ struct Failure
 	, usage()
 	, function_name(fname)
 	, pc(pc)
-	, exit_code(-1)
 	, http_code(0)
 	{
 		qbrt_value::hashtag(type, type_label);
+		qbrt_value::i(exit_code, -1);
 	}
 
 	Failure(const Failure &fail, const char *fname, int pc)
@@ -464,16 +465,7 @@ struct Failure
 	, http_code(fail.http_code)
 	{}
 
-	std::string debug_msg() const
-	{
-		std::ostringstream msg;
-		if (function_name) {
-			msg << function_name;
-			msg << ':' << pc << ' ';
-		}
-		msg << debug.str();
-		return msg.str();
-	}
+	std::string debug_msg() const;
 	std::string usage_msg() const { return usage.str(); }
 
 	const std::string & typestr() const
@@ -481,21 +473,8 @@ struct Failure
 		return *type.data.str;
 	}
 	uint8_t num_values() const { return 1; }
-	qbrt_value & value(uint8_t i)
-	{
-		if (i != 0) {
-			std::cerr << "no Failure value at index: " << i << "\n";
-		}
-		return type;
-	}
-	const qbrt_value & value(uint8_t i) const
-	{
-		if (i != 0) {
-			std::cerr << "no Failure value at const index: "
-				<< i << "\n";
-		}
-		return type;
-	}
+	qbrt_value & value(uint8_t);
+	const qbrt_value & value(uint8_t) const;
 };
 
 #define NEW_FAILURE(type, fname, pc) (new Failure(type, fname, pc))

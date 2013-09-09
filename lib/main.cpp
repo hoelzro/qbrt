@@ -430,6 +430,41 @@ void execute_divide(OpContext &ctx, const binaryop_instruction &i)
 	ctx.pc() += binaryop_instruction::SIZE;
 }
 
+void execute_fieldget(OpContext &ctx, const fieldget_instruction &i)
+{
+	const qbrt_value *src(ctx.srcvalue(i.src));
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+
+	const ResourceTable &resource(ctx.resource());
+	const char *field_name = fetch_string(resource, i.field_name);
+
+	int16_t fldidx(src->get_field_index(field_name));
+	if (fldidx < 0) {
+		cerr << "could not retrieve field named: " << field_name <<endl;
+		exit(1);
+	}
+
+	qbrt_value::copy(*dst, src->data.reg->value(fldidx));
+	ctx.pc() += fieldget_instruction::SIZE;
+}
+
+void execute_fieldset(OpContext &ctx, const fieldset_instruction &i)
+{
+	const qbrt_value *src(ctx.srcvalue(i.src));
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+
+	const ResourceTable &resource(ctx.resource());
+	const char *field_name = fetch_string(resource, i.field_name);
+	int16_t fldidx(src->get_field_index(field_name));
+	if (fldidx < 0) {
+		cerr << "could not retrieve field named: " << field_name <<endl;
+		exit(1);
+	}
+
+	qbrt_value::copy(dst->data.reg->value(fldidx), *src);
+	ctx.pc() += fieldset_instruction::SIZE;
+}
+
 void execute_fork(OpContext &ctx, const fork_instruction &i)
 {
 	Worker &w(ctx.worker());
@@ -848,7 +883,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	if (dst.type->id != VT_BSTRING) {
 		f = FAIL_TYPE(ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
-		f->exit_code = 1;
+		qbrt_value::i(f->exit_code, 1);
 		ctx.fail_frame(f);
 		return;
 	}
@@ -939,6 +974,8 @@ void init_executioners()
 	x[OP_CONSTS] = (executioner) execute_consts;
 	x[OP_CONSTHASH] = (executioner) execute_consthash;
 	x[OP_CTUPLE] = (executioner) execute_ctuple;
+	x[OP_FIELDGET] = (executioner) execute_fieldget;
+	x[OP_FIELDSET] = (executioner) execute_fieldset;
 	x[OP_IADD] = (executioner) execute_binaryop;
 	x[OP_IDIV] = (executioner) execute_divide;
 	x[OP_IMULT] = (executioner) execute_binaryop;
@@ -974,7 +1011,7 @@ void execute_instruction(Worker &w, const instruction &i)
 	WorkerOpContext ctx(w);
 	if (!x) {
 		Failure *f = new Failure("invalidopcode", ctx.function_name(), ctx.pc());
-		f->exit_code = 1;
+		qbrt_value::i(f->exit_code, 1);
 		f->debug << "Opcode not implemented: " << (int) opcode;
 		f->usage << "Internal program error";
 		cerr << f->debug_msg() << endl;
@@ -1518,7 +1555,7 @@ int main(int argc, const char **argv)
 		Failure *fail = result.data.failure;
 		cerr << fail->debug_msg()
 			<<"\nexit with: "<< fail->exit_code << endl;
-		return fail->exit_code;
+		return fail->exit_code.data.i;
 	}
 
 	return result.data.i;

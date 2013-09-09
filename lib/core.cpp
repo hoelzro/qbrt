@@ -187,6 +187,23 @@ bool qbrt_value::failed(const qbrt_value &val)
 	return val.type->id == VT_FAILURE;
 }
 
+int16_t qbrt_value::get_field_index(const string &fldname) const
+{
+	switch (type->id) {
+		case VT_FAILURE:
+			// Yes, this is ugly.
+			if (fldname == "type") {
+				return 0;
+			}
+			if (fldname == "exit_code") {
+				return 1;
+			}
+			return -2;
+			break;
+	}
+	return -1;
+}
+
 void qbrt_value::append_type(ostringstream &out, const qbrt_value &val)
 {
 	switch (val.type->id) {
