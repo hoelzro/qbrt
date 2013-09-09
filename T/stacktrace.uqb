@@ -1,0 +1,43 @@
+
+func ten_divided_by core/Int
+dparam x core/Int
+
+const $zero 0
+ifeq $x $zero @GOOD
+cfailure \result #divideby0
+const $debug_msg "cannot divide by zero"
+fieldset \result debug $debug_msg
+return
+
+@GOOD
+const $ten 10
+idiv \result $ten $x
+end.
+
+
+func ten_divided_by_times_2 core/Int
+dparam x core/Int
+
+lfunc $div ./ten_divided_by
+copy $div.0 $x
+call $y $div
+const $z 2
+imult \result $y $z
+end.
+
+
+func __main core/Void
+
+lfunc $printer io/print
+lfunc $test ./ten_divided_by_times_2
+lfunc $to_str core/str
+
+const $test.0 0
+call $to_str.0 $test
+call $printer.0 $to_str
+call \void $printer
+
+const $printer.0 "\n"
+call \void $printer
+
+end.

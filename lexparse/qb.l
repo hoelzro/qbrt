@@ -108,6 +108,8 @@ TYPEVAR	\*[A-Z]{NAMEC}*
 "ctuple"	{ BEGIN(ARGS); return_token(TOKEN_CTUPLE); }
 "datatype"	{ BEGIN(ARGS); return_token(TOKEN_DATATYPE); }
 "dparam"	{ BEGIN(ARGS); return_token(TOKEN_DPARAM); }
+"fieldget"	{ BEGIN(ARGS); return_token(TOKEN_FIELDGET); }
+"fieldset"	{ BEGIN(ARGS); return_token(TOKEN_FIELDSET); }
 "fork"		{ BEGIN(ARGS); return_token(TOKEN_FORK); }
 "func"		{ BEGIN(ARGS); return_token(TOKEN_FUNC); }
 "goto"		{ BEGIN(ARGS); return_token(TOKEN_GOTO); }

@@ -242,6 +242,12 @@ stmt(A) ::= COPY reg(B) reg(C). {
 stmt(A) ::= CTUPLE reg(B) INT(C). {
 	A = new ctuple_stmt(B, C->intval());
 }
+stmt(A) ::= FIELDGET reg(B) reg(C) ID(D) . {
+	A = new fieldget_stmt(B, C, D->text);
+}
+stmt(A) ::= FIELDSET reg(B) ID(C) reg(D). {
+	A = new fieldset_stmt(B, C->text, D);
+}
 stmt(A) ::= GOTO LABEL(B). {
 	A = new goto_stmt(B->strip_first());
 }

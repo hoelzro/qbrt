@@ -489,6 +489,51 @@ void protocol_stmt::pretty(std::ostream &out) const
 	}
 }
 
+
+void fieldget_stmt::allocate_registers(RegAlloc *r)
+{
+	r->assign_src(*src);
+	r->alloc_dst(*dst);
+}
+
+void fieldget_stmt::collect_resources(ResourceSet &rs)
+{
+	rs.collect(field_name);
+}
+
+void fieldget_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new fieldget_instruction(
+				*dst, *src, *field_name.index));
+}
+
+void fieldget_stmt::pretty(std::ostream &out) const
+{
+	out << "fieldget " << *dst << " " << *src << "." << field_name.value;
+}
+
+void fieldset_stmt::allocate_registers(RegAlloc *r)
+{
+	r->assign_src(*src);
+	r->alloc_dst(*dst);
+}
+
+void fieldset_stmt::collect_resources(ResourceSet &rs)
+{
+	rs.collect(field_name);
+}
+
+void fieldset_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new fieldset_instruction(
+				*dst, *field_name.index, *src));
+}
+
+void fieldset_stmt::pretty(std::ostream &out) const
+{
+	out << "fieldset " << *dst << "." << field_name.value << " " << *src;
+}
+
 void fork_stmt::pretty(std::ostream &out) const
 {
 	out << "fork " << *dst;

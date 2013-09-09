@@ -20,6 +20,42 @@ struct ctuple_instruction
 	static const uint8_t SIZE = 4;
 };
 
+struct fieldget_instruction
+: public instruction
+{
+	uint64_t opcode_data : 8;
+	uint64_t dst : 16;
+	uint64_t src : 16;
+	uint64_t field_name : 16;
+
+	fieldget_instruction(reg_t dst, reg_t src, uint16_t field_name)
+	: opcode_data(OP_FIELDGET)
+	, dst(dst)
+	, src(src)
+	, field_name(field_name)
+	{}
+
+	static const uint8_t SIZE = 7;
+};
+
+struct fieldset_instruction
+: public instruction
+{
+	uint64_t opcode_data : 8;
+	uint64_t dst : 16;
+	uint64_t field_name : 16;
+	uint64_t src : 16;
+
+	fieldset_instruction(reg_t dst, uint16_t field_name, reg_t src)
+	: opcode_data(OP_FIELDSET)
+	, dst(dst)
+	, field_name(field_name)
+	, src(src)
+	{}
+
+	static const uint8_t SIZE = 7;
+};
+
 struct lconstruct_instruction
 : public instruction
 {

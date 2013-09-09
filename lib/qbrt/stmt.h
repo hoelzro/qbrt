@@ -442,6 +442,42 @@ struct protocol_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct fieldget_stmt
+: public Stmt
+{
+	fieldget_stmt(AsmReg *dst, AsmReg *src, const std::string &name)
+	: dst(dst)
+	, src(src)
+	, field_name(name)
+	{}
+	AsmReg *dst;
+	AsmReg *src;
+	AsmString field_name;
+
+	void allocate_registers(RegAlloc *);
+	void collect_resources(ResourceSet &);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
+struct fieldset_stmt
+: public Stmt
+{
+	fieldset_stmt(AsmReg *dst, const std::string &name, AsmReg *src)
+	: dst(dst)
+	, field_name(name)
+	, src(src)
+	{}
+	AsmReg *dst;
+	AsmString field_name;
+	AsmReg *src;
+
+	void allocate_registers(RegAlloc *);
+	void collect_resources(ResourceSet &);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+};
+
 struct fork_stmt
 : public Stmt
 {

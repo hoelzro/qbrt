@@ -292,6 +292,8 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_MOVE] = move_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_REF] = ref_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_COPY] = copy_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_FIELDGET] = fieldget_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_FIELDSET] = fieldset_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_GOTO] = goto_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IF] = if_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFNOT] = if_instruction::SIZE;

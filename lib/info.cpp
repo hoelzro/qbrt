@@ -228,6 +228,26 @@ uint8_t print_ctuple_instruction(const ctuple_instruction &i)
 	return ctuple_instruction::SIZE;
 }
 
+uint8_t print_fieldget_instruction(const fieldget_instruction &i)
+{
+	cout << "fieldget";
+	print_register(i.dst);
+	print_register(i.src);
+	cout << " s" << i.field_name;
+	cout << endl;
+	return fieldget_instruction::SIZE;
+}
+
+uint8_t print_fieldset_instruction(const fieldset_instruction &i)
+{
+	cout << "fieldset";
+	print_register(i.dst);
+	cout << " s" << i.field_name;
+	print_register(i.src);
+	cout << endl;
+	return fieldset_instruction::SIZE;
+}
+
 uint8_t print_fork_instruction(const fork_instruction &i)
 {
 	cout << "fork ";
@@ -298,6 +318,8 @@ void set_printers()
 {
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
+	PRINTER[OP_FIELDGET] = (instruction_printer) print_fieldget_instruction;
+	PRINTER[OP_FIELDSET] = (instruction_printer) print_fieldset_instruction;
 	PRINTER[OP_IADD] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_IMULT] = (instruction_printer) print_binaryop_instruction;
 	PRINTER[OP_IDIV] = (instruction_printer) print_binaryop_instruction;
