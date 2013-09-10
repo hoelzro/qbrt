@@ -118,15 +118,30 @@ void reassign_func(function_value &funcval, const Function *newfunc)
 }
 
 
+Failure::Failure(const std::string type_label)
+: debug()
+, usage()
+, http_code(0)
+{
+	qbrt_value::hashtag(type, type_label);
+	qbrt_value::i(exit_code, -1);
+}
+
+Failure::Failure(const std::string type_label, const char *fname, int pc)
+: debug()
+, usage()
+, http_code(0)
+{
+	qbrt_value::hashtag(type, type_label);
+	qbrt_value::i(exit_code, -1);
+	trace.push_back(FailureEvent());
+	FailureEvent &e(trace.back());
+	e.set(fname, pc);
+}
+
 string Failure::debug_msg() const
 {
-	std::ostringstream msg;
-	if (function_name) {
-		msg << function_name;
-		msg << ':' << pc << ' ';
-	}
-	msg << debug.str();
-	return msg.str();
+	return debug.str();
 }
 
 qbrt_value & Failure::value(uint8_t i)
@@ -155,6 +170,20 @@ const qbrt_value & Failure::value(uint8_t i) const
 	return *(const qbrt_value *) NULL;
 }
 
+void Failure::trace_up(const string &fname, uint16_t pc)
+{
+	trace.push_back(FailureEvent());
+	FailureEvent &e(trace.back());
+	e.up(fname, pc);
+}
+
+void Failure::trace_down(const string &fname, uint16_t pc)
+{
+	trace.push_back(FailureEvent());
+	FailureEvent &e(trace.back());
+	e.down(fname, pc);
+}
+
 void Failure::write(ostream &out, const Failure &f)
 {
 	out << "Failure: #" << *f.type.data.hashtag;
@@ -163,17 +192,33 @@ void Failure::write(ostream &out, const Failure &f)
 		out << endl << usage_msg << endl;
 		return;
 	}
-
-	if (f.function_name) {
-		out << " in function " << f.function_name;
-	}
-	if (f.pc >= 0) {
-		out << " @" << f.pc;
-	}
 	out << endl;
+
+	Failure::write_trace(out, f.trace);
 
 	string debug_msg(f.debug_msg());
 	if (!debug_msg.empty()) {
 		out << debug_msg << endl;
+	}
+}
+
+void Failure::write_trace(ostream &out, const list< FailureEvent > &trace)
+{
+	list< FailureEvent >::const_iterator it(trace.begin());
+	for (; it!=trace.end(); ++it) {
+		out << *it << endl;
+	}
+}
+
+
+ostream & operator << (ostream &out, const FailureEvent &e)
+{
+	out << (e.direction <= 0 ? '<' : ' ');
+	out << (e.direction >= 0 ? '>' : ' ');
+	if (e.function_name.type->id == VT_BSTRING) {
+		out << *e.function_name.data.str;
+		if (e.pc.type->id == VT_INT) {
+			out << ':' << e.pc.data.i;
+		}
 	}
 }

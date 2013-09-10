@@ -411,6 +411,37 @@ static inline const char * fcontext_name(int fc) {
 	return "wtf_is_that_fcontext";
 }
 
+struct FailureEvent
+{
+	qbrt_value function_name;
+	qbrt_value pc;
+
+	FailureEvent()
+	: direction(0)
+	{}
+
+	void up(const std::string &function, uint16_t pc)
+	{
+		set(function, pc);
+		direction = +1;
+	}
+	void down(const std::string &function, uint16_t pc)
+	{
+		set(function, pc);
+		direction = -1;
+	}
+	void set(const std::string &function, uint16_t pc)
+	{
+		qbrt_value::str(function_name, function);
+		qbrt_value::i(this->pc, pc);
+	}
+
+	friend std::ostream & operator << (std::ostream &,const FailureEvent &);
+
+private:
+	int direction;
+};
+
 struct Failure
 : public qbrt_value_index
 {
@@ -420,42 +451,10 @@ struct Failure
 	std::ostringstream debug;	// 3
 	std::ostringstream usage;	// 4
 	// these will go to the call stack
-	const char *function_name;
-	int pc;
+	std::list< FailureEvent > trace;
 
-	Failure(const std::string type_label)
-	: type()
-	, debug()
-	, usage()
-	, function_name(NULL)
-	, pc(-1)
-	, http_code(0)
-	{
-		qbrt_value::hashtag(type, type_label);
-		qbrt_value::i(exit_code, -1);
-	}
-
-	Failure(const std::string type_label, const char *fname, int pc)
-	: type()
-	, debug()
-	, usage()
-	, function_name(fname)
-	, pc(pc)
-	, http_code(0)
-	{
-		qbrt_value::hashtag(type, type_label);
-		qbrt_value::i(exit_code, -1);
-	}
-
-	Failure(const Failure &fail, const char *fname, int pc)
-	: type(fail.type)
-	, debug(fail.debug.str())
-	, usage(fail.usage.str())
-	, function_name(fname)
-	, pc(pc)
-	, exit_code(fail.exit_code)
-	, http_code(fail.http_code)
-	{}
+	Failure(const std::string type_label);
+	Failure(const std::string type_label, const char *fname, int pc);
 
 	std::string debug_msg() const;
 	std::string usage_msg() const { return usage.str(); }
@@ -468,7 +467,12 @@ struct Failure
 	qbrt_value & value(uint8_t);
 	const qbrt_value & value(uint8_t) const;
 
+	void trace_up(const std::string &fname, uint16_t pc);
+	void trace_down(const std::string &fname, uint16_t pc);
+
 	static void write(std::ostream &, const Failure &);
+	static void write_trace(std::ostream &
+			, const std::list< FailureEvent > &);
 };
 
 #define NEW_FAILURE(type, fname, pc) (new Failure(type, fname, pc))

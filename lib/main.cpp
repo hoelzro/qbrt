@@ -37,6 +37,7 @@ int inspect_indent(0);
 #define RETURN_FAILURE(ctx, reg) do { \
 	Failure *fail = ctx.failure(reg); \
 	if (fail) { \
+		fail->trace_down(ctx.function_name(), ctx.pc()); \
 		FunctionCall &call(ctx.worker().current->function_call()); \
 		qbrt_value::fail(*call.result, fail); \
 		call.cfstate = CFS_FAILED; \
@@ -579,7 +580,9 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
 	qbrt_value &result(*ctx.dstvalue(i.dst));
-	qbrt_value::fail(result, new Failure(failtype));
+	Failure *f = new Failure(failtype);
+	f->trace_up(ctx.function_name(), ctx.pc());
+	qbrt_value::fail(result, f);
 	ctx.pc() += cfailure_instruction::SIZE;
 }
 
@@ -1081,8 +1084,10 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 	for (uint16_t i(0); i<f->argc; ++i) {
 		qbrt_value *val(failctx.dstvalue(PRIMARY_REG(i)));
 		if (val->type->id == VT_FAILURE) {
-			qbrt_value::fail(*w.current->function_call().result
-					, val->data.failure);
+			FunctionCall &failed_call(w.current->function_call());
+			Failure *fail = val->data.failure;
+			fail->trace_down(failed_call.name(), w.current->pc);
+			qbrt_value::fail(*failed_call.result, fail);
 			w.current->cfstate = CFS_FAILED;
 			return;
 		}
@@ -1153,10 +1158,10 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 			qbrtcall(w, res, f.data.f);
 			break;
 		case VT_FAILURE:
-			fail = DUPE_FAILURE(*f.data.failure
-					, w.current->function_call().name()
+			f.data.failure->trace_down(
+					w.current->function_call().name()
 					, w.current->pc);
-			qbrt_value::fail(res, fail);
+			qbrt_value::fail(res, f.data.failure);
 			break;
 		default:
 			fail = FAIL_TYPE(w.current->function_call().name()
