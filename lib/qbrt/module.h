@@ -14,6 +14,8 @@
 
 struct Module;
 
+#pragma pack(push, 1)
+
 union ObjectFlags
 {
 	uint64_t raw;
@@ -32,10 +34,11 @@ struct ObjectHeader
 	uint16_t version;
 	uint16_t iteration;
 	uint16_t imports;
+	uint16_t source_filename;
 
 	ObjectHeader();
 
-	static const uint32_t SIZE = 24;
+	static const uint32_t SIZE = 26;
 };
 
 struct ResourceName
@@ -89,8 +92,11 @@ struct ResourceTableHeader
 		, resource_count(0)
 	{}
 
-	static const uint32_t SIZE = 8;
+	static const uint32_t SIZE = 6;
 };
+
+#pragma pack(pop)
+
 
 struct ResourceTable
 {

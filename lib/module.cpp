@@ -15,6 +15,7 @@ ObjectHeader::ObjectHeader()
 , version(0)
 , iteration(0)
 , imports(0)
+, source_filename(0)
 {
 	magic[0] = 'q';
 	magic[1] = 'b';
