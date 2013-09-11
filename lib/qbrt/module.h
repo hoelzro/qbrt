@@ -14,12 +14,6 @@
 
 struct Module;
 
-struct Version
-{
-	uint16_t version;
-	char iteration[6];
-};
-
 union ObjectFlags
 {
 	uint64_t raw;
@@ -262,6 +256,5 @@ CFunction * add_c_override(Module &, c_function
 		, const std::string &param_types);
 
 bool open_qb(std::ifstream &lib, const std::string &qbname);
-		// , const Version &min, const Version &max);
 
 #endif
