@@ -37,7 +37,8 @@ int inspect_indent(0);
 #define RETURN_FAILURE(ctx, reg) do { \
 	Failure *fail = ctx.failure(reg); \
 	if (fail) { \
-		fail->trace_down(ctx.function_name(), ctx.pc()); \
+		fail->trace_down( \
+			ctx.module_name(), ctx.function_name(), ctx.pc()); \
 		FunctionCall &call(ctx.worker().current->function_call()); \
 		qbrt_value::fail(*call.result, fail); \
 		call.cfstate = CFS_FAILED; \
@@ -81,6 +82,7 @@ struct OpContext
 	virtual qbrt_value * dstvalue(uint16_t) = 0;
 	virtual qbrt_value & refvalue(uint16_t) = 0;
 	virtual Failure * failure(uint16_t) = 0;
+	virtual const std::string & module_name() const = 0;
 	virtual const char * function_name() const = 0;
 	virtual int & pc() const = 0;
 	virtual Worker & worker() const = 0;
@@ -106,6 +108,10 @@ public:
 	{}
 
 	virtual Worker & worker() const { return w; }
+	virtual const std::string & module_name() const
+	{
+		return func.mod->name;
+	}
 	virtual const char * function_name() const { return func.name(); }
 	virtual int & pc() const { return frame.pc; }
 	virtual uint8_t argc() const { return func.header->argc; }
@@ -268,6 +274,10 @@ public:
 	{}
 
 	virtual Worker & worker() const { return w; }
+	virtual const std::string & module_name() const
+	{
+		return cfunc.func->mod->name;
+	}
 	virtual const char * function_name() const { return "cfunction"; }
 	virtual int & pc() const { return *(int *) NULL; }
 	virtual uint8_t argc() const { return cfunc.argc; }
@@ -382,7 +392,8 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 		case OP_ISUB:
 		case OP_IMULT:
 			if (a.type->id != VT_INT) {
-				fail = FAIL_TYPE(ctx.function_name(), ctx.pc());
+				fail = FAIL_TYPE(ctx.module_name(),
+						ctx.function_name(), ctx.pc());
 				fail->debug << "unexpected type for first "
 					" operand in integer binary operation: "
 					<< a.type->id;
@@ -391,7 +402,8 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 				return;
 			}
 			if (b.type->id != VT_INT) {
-				fail = FAIL_TYPE(ctx.function_name(), ctx.pc());
+				fail = FAIL_TYPE(ctx.module_name(),
+						ctx.function_name(), ctx.pc());
 				fail->debug << "unexpected type for second "
 					" operand in integer binary operation: "
 					<< b.type->id;
@@ -581,7 +593,7 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
 	qbrt_value &result(*ctx.dstvalue(i.dst));
 	Failure *f = new Failure(failtype);
-	f->trace_up(ctx.function_name(), ctx.pc());
+	f->trace_up(ctx.module_name(), ctx.function_name(), ctx.pc());
 	qbrt_value::fail(result, f);
 	ctx.pc() += cfailure_instruction::SIZE;
 }
@@ -591,7 +603,8 @@ void execute_consti(OpContext &ctx, const consti_instruction &i)
 	qbrt_value *dst = ctx.dstvalue(i.reg);
 	Failure *f;
 	if (!dst) {
-		f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		f = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
 		ctx.fail_frame(f);
 		return;
 	}
@@ -634,7 +647,8 @@ void execute_consts(OpContext &ctx, const consts_instruction &i)
 	const char *str = fetch_string(ctx.resource(), i.string_id);
 	qbrt_value *dst = ctx.dstvalue(i.reg);
 	if (!dst) {
-		Failure *f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		Failure *f = FAIL_REGISTER404(ctx.module_name()
+				, ctx.function_name(), ctx.pc());
 		f->debug << "invalid register: " << i.reg;
 		ctx.fail_frame(f);
 		return;
@@ -654,7 +668,8 @@ void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
 {
 	qbrt_value *dst(ctx.dstvalue(i.dst));
 	if (!dst) {
-		Failure *f = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		Failure *f = FAIL_REGISTER404(ctx.module_name()
+				, ctx.function_name(), ctx.pc());
 		f->debug << "invalid register: " << i.dst;
 		ctx.fail_frame(f);
 		cerr << f->debug_msg() << endl;
@@ -671,7 +686,8 @@ void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	Failure *fail;
 	if (!dst) {
-		fail = FAIL_REGISTER404(ctx.function_name(), ctx.pc());
+		fail = FAIL_REGISTER404(ctx.module_name()
+				, ctx.function_name(), ctx.pc());
 		fail->debug << "invalid register: " << i.reg;
 		ctx.fail_frame(fail);
 		return;
@@ -681,7 +697,7 @@ void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 	if (src) {
 		qbrt_value::ref(*dst, *src);
 	} else {
-		fail = NEW_FAILURE("unknown_context"
+		fail = NEW_FAILURE("unknown_context", ctx.module_name()
 				, ctx.function_name(), ctx.pc());
 		fail->debug << "cannot find context variable: " << name;
 		qbrt_value::fail(*dst, fail);
@@ -702,7 +718,8 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 	Failure *fail;
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		fail = FAIL_REGISTER404("lconstruct", ctx.pc());
+		fail = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
 		fail->debug << "invalid register: " << i.reg;
 		ctx.fail_frame(fail);
 		return;
@@ -711,7 +728,8 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 	if (mod) {
 		Module::load_construct(*dst, *mod, name);
 	} else {
-		fail = FAIL_MODULE404("lconstruct", ctx.pc());
+		fail = FAIL_MODULE404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
 		fail->debug << "Cannot find module: '" << modname << "'";
 		qbrt_value::fail(*dst, fail);
 		// continue on with execution
@@ -731,14 +749,16 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 
 	qbrt_value *dst(ctx.dstvalue(i.reg));
 	if (!dst) {
-		fail = FAIL_REGISTER404("lfunc", ctx.pc());
+		fail = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
 		fail->debug << "Invalid register: " << i.reg;
 		ctx.fail_frame(fail);
 		return;
 	}
 
 	if (!mod) {
-		fail = FAIL_MODULE404("lfunc", ctx.pc());
+		fail = FAIL_MODULE404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
 		fail->debug << "Cannot find module: '" << modname << "'";
 		qbrt_value::fail(*dst, fail);
 		ctx.pc() += lfunc_instruction::SIZE;
@@ -754,7 +774,8 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 		if (cf) {
 			qbrt_value::f(*dst, new function_value(cf));
 		} else {
-			fail = FAIL_FUNCTION404(ctx.function_name(), ctx.pc());
+			fail = FAIL_FUNCTION404(ctx.module_name()
+					, ctx.function_name(), ctx.pc());
 			fail->debug << "could not find function: " << modname
 				<<'.'<< fname;
 			qbrt_value::fail(*dst, fail);
@@ -824,7 +845,7 @@ void execute_newproc(OpContext &ctx, const newproc_instruction &i)
 	qbrt_value *func(ctx.dstvalue(i.func));
 
 	if (func->type->id != VT_FUNCTION) {
-		f = FAIL_TYPE(ctx.function_name(), ctx.pc());
+		f = FAIL_TYPE(ctx.module_name(), ctx.function_name(), ctx.pc());
 		qbrt_value::fail(pid, f);
 		ctx.pc() += newproc_instruction::SIZE;
 		return;
@@ -884,7 +905,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	ctx.pc() += stracc_instruction::SIZE;
 
 	if (dst.type->id != VT_BSTRING) {
-		f = FAIL_TYPE(ctx.function_name(), op_pc);
+		f = FAIL_TYPE(ctx.module_name(), ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
 		qbrt_value::i(f->exit_code, 1);
 		ctx.fail_frame(f);
@@ -901,13 +922,15 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 			*dst.data.str += out.str();
 			break;
 		case VT_VOID:
-			f = FAIL_TYPE(ctx.function_name(), op_pc);
+			f = FAIL_TYPE(ctx.module_name(), ctx.function_name()
+					, op_pc);
 			f->debug << "cannot append void to string";
 			cerr << f->debug_msg() << endl;
 			qbrt_value::fail(dst, f);
 			break;
 		default:
-			f = FAIL_TYPE(ctx.function_name(), op_pc);
+			f = FAIL_TYPE(ctx.module_name(), ctx.function_name()
+					, op_pc);
 			f->debug << "stracc source type is not supported: "
 				<< (int) src.type->id;
 			cerr << f->debug_msg() << endl;
@@ -1014,7 +1037,8 @@ void execute_instruction(Worker &w, const instruction &i)
 	executioner x = EXECUTIONER[opcode];
 	WorkerOpContext ctx(w);
 	if (!x) {
-		Failure *f = new Failure("invalidopcode", ctx.function_name(), ctx.pc());
+		Failure *f = new Failure("invalidopcode", ctx.module_name()
+				, ctx.function_name(), ctx.pc());
 		qbrt_value::i(f->exit_code, 1);
 		f->debug << "Opcode not implemented: " << (int) opcode;
 		f->usage << "Internal program error";
@@ -1086,7 +1110,8 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		if (val->type->id == VT_FAILURE) {
 			FunctionCall &failed_call(w.current->function_call());
 			Failure *fail = val->data.failure;
-			fail->trace_down(failed_call.name(), w.current->pc);
+			fail->trace_down(failed_call.mod->name
+					, failed_call.name(), w.current->pc);
 			qbrt_value::fail(*failed_call.result, fail);
 			w.current->cfstate = CFS_FAILED;
 			return;
@@ -1159,12 +1184,14 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 			break;
 		case VT_FAILURE:
 			f.data.failure->trace_down(
-					w.current->function_call().name()
-					, w.current->pc);
+					w.current->function_call().mod->name,
+					w.current->function_call().name(),
+					w.current->pc);
 			qbrt_value::fail(res, f.data.failure);
 			break;
 		default:
-			fail = FAIL_TYPE(w.current->function_call().name()
+			fail = FAIL_TYPE(w.current->function_call().mod->name
+					, w.current->function_call().name()
 					, w.current->pc);
 			fail->debug << "Unknown function type: "
 				<< (int)f.type->id;

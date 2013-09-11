@@ -413,26 +413,28 @@ static inline const char * fcontext_name(int fc) {
 
 struct FailureEvent
 {
-	qbrt_value function_name;
+	qbrt_value module;
+	qbrt_value function;
 	qbrt_value pc;
 
 	FailureEvent()
 	: direction(0)
 	{}
 
-	void up(const std::string &function, uint16_t pc)
+	void up(const std::string &mod, const std::string &func, uint16_t pc)
 	{
-		set(function, pc);
+		set(mod, func, pc);
 		direction = +1;
 	}
-	void down(const std::string &function, uint16_t pc)
+	void down(const std::string &mod, const std::string &func, uint16_t pc)
 	{
-		set(function, pc);
+		set(mod, func, pc);
 		direction = -1;
 	}
-	void set(const std::string &function, uint16_t pc)
+	void set(const std::string &mod, const std::string &func, uint16_t pc)
 	{
-		qbrt_value::str(function_name, function);
+		qbrt_value::str(module, mod);
+		qbrt_value::str(function, func);
 		qbrt_value::i(this->pc, pc);
 	}
 
@@ -454,7 +456,8 @@ struct Failure
 	std::list< FailureEvent > trace;
 
 	Failure(const std::string type_label);
-	Failure(const std::string type_label, const char *fname, int pc);
+	Failure(const std::string type_label, const std::string &module
+			, const char *fname, int pc);
 
 	std::string debug_msg() const;
 	std::string usage_msg() const { return usage.str(); }
@@ -467,19 +470,23 @@ struct Failure
 	qbrt_value & value(uint8_t);
 	const qbrt_value & value(uint8_t) const;
 
-	void trace_up(const std::string &fname, uint16_t pc);
-	void trace_down(const std::string &fname, uint16_t pc);
+	void trace_up(const std::string &mod, const std::string &fname
+			, uint16_t pc);
+	void trace_down(const std::string &mod, const std::string &fname
+			, uint16_t pc);
 
 	static void write(std::ostream &, const Failure &);
 	static void write_trace(std::ostream &
 			, const std::list< FailureEvent > &);
 };
 
-#define NEW_FAILURE(type, fname, pc) (new Failure(type, fname, pc))
-#define DUPE_FAILURE(fail, fname, pc) (new Failure(fail, fname, pc))
-#define FAIL_TYPE(fname, pc) (NEW_FAILURE("typefailure", fname, pc))
-#define FAIL_MODULE404(fname, pc) (NEW_FAILURE("module404", fname, pc))
-#define FAIL_FUNCTION404(fname, pc) (NEW_FAILURE("function404", fname, pc))
-#define FAIL_REGISTER404(fname, pc) (NEW_FAILURE("register404", fname, pc))
+#define NEW_FAILURE(type, mod, fname, pc) (new Failure(type, mod, fname, pc))
+#define FAIL_TYPE(mod, fname, pc) (NEW_FAILURE("typefailure", mod, fname, pc))
+#define FAIL_MODULE404(mod, fname, pc) \
+		(NEW_FAILURE("module404", mod, fname, pc))
+#define FAIL_FUNCTION404(mod, fname, pc) \
+		(NEW_FAILURE("function404", mod, fname, pc))
+#define FAIL_REGISTER404(mod, fname, pc) \
+		(NEW_FAILURE("register404", mod, fname, pc))
 
 #endif

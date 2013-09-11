@@ -90,7 +90,7 @@ void List::head(qbrt_value &result, const qbrt_value &head)
 void List::is_empty(qbrt_value &result, const qbrt_value &head)
 {
 	if (head.type->id != VT_LIST) {
-		qbrt_value::fail(result, FAIL_TYPE("list/is_empty", 0));
+		qbrt_value::fail(result, FAIL_TYPE("list", "is_empty", 0));
 		return;
 	}
 	bool empty(strcmp(head.data.cons->name(), "Empty") == 0);
@@ -100,7 +100,7 @@ void List::is_empty(qbrt_value &result, const qbrt_value &head)
 void List::pop(qbrt_value &result, const qbrt_value &head)
 {
 	if (head.type->id != VT_LIST) {
-		qbrt_value::fail(result, FAIL_TYPE("list/pop", 0));
+		qbrt_value::fail(result, FAIL_TYPE("list", "pop", 0));
 		cerr <<"head arg not a construct: "<< (int)head.type->id<< endl;
 		// set failure in result
 		return;

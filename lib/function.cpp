@@ -127,7 +127,8 @@ Failure::Failure(const std::string type_label)
 	qbrt_value::i(exit_code, -1);
 }
 
-Failure::Failure(const std::string type_label, const char *fname, int pc)
+Failure::Failure(const std::string type_label, const string &module
+		, const char *fname, int pc)
 : debug()
 , usage()
 , http_code(0)
@@ -136,7 +137,7 @@ Failure::Failure(const std::string type_label, const char *fname, int pc)
 	qbrt_value::i(exit_code, -1);
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.set(fname, pc);
+	e.set(module, fname, pc);
 }
 
 string Failure::debug_msg() const
@@ -170,18 +171,18 @@ const qbrt_value & Failure::value(uint8_t i) const
 	return *(const qbrt_value *) NULL;
 }
 
-void Failure::trace_up(const string &fname, uint16_t pc)
+void Failure::trace_up(const string &mod, const string &fname, uint16_t pc)
 {
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.up(fname, pc);
+	e.up(mod, fname, pc);
 }
 
-void Failure::trace_down(const string &fname, uint16_t pc)
+void Failure::trace_down(const string &mod, const string &fname, uint16_t pc)
 {
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.down(fname, pc);
+	e.down(mod, fname, pc);
 }
 
 void Failure::write(ostream &out, const Failure &f)
@@ -215,8 +216,11 @@ ostream & operator << (ostream &out, const FailureEvent &e)
 {
 	out << (e.direction <= 0 ? '<' : ' ');
 	out << (e.direction >= 0 ? '>' : ' ');
-	if (e.function_name.type->id == VT_BSTRING) {
-		out << *e.function_name.data.str;
+	if (e.function.type->id == VT_BSTRING) {
+		if (e.module.type->id == VT_BSTRING) {
+			out << *e.module.data.str << '/';
+		}
+		out << *e.function.data.str;
 		if (e.pc.type->id == VT_INT) {
 			out << ':' << e.pc.data.i;
 		}
