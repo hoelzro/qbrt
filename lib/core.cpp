@@ -131,6 +131,25 @@ Type TYPE_PATTERNVAR(VT_PATTERNVAR);
 Type TYPE_PROMISE(VT_PROMISE);
 Type TYPE_FAILURE(VT_FAILURE);
 
+
+void qbrt_value::default_value(qbrt_value &v, const Type &t)
+{
+	switch (t.id) {
+		case VT_INT:
+			i(v, 0);
+			break;
+		case VT_BSTRING:
+			str(v, "");
+			break;
+		case VT_BOOL:
+			b(v, false);
+			break;
+		default:
+			cerr << "No default value for: " << (int) t.id << endl;
+			exit(1);
+	}
+}
+
 void qbrt_value::set_void(qbrt_value &v)
 {
 	v.data.str = NULL;

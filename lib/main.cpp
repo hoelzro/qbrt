@@ -37,8 +37,8 @@ int inspect_indent(0);
 #define RETURN_FAILURE(ctx, reg) do { \
 	Failure *fail = ctx.failure(reg); \
 	if (fail) { \
-		fail->trace_down( \
-			ctx.module_name(), ctx.function_name(), ctx.pc()); \
+		fail->trace_down(ctx.module_name(), ctx.function_name(), \
+			ctx.pc(), __FILE__, __LINE__); \
 		FunctionCall &call(ctx.worker().current->function_call()); \
 		qbrt_value::fail(*call.result, fail); \
 		call.cfstate = CFS_FAILED; \
@@ -123,7 +123,8 @@ public:
 			primary = REG_EXTRACT_PRIMARY(reg);
 			if (primary >= regc()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -132,7 +133,8 @@ public:
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			if (primary >= regc()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -146,7 +148,8 @@ public:
 			qbrt_value_index *idx(func.value(primary).data.reg);
 			if (secondary >= idx->num_values()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -168,7 +171,8 @@ public:
 			primary = REG_EXTRACT_PRIMARY(reg);
 			if (primary >= regc()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -177,7 +181,8 @@ public:
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			if (primary >= regc()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -191,7 +196,8 @@ public:
 			qbrt_value_index *idx(func.value(primary).data.reg);
 			if (secondary >= idx->num_values()) {
 				qbrt_value::fail(*func.result
-					, new Failure("invalidregister"));
+					, FAIL_REGISTER404(module_name(),
+						function_name(), pc()));
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
@@ -435,7 +441,9 @@ void execute_divide(OpContext &ctx, const binaryop_instruction &i)
 	const qbrt_value &b(*ctx.srcvalue(i.b));
 	qbrt_value &result(*ctx.dstvalue(i.result));
 	if (b.data.i == 0) {
-		qbrt_value::fail(result, new Failure("divideby0"));
+		qbrt_value::fail(result, NEW_FAILURE("divideby0"
+				, ctx.module_name(), ctx.function_name()
+				, ctx.pc()));
 	} else {
 		const qbrt_value &a(*ctx.srcvalue(i.a));
 		qbrt_value::i(result, a.data.i / b.data.i);
@@ -592,8 +600,8 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
 	qbrt_value &result(*ctx.dstvalue(i.dst));
-	Failure *f = new Failure(failtype);
-	f->trace_up(ctx.module_name(), ctx.function_name(), ctx.pc());
+	Failure *f = NEW_FAILURE(failtype, ctx.module_name()
+			, ctx.function_name(), ctx.pc());
 	qbrt_value::fail(result, f);
 	ctx.pc() += cfailure_instruction::SIZE;
 }
@@ -1037,7 +1045,7 @@ void execute_instruction(Worker &w, const instruction &i)
 	executioner x = EXECUTIONER[opcode];
 	WorkerOpContext ctx(w);
 	if (!x) {
-		Failure *f = new Failure("invalidopcode", ctx.module_name()
+		Failure *f = NEW_FAILURE("invalidopcode", ctx.module_name()
 				, ctx.function_name(), ctx.pc());
 		qbrt_value::i(f->exit_code, 1);
 		f->debug << "Opcode not implemented: " << (int) opcode;
@@ -1111,7 +1119,8 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 			FunctionCall &failed_call(w.current->function_call());
 			Failure *fail = val->data.failure;
 			fail->trace_down(failed_call.mod->name
-					, failed_call.name(), w.current->pc);
+					, failed_call.name(), w.current->pc
+					, __FILE__, __LINE__);
 			qbrt_value::fail(*failed_call.result, fail);
 			w.current->cfstate = CFS_FAILED;
 			return;
@@ -1186,7 +1195,8 @@ void call(Worker &w, qbrt_value &res, qbrt_value &f)
 			f.data.failure->trace_down(
 					w.current->function_call().mod->name,
 					w.current->function_call().name(),
-					w.current->pc);
+					w.current->pc,
+					__FILE__, __LINE__);
 			qbrt_value::fail(res, f.data.failure);
 			break;
 		default:

@@ -413,26 +413,38 @@ struct FailureEvent
 	qbrt_value module;
 	qbrt_value function;
 	qbrt_value pc;
+	qbrt_value c_file;
+	qbrt_value c_lineno;
 
 	FailureEvent()
-	: direction(0)
+	: module(TYPE_BSTRING)
+	, function(TYPE_BSTRING)
+	, pc(TYPE_INT)
+	, c_file(TYPE_BSTRING)
+	, c_lineno(TYPE_INT)
+	, direction(0)
 	{}
 
-	void up(const std::string &mod, const std::string &func, uint16_t pc)
+	void up(const std::string &mod, const std::string &func, uint16_t pc
+			, const char *cfile, int cline)
 	{
-		set(mod, func, pc);
+		set(mod, func, pc, cfile, cline);
 		direction = +1;
 	}
-	void down(const std::string &mod, const std::string &func, uint16_t pc)
+	void down(const std::string &mod, const std::string &func, uint16_t pc
+			, const char *cfile, int cline)
 	{
-		set(mod, func, pc);
+		set(mod, func, pc, cfile, cline);
 		direction = -1;
 	}
-	void set(const std::string &mod, const std::string &func, uint16_t pc)
+	void set(const std::string &mod, const std::string &func, uint16_t pc
+			, const char *cfile, int cline)
 	{
 		qbrt_value::str(module, mod);
 		qbrt_value::str(function, func);
 		qbrt_value::i(this->pc, pc);
+		qbrt_value::str(c_file, cfile);
+		qbrt_value::i(c_lineno, cline);
 	}
 
 	friend std::ostream & operator << (std::ostream &,const FailureEvent &);
@@ -452,9 +464,9 @@ struct Failure
 	// these will go to the call stack
 	std::list< FailureEvent > trace;
 
-	Failure(const std::string type_label);
 	Failure(const std::string type_label, const std::string &module
-			, const char *fname, int pc);
+			, const char *fname, int pc
+			, const char *cfile, int cline);
 
 	std::string debug_msg() const;
 	std::string usage_msg() const { return usage.str(); }
@@ -468,16 +480,17 @@ struct Failure
 	const qbrt_value & value(uint8_t) const;
 
 	void trace_up(const std::string &mod, const std::string &fname
-			, uint16_t pc);
+			, uint16_t pc, const char *c_file, int c_line);
 	void trace_down(const std::string &mod, const std::string &fname
-			, uint16_t pc);
+			, uint16_t pc, const char *c_file, int c_line);
 
 	static void write(std::ostream &, const Failure &);
 	static void write_trace(std::ostream &
 			, const std::list< FailureEvent > &);
 };
 
-#define NEW_FAILURE(type, mod, fname, pc) (new Failure(type, mod, fname, pc))
+#define NEW_FAILURE(type, mod, fname, pc) \
+		(new Failure(type, mod, fname, pc, __FILE__, __LINE__))
 #define FAIL_TYPE(mod, fname, pc) (NEW_FAILURE("typefailure", mod, fname, pc))
 #define FAIL_MODULE404(mod, fname, pc) \
 		(NEW_FAILURE("module404", mod, fname, pc))

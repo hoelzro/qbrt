@@ -118,17 +118,9 @@ void reassign_func(function_value &funcval, const Function *newfunc)
 }
 
 
-Failure::Failure(const std::string type_label)
-: debug()
-, usage()
-, http_code(0)
-{
-	qbrt_value::hashtag(type, type_label);
-	qbrt_value::i(exit_code, -1);
-}
-
 Failure::Failure(const std::string type_label, const string &module
-		, const char *fname, int pc)
+		, const char *fname, int pc
+		, const char *cfile, int cline)
 : debug()
 , usage()
 , http_code(0)
@@ -137,7 +129,7 @@ Failure::Failure(const std::string type_label, const string &module
 	qbrt_value::i(exit_code, -1);
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.set(module, fname, pc);
+	e.set(module, fname, pc, cfile, cline);
 }
 
 string Failure::debug_msg() const
@@ -171,18 +163,20 @@ const qbrt_value & Failure::value(uint8_t i) const
 	return *(const qbrt_value *) NULL;
 }
 
-void Failure::trace_up(const string &mod, const string &fname, uint16_t pc)
+void Failure::trace_up(const string &mod, const string &fname, uint16_t pc
+		, const char *c_file, int c_line)
 {
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.up(mod, fname, pc);
+	e.up(mod, fname, pc, c_file, c_line);
 }
 
-void Failure::trace_down(const string &mod, const string &fname, uint16_t pc)
+void Failure::trace_down(const string &mod, const string &fname, uint16_t pc
+		, const char *c_file, int c_line)
 {
 	trace.push_back(FailureEvent());
 	FailureEvent &e(trace.back());
-	e.down(mod, fname, pc);
+	e.down(mod, fname, pc, c_file, c_line);
 }
 
 void Failure::write(ostream &out, const Failure &f)
@@ -216,13 +210,7 @@ ostream & operator << (ostream &out, const FailureEvent &e)
 {
 	out << (e.direction <= 0 ? '<' : ' ');
 	out << (e.direction >= 0 ? '>' : ' ');
-	if (e.function.type->id == VT_BSTRING) {
-		if (e.module.type->id == VT_BSTRING) {
-			out << *e.module.data.str << '/';
-		}
-		out << *e.function.data.str;
-		if (e.pc.type->id == VT_INT) {
-			out << ':' << e.pc.data.i;
-		}
-	}
+	out << *e.module.data.str << '/';
+	out << *e.function.data.str << ':' << e.pc.data.i << ' ';
+	out << *e.c_file.data.str << ':' << e.c_lineno.data.i;
 }

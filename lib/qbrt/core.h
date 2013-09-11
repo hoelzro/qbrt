@@ -115,6 +115,13 @@ struct qbrt_value
 	{
 		data.str = NULL;
 	}
+	qbrt_value(const Type &t)
+	: type(&TYPE_VOID)
+	{
+		data.str = NULL;
+		default_value(*this, t);
+	}
+	static void default_value(qbrt_value &, const Type &);
 	static void set_void(qbrt_value &);
 	static void b(qbrt_value &v, bool b)
 	{
