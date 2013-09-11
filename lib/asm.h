@@ -185,7 +185,6 @@ struct AsmProtocol
 {
 	const AsmString &name;
 	AsmString doc;
-	AsmString filename;
 	std::list< AsmString * > *typevar;
 	uint16_t line_no;
 	uint16_t argc;
@@ -211,7 +210,6 @@ struct AsmPolymorph
 {
 	const AsmModSym &protocol;
 	AsmString doc;
-	AsmString filename;
 	uint16_t line_no;
 	AsmTypeSpecList type;
 
@@ -323,7 +321,6 @@ struct AsmFunc
 	const AsmTypeSpec &result_type;
 	const AsmString &name;
 	AsmString doc;
-	AsmString filename;
 	uint16_t line_no;
 	uint8_t fcontext;
 	uint8_t argc;

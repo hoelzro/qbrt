@@ -175,7 +175,6 @@ struct FunctionHeader
 {
 	uint16_t name_idx;
 	uint16_t doc_idx;
-	uint16_t file_idx;
 	uint16_t line_no;
 	uint16_t context_idx;
 	uint16_t param_types_idx;
@@ -193,14 +192,13 @@ struct FunctionHeader
 			+ SIZE + argc * sizeof(ParamResource);
 	}
 
-	static const uint16_t SIZE = 18;
+	static const uint16_t SIZE = 16;
 };
 
 struct ProtocolResource
 {
 	uint16_t name_idx;
 	uint16_t doc_idx;
-	uint16_t file_idx;
 	uint16_t line_no;
 	uint16_t arg_func_count;
 
@@ -215,21 +213,20 @@ struct ProtocolResource
 		return (&arg_func_count)[i+1];
 	}
 
-	static const uint16_t SIZE = 10;
+	static const uint16_t SIZE = 8;
 };
 
 struct PolymorphResource
 {
 	uint16_t protocol_idx;
 	uint16_t doc_idx;
-	uint16_t file_idx;
 	uint16_t line_no;
 	uint16_t type_count;
 	uint16_t func_count;
 
 	uint16_t type[]; // TypeSpec array
 
-	static const uint16_t HEADER_SIZE = 12;
+	static const uint16_t HEADER_SIZE = 10;
 };
 
 struct ContextStack

@@ -740,7 +740,6 @@ uint32_t AsmFunc::write(ostream &out) const
 {
 	out.write((const char *) name.index, 2);
 	out.write((const char *) doc.index, 2);
-	out.write((const char *) filename.index, 2);
 	out.write((const char *) (&line_no), 2);
 	if (ctx) {
 		out.write((const char *) ctx->index, 2);
@@ -806,11 +805,10 @@ uint32_t AsmProtocol::write(ostream &out) const
 
 	out.write((const char *) name.index, 2);
 	out.write((const char *) doc.index, 2);
-	out.write((const char *) filename.index, 2);
 	out.write((const char *) &line_no, 2);
 	out.write((const char *) &arg_func_counts, 2);
 
-	uint32_t proto_size(10);
+	uint32_t proto_size(ProtocolResource::SIZE);
 
 	list< AsmString * >::const_iterator it(typevar->begin());
 	for (; it!=typevar->end(); ++it) {
@@ -828,12 +826,11 @@ uint32_t AsmPolymorph::write(ostream &out) const
 
 	out.write((const char *) protocol.index, 2);
 	out.write((const char *) doc.index, 2);
-	out.write((const char *) filename.index, 2);
 	out.write((const char *) &line_no, 2);
 	out.write((const char *) &num_types, 2);
 	out.write((const char *) &num_funcs, 2);
 
-	uint32_t poly_size(12);
+	uint32_t poly_size(PolymorphResource::HEADER_SIZE);
 	list< AsmTypeSpec * >::const_iterator it(type.begin());
 	for (; it!=type.end(); ++it) {
 		out.write((const char *) (*it)->index, 2);
