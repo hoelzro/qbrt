@@ -425,10 +425,11 @@ struct FailureEvent
 	, direction(0)
 	{}
 
-	void up(const std::string &mod, const std::string &func, uint16_t pc
-			, const char *cfile, int cline)
+	void up(const std::string &mod, const std::string &func, uint16_t pc)
 	{
-		set(mod, func, pc, cfile, cline);
+		qbrt_value::str(module, mod);
+		qbrt_value::str(function, func);
+		qbrt_value::i(this->pc, pc);
 		direction = +1;
 	}
 	void down(const std::string &mod, const std::string &func, uint16_t pc
@@ -480,7 +481,7 @@ struct Failure
 	const qbrt_value & value(uint8_t) const;
 
 	void trace_up(const std::string &mod, const std::string &fname
-			, uint16_t pc, const char *c_file, int c_line);
+			, uint16_t pc);
 	void trace_down(const std::string &mod, const std::string &fname
 			, uint16_t pc, const char *c_file, int c_line);
 

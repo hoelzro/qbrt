@@ -54,6 +54,16 @@ void CodeFrame::io_pop()
 	io = NULL;
 }
 
+void CodeFrame::backtrace(Failure &f, const CodeFrame *frame)
+{
+	if (!frame) {
+		return;
+	}
+	const FunctionCall &call(frame->function_call());
+	f.trace_up(call.mod->name, call.name(), frame->pc);
+	backtrace(f, frame->parent);
+}
+
 
 FunctionCall::FunctionCall(const QbrtFunction &func, qbrt_value_index &vals)
 : CodeFrame(CFT_CALL)

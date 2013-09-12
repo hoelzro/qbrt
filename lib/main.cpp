@@ -90,6 +90,10 @@ struct OpContext
 	virtual qbrt_value * get_context(const std::string &) = 0;
 	virtual void io(StreamIO *op) = 0;
 
+	void backtrace(Failure &f)
+	{
+		CodeFrame::backtrace(f, worker().current->parent);
+	}
 	void fail_frame(Failure *f)
 	{
 		qbrt_value::fail(*dstvalue(SPECIAL_REG_RESULT), f);
@@ -602,6 +606,7 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 	qbrt_value &result(*ctx.dstvalue(i.dst));
 	Failure *f = NEW_FAILURE(failtype, ctx.module_name()
 			, ctx.function_name(), ctx.pc());
+	ctx.backtrace(*f);
 	qbrt_value::fail(result, f);
 	ctx.pc() += cfailure_instruction::SIZE;
 }

@@ -93,6 +93,7 @@ struct CodeFrame
 
 	virtual void finish_frame(Worker &) = 0;
 
+	static void backtrace(Failure &, const CodeFrame *);
 	friend qbrt_value * get_context(CodeFrame *, const std::string &);
 	friend qbrt_value * add_context(CodeFrame *, const std::string &);
 

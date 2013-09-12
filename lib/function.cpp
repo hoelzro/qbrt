@@ -163,12 +163,11 @@ const qbrt_value & Failure::value(uint8_t i) const
 	return *(const qbrt_value *) NULL;
 }
 
-void Failure::trace_up(const string &mod, const string &fname, uint16_t pc
-		, const char *c_file, int c_line)
+void Failure::trace_up(const string &mod, const string &fname, uint16_t pc)
 {
-	trace.push_back(FailureEvent());
-	FailureEvent &e(trace.back());
-	e.up(mod, fname, pc, c_file, c_line);
+	trace.push_front(FailureEvent());
+	FailureEvent &e(trace.front());
+	e.up(mod, fname, pc);
 }
 
 void Failure::trace_down(const string &mod, const string &fname, uint16_t pc
@@ -211,6 +210,9 @@ ostream & operator << (ostream &out, const FailureEvent &e)
 	out << (e.direction <= 0 ? '<' : ' ');
 	out << (e.direction >= 0 ? '>' : ' ');
 	out << *e.module.data.str << '/';
-	out << *e.function.data.str << ':' << e.pc.data.i << ' ';
-	out << *e.c_file.data.str << ':' << e.c_lineno.data.i;
+	out << *e.function.data.str << ':' << e.pc.data.i;
+	if (e.direction <= 0) {
+		out << ' ' << *e.c_file.data.str << ':' << e.c_lineno.data.i;
+	}
+	return out;
 }
