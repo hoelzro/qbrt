@@ -1,2 +1,4 @@
-__main:0 could not find function: io.pront
-exit with: -1
+Failure: #function404
+<>missingmodule/__main:0 lib/main.cpp:791
+< missingmodule/__main:5 lib/main.cpp:658
+could not find function: io.pront

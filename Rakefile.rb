@@ -167,7 +167,7 @@ def test_uqb(file)
 	passed = false
 	Dir.chdir "T/"
 	mod = file.chomp(File.extname(file))
-	sh "../qbc #{mod}"
+	sh "QBPATH=../libqb:. ../qbc #{mod}"
 	Dir.chdir "../"
 	input_file = "T/DATA/#{mod}.input"
 	args_file = "T/DATA/#{mod}.args"
