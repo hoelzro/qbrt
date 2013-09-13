@@ -144,6 +144,12 @@ task :clean => [] do
 end
 
 
+# Unit Tests
+task :unit => ['testqb'] do
+	sh "accertion/accert ./testqb"
+end
+
+
 TestFiles = ['hello.uqb',
 	'argc.uqb',
 	'arithmetic.uqb',
