@@ -417,10 +417,10 @@ struct FailureEvent
 	qbrt_value c_lineno;
 
 	FailureEvent()
-	: module(TYPE_BSTRING)
-	, function(TYPE_BSTRING)
+	: module(TYPE_STRING)
+	, function(TYPE_STRING)
 	, pc(TYPE_INT)
-	, c_file(TYPE_BSTRING)
+	, c_file(TYPE_STRING)
 	, c_lineno(TYPE_INT)
 	, direction(0)
 	{}

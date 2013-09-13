@@ -32,7 +32,7 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 
 #define VT_VOID		0x00
 #define VT_KIND		0x01
-#define VT_BSTRING	0x02
+#define VT_STRING	0x02
 #define VT_FUNCTION	0x03
 #define VT_BOOL		0x04
 #define VT_FLOAT	0x05
@@ -52,7 +52,7 @@ typedef void (*c_function)(OpContext &, qbrt_value &out);
 
 extern Type TYPE_VOID;
 extern Type TYPE_INT;
-extern Type TYPE_BSTRING;
+extern Type TYPE_STRING;
 extern Type TYPE_BOOL;
 extern Type TYPE_FLOAT;
 extern Type TYPE_HASHTAG;
@@ -140,7 +140,7 @@ struct qbrt_value
 	}
 	static void str(qbrt_value &v, const std::string &s)
 	{
-		v.type = &TYPE_BSTRING;
+		v.type = &TYPE_STRING;
 		v.data.str = new std::string(s);
 	}
 	static void hashtag(qbrt_value &v, const std::string &h)

@@ -25,7 +25,7 @@ static void init_primitive_modules()
 	PRIMITIVE_MODULE[VT_BOOL] = "core";
 	PRIMITIVE_MODULE[VT_FLOAT] = "core";
 	PRIMITIVE_MODULE[VT_FUNCTION] = "core";
-	PRIMITIVE_MODULE[VT_BSTRING] = "core";
+	PRIMITIVE_MODULE[VT_STRING] = "core";
 	PRIMITIVE_MODULE[VT_HASHTAG] = "core";
 	PRIMITIVE_MODULE[VT_PATTERNVAR] = "core";
 	PRIMITIVE_MODULE[VT_REF] = "core";
@@ -46,7 +46,7 @@ static void init_primitive_names()
 	PRIMITIVE_NAME[VT_BOOL] = "Bool";
 	PRIMITIVE_NAME[VT_FLOAT] = "Float";
 	PRIMITIVE_NAME[VT_FUNCTION] = "Function";
-	PRIMITIVE_NAME[VT_BSTRING] = "String";
+	PRIMITIVE_NAME[VT_STRING] = "String";
 	PRIMITIVE_NAME[VT_HASHTAG] = "HashTag";
 	PRIMITIVE_NAME[VT_PATTERNVAR] = "PatternVar";
 	PRIMITIVE_NAME[VT_REF] = "Ref";
@@ -116,7 +116,7 @@ Type::Type(const string &mod, const string &name, uint8_t argc)
 Type TYPE_VOID(VT_VOID);
 Type TYPE_KIND(VT_KIND);
 Type TYPE_INT(VT_INT);
-Type TYPE_BSTRING(VT_BSTRING);
+Type TYPE_STRING(VT_STRING);
 Type TYPE_BOOL(VT_BOOL);
 Type TYPE_FLOAT(VT_FLOAT);
 Type TYPE_HASHTAG(VT_HASHTAG);
@@ -138,7 +138,7 @@ void qbrt_value::default_value(qbrt_value &v, const Type &t)
 		case VT_INT:
 			i(v, 0);
 			break;
-		case VT_BSTRING:
+		case VT_STRING:
 			str(v, "");
 			break;
 		case VT_BOOL:
@@ -181,7 +181,7 @@ void qbrt_value::copy(qbrt_value &dst, const qbrt_value &src)
 		case VT_FLOAT:
 			qbrt_value::f(dst, src.data.f);
 			break;
-		case VT_BSTRING:
+		case VT_STRING:
 			qbrt_value::str(dst, *src.data.str);
 			break;
 		case VT_CONSTRUCT:
@@ -267,7 +267,7 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 			return type_compare< int64_t >(a.data.i, b.data.i);
 		case VT_BOOL:
 			return type_compare< bool >(a.data.b, b.data.b);
-		case VT_BSTRING:
+		case VT_STRING:
 			return type_compare< const string & >(
 					*a.data.str, *b.data.str);
 		case VT_CONSTRUCT:

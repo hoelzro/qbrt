@@ -917,7 +917,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	int op_pc(ctx.pc());
 	ctx.pc() += stracc_instruction::SIZE;
 
-	if (dst.type->id != VT_BSTRING) {
+	if (dst.type->id != VT_STRING) {
 		f = FAIL_TYPE(ctx.module_name(), ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
 		qbrt_value::i(f->exit_code, 1);
@@ -927,7 +927,7 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 
 	ostringstream out;
 	switch (src.type->id) {
-		case VT_BSTRING:
+		case VT_STRING:
 			*dst.data.str += *src.data.str;
 			break;
 		case VT_INT:
@@ -1226,7 +1226,7 @@ void core_print(OpContext &ctx, qbrt_value &out)
 		case VT_INT:
 			cout << val->data.i;
 			break;
-		case VT_BSTRING:
+		case VT_STRING:
 			cout << *(val->data.str);
 			break;
 		default:
@@ -1306,7 +1306,7 @@ ostream & inspect(ostream &out, const qbrt_value &v)
 		case VT_INT:
 			out << "int:" << v.data.i;
 			break;
-		case VT_BSTRING:
+		case VT_STRING:
 			out << *v.data.str;
 			break;
 		case VT_FAILURE:
@@ -1352,8 +1352,8 @@ void get_qbrt_type(OpContext &ctx, qbrt_value &out)
 		case VT_INT:
 			t = &TYPE_INT;
 			break;
-		case VT_BSTRING:
-			t = &TYPE_BSTRING;
+		case VT_STRING:
+			t = &TYPE_STRING;
 			break;
 		case VT_BOOL:
 			t = &TYPE_BOOL;
@@ -1458,12 +1458,12 @@ void core_open(OpContext &ctx, qbrt_value &out)
 	const qbrt_value &mode(*ctx.srcvalue(PRIMARY_REG(1)));
 	// these type checks should be done automatically...
 	// once types are working.
-	if (filename.type->id != VT_BSTRING) {
+	if (filename.type->id != VT_STRING) {
 		cerr << "first argument to open is not a string\n";
 		cerr << "argument is type: " << (int)filename.type->id << endl;
 		exit(2);
 	}
-	if (mode.type->id != VT_BSTRING) {
+	if (mode.type->id != VT_STRING) {
 		cerr << "second argument to open is not a string\n";
 		cerr << "argument is type: " << (int) mode.type->id << endl;
 		exit(2);
@@ -1491,7 +1491,7 @@ void core_write(OpContext &ctx, qbrt_value &out)
 		cerr << "first argument to write is not a stream\n";
 		exit(2);
 	}
-	if (text.type->id != VT_BSTRING) {
+	if (text.type->id != VT_STRING) {
 		cerr << "second argument to write is not a string\n";
 		cerr << "argument is type: " << (int) text.type->id << endl;
 		exit(2);
@@ -1524,8 +1524,8 @@ int main(int argc, const char **argv)
 			, "io/Stream;core/String;");
 	add_c_function(*mod_core, core_wid, "wid", 0, "");
 	add_type(*mod_core, "Int", TYPE_INT);
-	add_type(*mod_core, "String", TYPE_BSTRING);
-	add_type(*mod_core, "ByteString", TYPE_BSTRING);
+	add_type(*mod_core, "String", TYPE_STRING);
+	add_type(*mod_core, "ByteString", TYPE_STRING);
 	add_c_override(*mod_core, core_str_from_str, "core", "Stringy", "str", 1
 			, "core/String");
 	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
