@@ -109,7 +109,7 @@ struct fork_instruction
 struct wait_instruction
 : public instruction
 {
-	uint16_t reg : 16;
+	uint16_t reg;
 
 	wait_instruction(reg_t r)
 	: instruction(OP_WAIT)
