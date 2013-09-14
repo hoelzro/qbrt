@@ -119,7 +119,7 @@ file 'lib/qblex.c' => ['lexparse/qb.l','lexparse/qb.y'] do
 end
 
 file 'lib/qbparse.h' => ['lib/qbparse.c','lexparse/qb.y']
-file 'lib/qbparse.c' => ['lempar/lempar.c', 'lexparse/qb.y'] do
+file 'lib/qbparse.c' => ['lemon', 'lempar/lempar.c', 'lexparse/qb.y'] do
 	sh "./lemon -g lexparse/qb.y"
 	sh "./lemon -s -Tlempar/lempar.c lexparse/qb.y"
 	File.rename('lexparse/qb.h','lib/qbparse.h')
