@@ -1,15 +1,15 @@
 # Qbrt, bytecode
 
 Qbrt is a concurrent bytecode assembly language and runtime interpreter.
-It's purpose is to provide flexible, accessible runtime features
-and a common runtime environment to high level programming language.
-By doing so, qbrt aims to reduce the barrier to entry for language
+It's aim is to reduce the barrier to entry for language
 designers to build more concurrent and interoperable programming
 languages that take advantage of multiprocessor systems.
+It does so by making easy to access and use advanced features
+and a common runtime environment.
 
 ## Hello World Example
 
-The obligatory hello world example, written in qbrt.
+The obligatory hello world example, written in qbrt, and Swedish.
 It's longer than most other languages, but remember, qbrt is
 a bytecode assembly language that's designed to be easy for
 computer programs to write, at the expense of some human
@@ -17,10 +17,9 @@ usability.
 
 ```
 func __main
-lfunc $1 io/print
-const $1.0 "hello world\n"
-call void $1
-return
+lfunc $p io/print
+const $p.0 "hallå världen\n"
+call \void $p
 end.
 ```
 
@@ -30,13 +29,24 @@ end.
 * [Registers](DOCS/registers.md)
 * [Core Modules](DOCS/core_modules.md)
 
+Run unit tests in testlib/ with ```rake unit```.
 Run integration tests in T/ with ```rake T```.
 
 ## Features
 
-Why might you find qbrt interesting? Well first, it probably helps
-if you're interested in designing a high level programming
-language yourself.
+Why might you find qbrt interesting?
+
+1. You're implementing a language and don't want to implement
+   qbrt features yourself, like concurrency, asynchronous I/O and
+   memory management.
+2. You're looking for a runtime environment that takes advantage
+   of multiple core processors.
+
+### Dual Band Variables
+
+Expecting and recovering from failure is a necessary of good software.
+Qbrt pays extra attention to failured operations so developers can
+worry about them only when necessary.
 
 ### Concurrency
 
@@ -94,10 +104,11 @@ executables.
 
 ### The compiler
 
-The compiler takes a .uqb assembly code file as input and writes a
+The compiler takes a module name as input, converts it to the
+uncompiled source file <module>.uqb and compiles a
 corresponding binary bytecode file (.qb) as output.
 
-```> qbc T/hello.uqb```
+```> QBPATH=libqb:T ./qbc hello```
 
 ### The inspector
 
@@ -105,14 +116,14 @@ The inspector is used primarily as a development tool for the compiler.
 It takes a compiled .qb file and displays information about
 various resources included in the file and all the code.
 
-```> qbi T/hello```
+```> QBPATH=libqb:T ./qbi hello```
 
 ### The interpreter
 
 The interpreter takes a compiled .qb file and executes it. This is
 where all of the runtime
 
-```> qbrt T/hello```
+```> QBPATH=libqb:T ./qbrt hello```
 
 ### Build Dependencies
 
@@ -120,3 +131,9 @@ To build the components of qbrt, you'll need a few things:
 
 * gcc
 * rake
+
+## Client Languages
+
+Looking for a client language that compiles to qbrt bytecode?
+
+* [Jaz](http://github.com/mdg/jaz)
