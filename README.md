@@ -131,6 +131,7 @@ To build the components of qbrt, you'll need a few things:
 
 * gcc
 * rake
+* rubygem popen4
 
 ## Client Languages
 
