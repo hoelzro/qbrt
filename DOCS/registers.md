@@ -20,7 +20,8 @@ They are an indexed place in the virtual machine that instructions
 can directly access and operate on directly.
 
 In qbrt, primary registers are accessed with a dollar sign followed
-by an integer (eg $5). The primary registers will be reindexed during
+by an integer or identifier (eg $5, $x).
+*NOTE:* Numbered primary registers will be reindexed during
 compilation so do not expect the integers to remain the same.
 
 Function parameters are a subtype of primary register and are accessed
@@ -45,15 +46,17 @@ imult $0 %0 $1  ## Multiple parameter 0 and primary register 1,
 Secondary registers are used primarily to pass values from a calling
 function into the primary register set of the function being called.
 They are accessed with a dollar sign followed by a decimal number
-(eg. $4.1). The integer before the decimal is the index of the primary
+(eg. $x.1). The integer before the decimal is the index of the primary
 register that stores the loaded function. The integer after the decimal
 is the index of the function parameter.
+*NOTE:* A functions registers are allocated when the function is loaded
+not when it is called.
 
 ```
-lfunc $0 ./foo
-const $0.0 3   ## Load constant 3 into parameter 0 of function "foo"
-const $0.1 8   ## Load constant 8 into parameter 1 of function "foo"
-call $1 $0
+lfunc $x ./foo
+const $x.0 3   ## Load constant 3 into parameter 0 of function "foo"
+const $x.1 8   ## Load constant 8 into parameter 1 of function "foo"
+call $y $x
 ```
 
 ## Const Registers
@@ -67,10 +70,10 @@ the register would be.
 
 Special registers are a way for a qbrt program to get direct access
 into data in the virtual machine. The most often used example of this
-is the "result" register which contains the result of a function.
+is the "\result" register which contains the result of a function.
 
 ```
-const $0 2
-const $1 3
-imult result $0 $1  ## assigns the product of 2 and 3 to the result register
+const $x 2
+const $y 3
+imult \result $x $y  ## assigns the product of 2 and 3 to the result register
 ```
