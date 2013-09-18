@@ -34,13 +34,13 @@ call $1.2 $4
 newproc $5 $1
 const $0 "\nHello "
 const $1 " "
-recv $2 $5
+recv $2
 stracc $0 $2
 stracc $0 $1
-recv $3 $5
+recv $3
 stracc $0 $3
 stracc $0 $1
-recv $4 $5
+recv $4
 stracc $0 $4
 const $1 "!\n"
 stracc $0 $1

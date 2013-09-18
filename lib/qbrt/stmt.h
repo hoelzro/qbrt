@@ -656,12 +656,10 @@ struct patternvar_stmt
 struct recv_stmt
 : public Stmt
 {
-	recv_stmt(AsmReg *dst, AsmReg *tube)
+	recv_stmt(AsmReg *dst)
 	: dst(dst)
-	, tube(tube)
 	{}
 	AsmReg *dst;
-	AsmReg *tube;
 
 	void allocate_registers(RegAlloc *);
 	void generate_code(AsmFunc &);

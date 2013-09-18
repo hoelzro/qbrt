@@ -160,7 +160,7 @@ const $4.1 "hello"
 call void $4
 
 lfunc $3 io/print
-recv $3.0 $1	## wait here until a message arrives, then store it in $3.0
+recv $3.0	## wait here until a message arrives, then store it in $3.0
 call void $3	## print the value received from function foo()
 ```
 
@@ -171,14 +171,13 @@ Look for a message on the process's inbound message queue.
 Arguments:
 
 * **dest** the register to store the incoming value
-* **remote_pid** vestigial and will soon be removed
 
 Example:
 ```
 lfunc $3 io/print
 lfunc $0 ./foo
 newproc $2 $0	## create a new process executing foo()
-recv $3.0 $1	## wait here until a message arrives, then store it in $3.0
+recv $3.0	## wait here until a message arrives, then store it in $3.0
 call void $3	## print the value received from function foo()
 ```
 

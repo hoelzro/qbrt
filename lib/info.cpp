@@ -136,8 +136,7 @@ uint8_t print_patternvar_instruction(const patternvar_instruction &i)
 
 uint8_t print_recv_instruction(const recv_instruction &i)
 {
-	cout << "recv " << pretty_reg(i.dst)
-		<<' '<< pretty_reg(i.tube) << endl;
+	cout << "recv " << pretty_reg(i.dst) << endl;
 	return recv_instruction::SIZE;
 }
 
@@ -428,7 +427,8 @@ uint8_t print_instruction(const uint8_t *funcdata)
 		cerr << "\nnull printer for: " << (int) i.opcode() << endl;
 		exit(1);
 	}
-	return p(i);
+	p(i);
+	return isize(i.opcode());
 }
 
 void print_function_code(const FunctionHeader &f, uint32_t size

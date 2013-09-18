@@ -758,18 +758,17 @@ void patternvar_stmt::pretty(ostream &out) const
 
 void recv_stmt::allocate_registers(RegAlloc *r)
 {
-	r->assign_src(*tube);
 	r->alloc_dst(*dst);
 }
 
 void recv_stmt::generate_code(AsmFunc &f)
 {
-	asm_instruction(f, new recv_instruction(*dst, *tube));
+	asm_instruction(f, new recv_instruction(*dst));
 }
 
 void recv_stmt::pretty(std::ostream &out) const
 {
-	out << "recv " << *dst <<' '<< *tube;
+	out << "recv " << *dst;
 }
 
 void ref_stmt::allocate_registers(RegAlloc *rc)
