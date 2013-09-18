@@ -31,7 +31,7 @@ Example:
 const $0 "base string"
 const $1 " postfixed"
 stracc $0 $1
-// $0 now contains "base string postfixed"
+## $0 now contains "base string postfixed"
 ```
 
 ### const
@@ -61,14 +61,15 @@ functionality. Here is an example and the related functions.
 Example:
 ```
 func decrement
-const $0 1
-isub result %0 $0
+dparam x core/Int
+const $y 1
+isub \result $x $y
 end.
 
 func __main
-lfunc $0 ./decrement // $0 contains the "decrement" function
-const $0.0 5
-call $1 $0           // $1 should now contain 4
+lfunc $d ./decrement ## $d contains the "decrement" function
+const $d.0 5
+call $x $d           ## $x should now contain 4
 end.
 ```
 
@@ -78,21 +79,20 @@ Declare a function with a given name and number of parameters.
 Function declarations begin a function block and must be ended
 with an end statement.
 
-Arguments: &lt;name&gt; &lt;argc&gt;
+Arguments: &lt;name&gt; &lt;return type&gt;
 
 * **name** a string for the function name
-* **argc** an integer for the number of parameters that the function has
+* **return type** the full type name of the type that this function returns
 
 ### lfunc
 
 Load a function from the given module with the given function name and
 store it in the destination register.
 
-Arguments: &lt;dst&gt; &lt;module name&gt; &lt;function name&gt;
+Arguments: &lt;dst&gt; &lt;full function name&gt;
 
 * **dst** the register where the function should be loaded
-* **module name** the string name of the module that has the function
-* **function name** the string name of the function to load
+* **full function name** the module & function to be loaded eg. module/function
 
 ### call
 
@@ -127,15 +127,15 @@ Arguments: &lt;reg&gt;
 
 Example:
 ```
-fork $0            // put a promise in $0
+fork $0            ## put a promise in $0
   const $1 2
   const $2 3
-  imult $0 $1 $2   // overwrite the promise in $0 with an actual value
-  end.             // the fork instruction starts a block that stops here
-                   // with the end. statement
+  imult $0 $1 $2   ## overwrite the promise in $0 with an actual value
+  end.             ## the fork instruction starts a block that stops here
+                   ## with the end. statement
 const $3 4
-wait $0            // wait here until $0 is set
-imult $4 $0 $3     // $4 now contains 2 * 3 * 4, or 24
+wait $0            ## wait here until $0 is set
+imult $4 $0 $3     ## $4 now contains 2 * 3 * 4, or 24
 ```
 
 ### newproc
@@ -152,7 +152,7 @@ Arguments:
 Example:
 ```
 lfunc $0 ./foo
-newproc $2 $0	// create a new process executing foo()
+newproc $2 $0	## create a new process executing foo()
 
 lfunc $4 core/send
 copy $4.0 $2
@@ -160,8 +160,8 @@ const $4.1 "hello"
 call void $4
 
 lfunc $3 io/print
-recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
-call void $3	// print the value received from function foo()
+recv $3.0 $1	## wait here until a message arrives, then store it in $3.0
+call void $3	## print the value received from function foo()
 ```
 
 ### recv
@@ -177,9 +177,9 @@ Example:
 ```
 lfunc $3 io/print
 lfunc $0 ./foo
-newproc $2 $0	// create a new process executing foo()
-recv $3.0 $1	// wait here until a message arrives, then store it in $3.0
-call void $3	// print the value received from function foo()
+newproc $2 $0	## create a new process executing foo()
+recv $3.0 $1	## wait here until a message arrives, then store it in $3.0
+call void $3	## print the value received from function foo()
 ```
 
 ### wait
@@ -209,7 +209,7 @@ const $1 "initialized"
 goto @label
 const $1 "never gets here"
 @label
-// $1 will always contain "initialized"
+## $1 will always contain "initialized"
 ```
 
 ### brt/brf
@@ -227,8 +227,8 @@ const $1 "initialized"
 brt $0 @label
 const $1 "no branch"
 @label
-// if $0 is true, register $1 will now contain "initialized"
-// if $0 is false, register $1 will now contain "no branch"
+## if $0 is true, register $1 will now contain "initialized"
+## if $0 is false, register $1 will now contain "no branch"
 ```
 
 ### brfail/brnfail
@@ -246,7 +246,7 @@ const $1 "initialized"
 brfail $1 @label
 const $1 "no branch"
 @label
-// $1 is not a failure type, register $1 will always contain "no branch"
+## $1 is not a failure type, register $1 will always contain "no branch"
 ```
 
 ### Comparison Branch Instructions
@@ -292,7 +292,7 @@ Example:
 ```
 const $1 5
 const $2 7
-iadd $0 $1 $2   // register $0 will contain integer 12
+iadd $0 $1 $2   ## register $0 will contain integer 12
 ```
 
 ### isub
@@ -303,7 +303,7 @@ Example:
 ```
 const $1 9
 const $2 4
-isub $0 $1 $2   // register $0 will contain integer 5.
+isub $0 $1 $2   ## register $0 will contain integer 5.
 ```
 
 ### imult
@@ -314,7 +314,7 @@ Example:
 ```
 const $1 3
 const $2 6
-imult $0 $1 $2  // register $0 will contain integer 18.
+imult $0 $1 $2  ## register $0 will contain integer 18.
 ```
 
 ### idiv
@@ -325,5 +325,5 @@ Example:
 ```
 const $1 12
 const $2 3
-idiv $0 $1 $2   // register $0 will contain integer 4.
+idiv $0 $1 $2   ## register $0 will contain integer 4.
 ```
