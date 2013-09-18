@@ -261,16 +261,6 @@ Arguments: &lt;op1&gt; &lt;op2&gt; &lt;label&gt;
 * **op2** the second operand in the comparison
 * **label** the location to jump to if the test is successful
 
-### breq
-
-*NOTE: not implemented yet*
-
-Jump if the two operands are equal
-
-### brne
-
-Jump if the two operands are equal
-
 ## Arithmetic Instructions
 
 Instructions for doing arithmetic operations.
