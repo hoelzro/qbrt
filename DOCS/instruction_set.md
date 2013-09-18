@@ -212,33 +212,35 @@ const $1 "never gets here"
 ## $1 will always contain "initialized"
 ```
 
-### brt/brf
+### if/ifnot
 
-Branch if the operand is true or false
+if: continue if the operand is true, else jump to the label
+ifnot: continue if the operand is *not* true, else jump to the label
 
 Arguments: &lt;op&gt; &lt;label&gt;
 
 * **op** the operand register to test
-* **label** the location to jump to if the test is successful
+* **label** the location to jump to based on the result of the test
 
 Example:
 ```
-const $1 "initialized"
-brt $0 @label
-const $1 "no branch"
+const $s "initialized"
+if $c @label
+const $s "condition is true"
 @label
-## if $0 is true, register $1 will now contain "initialized"
-## if $0 is false, register $1 will now contain "no branch"
+## if $c is true, register $s will now contain "condition is true"
+## if $c is false, register $s will still contain "initialized"
 ```
 
-### brfail/brnfail
+### iffail/ifnotfail
 
-Branch if the operand is or is not a failure
+iffail: continue if the operand is a failure, else jump to the label
+ifnotfail: continue if the operand is *not* a failure, else jump to the label
 
 Arguments: &lt;op&gt; &lt;label&gt;
 
 * **op** the operand register to test
-* **label** the location to jump to if the test is successful
+* **label** the location to jump to based on the result of the test
 
 Example:
 ```
