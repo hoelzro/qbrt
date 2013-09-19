@@ -35,7 +35,7 @@ QBI.debug!
 QBRT = CTarget.new()
 QBRT.name = 'qbrt'
 QBRT.include 'lib'
-QBRT.compile_files("lib/main.cpp", \
+QBRT.compile_files("lib/qbrt.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/io.cpp", \
