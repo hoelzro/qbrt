@@ -3,7 +3,8 @@ func ten_divided_by core/Int
 dparam x core/Int
 
 const $zero 0
-ifeq $x $zero @GOOD
+cmp= $cmp $zero $x
+if $cmp @GOOD
 cfailure \result #divideby0
 return
 

@@ -102,6 +102,12 @@ TYPEVAR	\*[A-Z]{NAMEC}*
 "bindtype"	{ BEGIN(ARGS); return_token(TOKEN_BINDTYPE); }
 "call"		{ BEGIN(ARGS); return_token(TOKEN_CALL); }
 "cfailure"	{ BEGIN(ARGS); return_token(TOKEN_CFAILURE); }
+"cmp="		{ BEGIN(ARGS); return_token(TOKEN_CMP_EQ); }
+"cmp!="		{ BEGIN(ARGS); return_token(TOKEN_CMP_NOTEQ); }
+"cmp<"		{ BEGIN(ARGS); return_token(TOKEN_CMP_LT); }
+"cmp<="		{ BEGIN(ARGS); return_token(TOKEN_CMP_LTEQ); }
+"cmp>"		{ BEGIN(ARGS); return_token(TOKEN_CMP_GT); }
+"cmp>="		{ BEGIN(ARGS); return_token(TOKEN_CMP_GTEQ); }
 "const"		{ BEGIN(ARGS); return_token(TOKEN_CONST); }
 "construct"	{ BEGIN(ARGS); return_token(TOKEN_CONSTRUCT); }
 "copy"		{ BEGIN(ARGS); return_token(TOKEN_COPY); }

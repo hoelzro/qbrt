@@ -9,6 +9,7 @@
 #include "qbrt/module.h"
 #include "io.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -611,6 +612,54 @@ void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 	ctx.pc() += cfailure_instruction::SIZE;
 }
 
+void execute_cmp(OpContext &ctx, const cmp_instruction &i)
+{
+	RETURN_FAILURE(ctx, i.a);
+	RETURN_FAILURE(ctx, i.b);
+	const qbrt_value &a(*ctx.srcvalue(i.a));
+	const qbrt_value &b(*ctx.srcvalue(i.b));
+	qbrt_value *dst = ctx.dstvalue(i.result);
+	Failure *f;
+	if (!dst) {
+		f = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
+				, ctx.pc());
+		ctx.backtrace(*f);
+		ctx.fail_frame(f);
+		return;
+	}
+
+	int comparison(qbrt_compare(a, b));
+	bool result;
+	switch (i.opcode()) {
+		case OP_CMP_EQ:
+			qbrt_value::b(*dst, comparison == 0);
+			break;
+		case OP_CMP_NOTEQ:
+			qbrt_value::b(*dst, comparison != 0);
+			break;
+		case OP_CMP_GT:
+			qbrt_value::b(*dst, comparison > 0);
+			break;
+		case OP_CMP_GTEQ:
+			qbrt_value::b(*dst, comparison >= 0);
+			break;
+		case OP_CMP_LT:
+			qbrt_value::b(*dst, comparison < 0);
+			break;
+		case OP_CMP_LTEQ:
+			qbrt_value::b(*dst, comparison >= 0);
+			break;
+		default:
+			f = NEW_FAILURE("invalidcmpop", ctx.module_name()
+					, ctx.function_name()
+					, ctx.pc());
+			ctx.backtrace(*f);
+			ctx.fail_frame(f);
+			return;
+	}
+	ctx.pc() += cmp_instruction::SIZE;
+}
+
 void execute_consti(OpContext &ctx, const consti_instruction &i)
 {
 	qbrt_value *dst = ctx.dstvalue(i.reg);
@@ -1010,6 +1059,12 @@ void init_executioners()
 	x[OP_CALL] = (executioner) execute_call;
 	x[OP_RETURN] = (executioner) execute_return;
 	x[OP_CFAILURE] = (executioner) execute_cfailure;
+	x[OP_CMP_EQ] = (executioner) execute_cmp;
+	x[OP_CMP_NOTEQ] = (executioner) execute_cmp;
+	x[OP_CMP_GT] = (executioner) execute_cmp;
+	x[OP_CMP_GTEQ] = (executioner) execute_cmp;
+	x[OP_CMP_LT] = (executioner) execute_cmp;
+	x[OP_CMP_LTEQ] = (executioner) execute_cmp;
 	x[OP_CONSTI] = (executioner) execute_consti;
 	x[OP_CONSTS] = (executioner) execute_consts;
 	x[OP_CONSTHASH] = (executioner) execute_consthash;
@@ -1055,8 +1110,8 @@ void execute_instruction(Worker &w, const instruction &i)
 		qbrt_value::i(f->exit_code, 1);
 		f->debug << "Opcode not implemented: " << (int) opcode;
 		f->usage << "Internal program error";
-		cerr << f->debug_msg() << endl;
-		fail(ctx, f);
+		ctx.backtrace(*f);
+		ctx.fail_frame(f);
 		return;
 	}
 	//cerr << "---------------------------\n";

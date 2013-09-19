@@ -227,6 +227,24 @@ stmt(A) ::= CALL reg(B) reg(C). {
 stmt(A) ::= CFAILURE reg(C) HASHTAG(B). {
 	A = new cfailure_stmt(C, B->strip_first());
 }
+stmt(A) ::= CMP_EQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::eq(B, C, D);
+}
+stmt(A) ::= CMP_NOTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::noteq(B, C, D);
+}
+stmt(A) ::= CMP_GT reg(B) reg(C) reg(D). {
+	A = cmp_stmt::gt(B, C, D);
+}
+stmt(A) ::= CMP_GTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::gteq(B, C, D);
+}
+stmt(A) ::= CMP_LT reg(B) reg(C) reg(D). {
+	A = cmp_stmt::lt(B, C, D);
+}
+stmt(A) ::= CMP_LTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::lteq(B, C, D);
+}
 stmt(A) ::= CONST reg(B) INT(C). {
 	A = new consti_stmt(B, C->intval());
 }

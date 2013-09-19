@@ -6,6 +6,7 @@
 #include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -310,6 +311,12 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_CALL] = call_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RETURN] = return_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CFAILURE] = cfailure_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_EQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_NOTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LTEQ] = cmp_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTI] = consti_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTS] = consts_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTHASH] = consthash_instruction::SIZE;

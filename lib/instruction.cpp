@@ -4,6 +4,7 @@
 #include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -64,6 +65,12 @@ void init_writers()
 	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
 	WRITER[OP_CFAILURE] =
 		(instruction_writer) iwriter<cfailure_instruction>;
+	WRITER[OP_CMP_EQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_NOTEQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_GT] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_GTEQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_LT] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_LTEQ] = (instruction_writer)iwriter<cmp_instruction>;
 	WRITER[OP_CONSTI] = (instruction_writer) iwriter<consti_instruction>;
 	WRITER[OP_CONSTS] = (instruction_writer) iwriter<consts_instruction>;
 	WRITER[OP_CONSTHASH] =

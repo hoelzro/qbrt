@@ -184,7 +184,6 @@ void Failure::write(ostream &out, const Failure &f)
 	string usage_msg(f.usage_msg());
 	if (!usage_msg.empty()) {
 		out << endl << usage_msg << endl;
-		return;
 	}
 	out << endl;
 

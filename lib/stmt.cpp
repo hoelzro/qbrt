@@ -3,6 +3,7 @@
 #include "qbrt/logic.h"
 #include "qbrt/function.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -289,6 +290,74 @@ void copy_stmt::generate_code(AsmFunc &f)
 void copy_stmt::pretty(std::ostream &out) const
 {
 	out << "copy " << *dst << " " << *src;
+}
+
+cmp_stmt * cmp_stmt::eq(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_EQ, result, a, b);
+}
+
+cmp_stmt * cmp_stmt::noteq(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_NOTEQ, result, a, b);
+}
+
+cmp_stmt * cmp_stmt::gt(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_GT, result, a, b);
+}
+
+cmp_stmt * cmp_stmt::gteq(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_GTEQ, result, a, b);
+}
+
+cmp_stmt * cmp_stmt::lt(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_LT, result, a, b);
+}
+
+cmp_stmt * cmp_stmt::lteq(AsmReg *result, AsmReg *a, AsmReg *b)
+{
+	return new cmp_stmt(OP_CMP_LTEQ, result, a, b);
+}
+
+void cmp_stmt::allocate_registers(RegAlloc *r)
+{
+	r->alloc_dst(*result);
+	r->assign_src(*a);
+	r->assign_src(*b);
+}
+
+void cmp_stmt::generate_code(AsmFunc &f)
+{
+	asm_instruction(f, new cmp_instruction(opcode, *result, *a, *b));
+}
+
+void cmp_stmt::pretty(ostream &out) const
+{
+	cout << "cmp";
+	switch (opcode) {
+		case OP_CMP_EQ:
+			out << "=";
+			break;
+		case OP_CMP_NOTEQ:
+			out << "!=";
+			break;
+		case OP_CMP_GT:
+			out << ">";
+			break;
+		case OP_CMP_GTEQ:
+			out << ">=";
+			break;
+		case OP_CMP_LT:
+			out << "<";
+			break;
+		case OP_CMP_LTEQ:
+			out << "<=";
+			break;
+	}
+	out << ' ' << *result << ' ' << *a << ' ' << *b;
 }
 
 void ctuple_stmt::allocate_registers(RegAlloc *r)

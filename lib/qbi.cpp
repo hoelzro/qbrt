@@ -4,6 +4,7 @@
 #include "qbrt/module.h"
 #include "qbrt/logic.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -211,6 +212,24 @@ uint8_t print_cfailure_instruction(const cfailure_instruction &i)
 	return cfailure_instruction::SIZE;
 }
 
+uint8_t print_cmp_instruction(const cmp_instruction &i)
+{
+	cout << "cmp";
+	switch (i.opcode()) {
+		case OP_CMP_EQ:    cout << "=";  break;
+		case OP_CMP_NOTEQ: cout << "!="; break;
+		case OP_CMP_GT:    cout << ">";  break;
+		case OP_CMP_GTEQ:  cout << ">="; break;
+		case OP_CMP_LT:    cout << "<";  break;
+		case OP_CMP_LTEQ:  cout << "<="; break;
+	}
+	print_register(i.result);
+	print_register(i.a);
+	print_register(i.b);
+	cout << endl;
+	return 0;
+}
+
 uint8_t print_consti_instruction(const consti_instruction &i)
 {
 	cout << "consti";
@@ -318,6 +337,12 @@ void set_printers()
 {
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
+	PRINTER[OP_CMP_EQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_NOTEQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_GT] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_GTEQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_LT] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_LTEQ] = (instruction_printer) print_cmp_instruction;
 	PRINTER[OP_FIELDGET] = (instruction_printer) print_fieldget_instruction;
 	PRINTER[OP_FIELDSET] = (instruction_printer) print_fieldset_instruction;
 	PRINTER[OP_IADD] = (instruction_printer) print_binaryop_instruction;

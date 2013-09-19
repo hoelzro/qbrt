@@ -272,6 +272,34 @@ struct cfailure_stmt
 	void pretty(std::ostream &) const;
 };
 
+struct cmp_stmt
+: public Stmt
+{
+	AsmReg *result;
+	AsmReg *a;
+	AsmReg *b;
+	int8_t opcode;
+
+	static cmp_stmt * eq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * noteq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * gt(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * gteq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * lt(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * lteq(AsmReg *result, AsmReg *, AsmReg *);
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+
+private:
+	cmp_stmt(uint8_t op, AsmReg *result, AsmReg *a, AsmReg *b)
+	: result(result)
+	, a(a)
+	, b(b)
+	, opcode(op)
+	{}
+};
+
 struct consti_stmt
 : public Stmt
 {
