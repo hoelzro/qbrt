@@ -42,7 +42,7 @@
 #include <cstdlib>
 #include "qbparse.h"
 #include "qbtoken.h"
-#include "asm.h"
+#include "qbc.h"
 
 using namespace std;
 

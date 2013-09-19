@@ -6,7 +6,7 @@ include Rake::DSL
 QBC = CTarget.new()
 QBC.name = 'qbc'
 QBC.include 'lib'
-QBC.compile_files("lib/asm.cpp", \
+QBC.compile_files("lib/qbc.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/instruction.cpp", \

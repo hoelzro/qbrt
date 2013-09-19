@@ -15,7 +15,7 @@
 #include "instruction.h"
 #include "qbtoken.h"
 #include "qbparse.h"
-#include "asm.h"
+#include "qbc.h"
 #include <string.h>
 
 using namespace std;
