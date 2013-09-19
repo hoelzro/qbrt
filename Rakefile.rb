@@ -23,7 +23,7 @@ QBCDEPS = ["o","o/qbc","o/qbc/lib","lib/qbparse.h","lib/qbparse.c"]
 QBI = CTarget.new()
 QBI.name = 'qbi'
 QBI.include 'lib'
-QBI.compile_files("lib/info.cpp", \
+QBI.compile_files("lib/qbi.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/module.cpp", \
