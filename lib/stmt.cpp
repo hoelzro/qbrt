@@ -634,32 +634,6 @@ void if_stmt::pretty(std::ostream &out) const
 		<< *reg << " @" << label.name;
 }
 
-ifcmp_stmt * ifcmp_stmt::eq(AsmReg *a, AsmReg *b, const std::string &lbl)
-{
-	return new ifcmp_stmt(OP_IFEQ, a, b, lbl);
-}
-
-ifcmp_stmt * ifcmp_stmt::ne(AsmReg *a, AsmReg *b, const std::string &lbl)
-{
-	return new ifcmp_stmt(OP_IFNOTEQ, a, b, lbl);
-}
-
-void ifcmp_stmt::allocate_registers(RegAlloc *r)
-{
-	r->assign_src(*a);
-	r->assign_src(*b);
-}
-
-void ifcmp_stmt::generate_code(AsmFunc &f)
-{
-	asm_jump(f, label.name, new ifcmp_instruction(opcode, *a, *b));
-}
-
-void ifcmp_stmt::pretty(std::ostream &out) const
-{
-	out << "ifcmp " << *a << ' ' << *b << " @" << label.name;
-}
-
 void iffail_stmt::allocate_registers(RegAlloc *alloc)
 {
 	alloc->assign_src(*reg);

@@ -121,8 +121,6 @@ TYPEVAR	\*[A-Z]{NAMEC}*
 "goto"		{ BEGIN(ARGS); return_token(TOKEN_GOTO); }
 "if"		{ BEGIN(ARGS); return_token(TOKEN_IF); }
 "ifnot"		{ BEGIN(ARGS); return_token(TOKEN_IFNOT); }
-"ifeq"		{ BEGIN(ARGS); return_token(TOKEN_IFEQ); }
-"ifnoteq"	{ BEGIN(ARGS); return_token(TOKEN_IFNOTEQ); }
 "iffail"	{ BEGIN(ARGS); return_token(TOKEN_IFFAIL); }
 "ifnotfail"	{ BEGIN(ARGS); return_token(TOKEN_IFNOTFAIL); }
 "iadd"		{ BEGIN(ARGS); return_token(TOKEN_IADD); }

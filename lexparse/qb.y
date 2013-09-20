@@ -275,12 +275,6 @@ stmt(A) ::= IF reg(C) LABEL(B). {
 stmt(A) ::= IFNOT reg(C) LABEL(B). {
 	A = new if_stmt(false, C, B->strip_first());
 }
-stmt(A) ::= IFEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::eq(B, C, D->strip_first());
-}
-stmt(A) ::= IFNOTEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::ne(B, C, D->strip_first());
-}
 stmt(A) ::= IFFAIL reg(B) LABEL(C). {
 	A = new iffail_stmt(true, B, C->strip_first());
 }

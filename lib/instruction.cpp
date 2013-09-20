@@ -49,7 +49,6 @@ DEFINE_IWRITER(copy);
 DEFINE_IWRITER(return);
 DEFINE_IWRITER(goto);
 DEFINE_IWRITER(if);
-DEFINE_IWRITER(ifcmp);
 DEFINE_IWRITER(iffail);
 DEFINE_IWRITER(ctuple);
 DEFINE_IWRITER(stuple);
@@ -101,8 +100,6 @@ void init_writers()
 	WRITER[OP_GOTO] = (instruction_writer) iwriter<goto_instruction>;
 	WRITER[OP_IF] = (instruction_writer) iwriter<if_instruction>;
 	WRITER[OP_IFNOT] = (instruction_writer) iwriter<if_instruction>;
-	WRITER[OP_IFEQ] = (instruction_writer) iwriter<ifcmp_instruction>;
-	WRITER[OP_IFNOTEQ] = (instruction_writer) iwriter<ifcmp_instruction>;
 	WRITER[OP_IFFAIL] = (instruction_writer) iwriter<iffail_instruction>;
 	WRITER[OP_IFNOTFAIL] = (instruction_writer) iwriter<iffail_instruction>;
 	WRITER[OP_CTUPLE] = (instruction_writer) iwriter<ctuple_instruction>;

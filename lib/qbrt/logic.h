@@ -30,21 +30,6 @@ struct if_instruction
 	static const uint8_t SIZE = 5;
 };
 
-struct ifcmp_instruction
-: public jump_instruction
-{
-	uint16_t ra;
-	uint16_t rb;
-
-	ifcmp_instruction(int8_t opcode, reg_t a, reg_t b)
-	: jump_instruction(opcode)
-	, ra(a)
-	, rb(b)
-	{}
-
-	static const uint8_t SIZE = 7;
-};
-
 struct iffail_instruction
 : public jump_instruction
 {

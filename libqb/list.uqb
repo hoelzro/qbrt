@@ -31,7 +31,8 @@ const \result "["
 copy $0 %0
 lconstruct $1 ./Empty
 @START
-ifeq $0 $1 @NOT_EMPTY
+cmp= $cmp $0 $1
+if $cmp @NOT_EMPTY
 const $2 "]"
 stracc \result $2
 return

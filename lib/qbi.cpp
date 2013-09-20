@@ -292,28 +292,6 @@ uint8_t print_if_instruction(const if_instruction &i)
 	return if_instruction::SIZE;
 }
 
-uint8_t print_ifcmp_instruction(const ifcmp_instruction &i)
-{
-	const char *bcname;
-	switch (i.opcode()) {
-		case OP_IFEQ:
-			bcname = "ifeq ";
-			break;
-		case OP_IFNOTEQ:
-			bcname = "ifnoteq ";
-			break;
-		default:
-			bcname = "unk ";
-			break;
-	}
-	cout << bcname;
-	print_jump_delta(i.jump_data);
-	print_register(i.ra);
-	print_register(i.rb);
-	cout << endl;
-	return ifcmp_instruction::SIZE;
-}
-
 uint8_t print_iffail_instruction(const iffail_instruction &i)
 {
 	cout << (i.iffail() ? "iffail " : "ifnotfail ");
@@ -370,8 +348,6 @@ void set_printers()
 	PRINTER[OP_GOTO] = (instruction_printer) print_goto_instruction;
 	PRINTER[OP_IF] = (instruction_printer) print_if_instruction;
 	PRINTER[OP_IFNOT] = (instruction_printer) print_if_instruction;
-	PRINTER[OP_IFEQ] = (instruction_printer) print_ifcmp_instruction;
-	PRINTER[OP_IFNOTEQ] = (instruction_printer) print_ifcmp_instruction;
 	PRINTER[OP_IFFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_IFNOTFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;

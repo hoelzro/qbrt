@@ -271,6 +271,7 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 		case VT_STRING:
 			return type_compare< const string & >(
 					*a.data.str, *b.data.str);
+		case VT_LIST:
 		case VT_CONSTRUCT:
 			return type_compare< const Construct & >(
 					*a.data.cons, *b.data.cons);
@@ -340,8 +341,6 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_GOTO] = goto_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IF] = if_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFNOT] = if_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_IFEQ] = ifcmp_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_IFNOTEQ] = ifcmp_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFFAIL] = iffail_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFNOTFAIL] = iffail_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CTUPLE] = ctuple_instruction::SIZE;

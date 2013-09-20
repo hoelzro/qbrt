@@ -198,31 +198,6 @@ struct if_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct ifcmp_stmt
-: public Stmt
-{
-	AsmReg *a;
-	AsmReg *b;
-	AsmLabel label;
-	int8_t opcode;
-
-	static ifcmp_stmt * eq(AsmReg *, AsmReg *, const std::string &lbl);
-	static ifcmp_stmt * ne(AsmReg *, AsmReg *, const std::string &lbl);
-
-	void allocate_registers(RegAlloc *);
-	void generate_code(AsmFunc &);
-	void pretty(std::ostream &) const;
-
-private:
-	ifcmp_stmt(uint8_t op, AsmReg *a, AsmReg *b
-			, const std::string &lbl)
-	: a(a)
-	, b(b)
-	, label(lbl)
-	, opcode(op)
-	{}
-};
-
 struct iffail_stmt
 : public Stmt
 {

@@ -558,34 +558,6 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
 }
 
 /**
- * If the comparison matches, execute normally
- * else follow the jump
- */
-void execute_ifcmp(OpContext &ctx, const ifcmp_instruction &i)
-{
-	const qbrt_value &a(*ctx.srcvalue(i.ra));
-	const qbrt_value &b(*ctx.srcvalue(i.rb));
-	bool no_jump(false);
-	switch (i.opcode()) {
-		case OP_IFEQ:
-			no_jump = equal_value(a,b);
-			break;
-		case OP_IFNOTEQ:
-			no_jump = ! equal_value(a,b);
-			break;
-		default:
-			cerr << "Unsupported comparison: " << i.opcode()
-				<< "\n";
-			return;
-	}
-	if (no_jump) {
-		ctx.pc() += ifcmp_instruction::SIZE;
-	} else {
-		ctx.pc() += i.jump();
-	}
-}
-
-/**
  * If failure, keep going. If not failure, jump to the given label
  */
 void execute_iffail(OpContext &ctx, const iffail_instruction &i)
@@ -1092,8 +1064,6 @@ void init_executioners()
 	x[OP_GOTO] = (executioner) execute_goto;
 	x[OP_IF] = (executioner) execute_if;
 	x[OP_IFNOT] = (executioner) execute_if;
-	x[OP_IFEQ] = (executioner) execute_ifcmp;
-	x[OP_IFNOTEQ] = (executioner) execute_ifcmp;
 	x[OP_IFFAIL] = (executioner) execute_iffail;
 	x[OP_IFNOTFAIL] = (executioner) execute_iffail;
 	x[OP_WAIT] = (executioner) execute_wait;

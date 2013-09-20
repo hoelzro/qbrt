@@ -586,8 +586,6 @@ void measure_jump_bytes(codeblock &code)
 			case OP_GOTO:
 			case OP_IF:
 			case OP_IFNOT:
-			case OP_IFEQ:
-			case OP_IFNOTEQ:
 			case OP_IFFAIL:
 			case OP_IFNOTFAIL:
 			case OP_MATCH:
