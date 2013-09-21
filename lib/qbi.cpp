@@ -730,13 +730,20 @@ void show_object_info(const char *objname)
 	cout << "library: " << fetch_string(resource, header.name) << endl;
 	cout << "version: " << header.version << '.'
 		<< fetch_string(resource, header.iteration) << endl;
-	cout << "imports: " << header.imports << endl;
+	cout << "import list index: " << header.imports << endl;
 	cout << "bytes of code & data: " << resource.data_size << endl;
 	cout << "# of resources: " << (resource.resource_count - 1) << endl;
 	cout << hex;
-	cout << "data offset: " << ResourceTable::DATA_OFFSET << endl;
-	cout << "index offset: " << resource.index_offset() << endl;
+	cout << "data offset: 0x" << ResourceTable::DATA_OFFSET << endl;
+	cout << "index offset: 0x" << resource.index_offset() << endl;
 	cout << dec;
+	if (header.source_filename) {
+		const char *source_name;
+		source_name = fetch_string(resource, header.source_filename);
+		cout << "source filename: " << source_name << endl;
+	} else {
+		cout << "source filename not set\n";
+	}
 
 	print_imports(resource, header.imports);
 	print_resources(resource);
