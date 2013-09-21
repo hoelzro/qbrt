@@ -724,7 +724,7 @@ void show_object_info(const char *objname)
 	const ObjectHeader &header(mod->header);
 	const ResourceTable &resource(mod->resource);
 
-	string isapp(header.flags.f.application ? "yes" : "no");
+	string isapp(header.application() ? "yes" : "no");
 	cout << "magic: " << header.magic << endl;
 	cout << "application: " << isapp << endl;
 	cout << "library: " << fetch_string(resource, header.name) << endl;

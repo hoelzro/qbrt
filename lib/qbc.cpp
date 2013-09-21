@@ -17,6 +17,7 @@
 #include "qbparse.h"
 #include "qbc.h"
 #include <string.h>
+#include <endian.h>
 
 using namespace std;
 
@@ -657,7 +658,19 @@ void init_constant_registers()
  */
 void write_header(ostream &out, const ObjectHeader &h)
 {
-	out.write((const char *) &h, ObjectHeader::SIZE);
+	ObjectHeader be;
+	be.magic[0] = h.magic[0];
+	be.magic[1] = h.magic[1];
+	be.magic[2] = h.magic[2];
+	be.magic[3] = h.magic[3];
+	be.qbrt_version = htobe32(h.qbrt_version);
+	be.flags = htobe64(h.flags);
+	be.name = htobe16(h.name);
+	be.version = htobe16(h.version);
+	be.iteration = htobe16(h.iteration);
+	be.imports = htobe16(h.imports);
+	be.source_filename = htobe16(h.source_filename);
+	out.write((const char *) &be, ObjectHeader::SIZE);
 }
 
 /**
@@ -1304,7 +1317,7 @@ bool compile_module(ModuleMap &modmap, const string &module_name)
 
 	ObjectBuilder obj(module_name);
 	obj.header.qbrt_version = 13;
-	obj.header.flags.f.application = 1;
+	obj.header.set_application(1);
 
 	cout << "---\n";
 	g_parse_module = module_name;

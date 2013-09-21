@@ -11,6 +11,7 @@ using namespace std;
 
 ObjectHeader::ObjectHeader()
 : qbrt_version(0)
+, flags(OFLAG_APP)
 , name(0)
 , version(0)
 , iteration(0)
@@ -21,8 +22,6 @@ ObjectHeader::ObjectHeader()
 	magic[1] = 'b';
 	magic[2] = 'r';
 	magic[3] = 't';
-	flags.raw = 0;
-	flags.f.application = 1;
 }
 
 bool operator < (const PolymorphArg &a, const PolymorphArg &b)
@@ -416,6 +415,13 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 void read_header(ObjectHeader &h, istream &input)
 {
 	input.read((char *) &h, ObjectHeader::SIZE);
+	h.qbrt_version = be32toh(h.qbrt_version);
+	h.flags = be64toh(h.flags);
+	h.name = be16toh(h.name);
+	h.version = be16toh(h.version);
+	h.iteration = be16toh(h.iteration);
+	h.imports = be16toh(h.imports);
+	h.source_filename = be16toh(h.source_filename);
 }
 
 void read_resource_table(ResourceTable &tbl, istream &input)
