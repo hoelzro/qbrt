@@ -426,6 +426,7 @@ void read_header(ObjectHeader &h, istream &input)
 
 void read_resource_table(ResourceTable &tbl, istream &input)
 {
+#error "broken here. to be fixed shortly."
 	input.read((char *) &tbl.data_size, 4);
 	input.read((char *) &tbl.resource_count, 2);
 	uint32_t index_size(tbl.resource_count * ResourceInfo::SIZE);
@@ -455,8 +456,8 @@ Module * read_module(const string &objname)
 	}
 	const char *header_name(fetch_string(mod->resource, mod->header.name));
 	if (header_name != objname) {
-		cerr << "module name mismatch: " << header_name
-			<< " != " << objname & DIE;
+		cerr << "module name mismatch: " << mod->header.name << "/"
+			<< (int) *header_name << " != " << objname & DIE;
 	}
 
 	return mod;
