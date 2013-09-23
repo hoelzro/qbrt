@@ -116,5 +116,6 @@ uint8_t write_instruction(ostream &out, const instruction &i)
 		cerr << "instruction writer is null for: " << (int) i.opcode()
 			& DIE;
 	}
-	return w(out, i);
+	w(out, i);
+	return isize(i.opcode());
 }
