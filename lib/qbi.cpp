@@ -372,7 +372,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		case PFC_ABSTRACT:
 		case PFC_DEFAULT:
 			protocol = tbl.ptr< ProtocolResource >(f.context_idx);
-			pname = fetch_string(tbl, protocol->name_idx);
+			pname = fetch_string(tbl, protocol->name_idx());
 			break;
 		case PFC_OVERRIDE:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
@@ -616,7 +616,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 				cerr << "null protocol for function " << fname << endl;
 				return;
 			}
-			pname = fetch_string(tbl, proto->name_idx);
+			pname = fetch_string(tbl, proto->name_idx());
 			break;
 		case FCT_POLYMORPH:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
@@ -637,7 +637,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const ProtocolResource &p(tbl.obj< ProtocolResource >(i));
-	const StringResource &pname(tbl.obj< StringResource >(p.name_idx));
+	const StringResource &pname(tbl.obj< StringResource >(p.name_idx()));
 	printf("protocol %s/%u", pname.value, p.argc());
 
 	const StringResource &prototype(

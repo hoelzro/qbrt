@@ -27,7 +27,7 @@ const char * QbrtFunction::protocol_name() const
 			const ProtocolResource *proto;
 			proto = mod->resource.ptr< const ProtocolResource >(
 					header->context_idx);
-			name_idx = proto->name_idx;
+			name_idx = proto->name_idx();
 			break; }
 		case FCT_POLYMORPH: {
 			const PolymorphResource *poly;

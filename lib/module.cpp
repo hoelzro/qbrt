@@ -101,7 +101,7 @@ struct ProtocolSearch
 	int compare(const ResourceTable &tbl, uint16_t i) const
 	{
 		const ProtocolResource *proto = tbl.ptr< ProtocolResource >(i);
-		const char *pname = fetch_string(tbl, proto->name_idx);
+		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (name < pname) {
 			return -1;
 		}
@@ -144,7 +144,7 @@ struct ProtocolFunctionSearch
 
 		const ProtocolResource *proto;
 		proto = tbl.ptr< ProtocolResource >(f->context_idx);
-		const char *pname = fetch_string(tbl, proto->name_idx);
+		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (protocol < pname) {
 			return -1;
 		}
