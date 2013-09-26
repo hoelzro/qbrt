@@ -723,10 +723,8 @@ void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 {
 	const ResourceTable &resource(ctx.resource());
-	const ModSym &modsym(fetch_modsym(resource, i.modsym));
-	const char *modname = fetch_string(resource, modsym.mod_name);
-	const char *name = fetch_string(resource, modsym.sym_name);
-	const Module *mod(find_module(ctx.worker(), modname));
+	const FullId cons(fetch_fullid(resource, i.modsym));
+	const Module *mod(find_module(ctx.worker(), cons.module));
 
 	Failure *fail;
 	qbrt_value *dst(ctx.dstvalue(i.reg));
@@ -739,11 +737,11 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 	}
 
 	if (mod) {
-		Module::load_construct(*dst, *mod, name);
+		Module::load_construct(*dst, *mod, cons.id);
 	} else {
 		fail = FAIL_MODULE404(ctx.module_name(), ctx.function_name()
 				, ctx.pc());
-		fail->debug << "Cannot find module: '" << modname << "'";
+		fail->debug << "Cannot find module: '" << cons.module << "'";
 		qbrt_value::fail(*dst, fail);
 		// continue on with execution
 	}

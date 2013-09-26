@@ -75,6 +75,17 @@ struct ModSym
 	typedef std::vector< ModSym * > Array;
 };
 
+struct FullId
+{
+	const char *module;
+	const char *id;
+
+	FullId(const char *mod, const char *id)
+	: module(mod)
+	, id(id)
+	{}
+};
+
 struct ImportResource
 {
 	uint16_t count;
@@ -244,6 +255,14 @@ static inline const char * fetch_string(const ResourceTable &tbl, uint16_t idx)
 static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 {
 	return tbl.obj< ModSym >(i);
+}
+
+static inline FullId fetch_fullid(const ResourceTable &tbl, uint16_t i)
+{
+	const ModSym &msr(fetch_modsym(tbl, i));
+	const char *mod(fetch_string(tbl, msr.mod_name));
+	const char *id(fetch_string(tbl, msr.sym_name));
+	return FullId(mod, id);
 }
 
 static inline const TypeSpecResource & fetch_typespec(const ResourceTable &tbl
