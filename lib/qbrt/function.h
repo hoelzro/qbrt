@@ -197,20 +197,29 @@ struct FunctionHeader
 
 struct ProtocolResource
 {
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t line_no;
-	uint16_t arg_func_count;
+private:
+	uint16_t _name_idx;
+	uint16_t _doc_idx;
+	uint16_t _line_no;
+	uint16_t _arg_func_count;
+	uint16_t _typevars[];
 
-	inline uint16_t argc() const
-	{ return endian_swap(arg_func_count) >> 10; }
-
+public:
+	inline uint16_t name_idx() const { return be16toh(_name_idx); }
+	inline uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	inline uint16_t line_no() const { return be16toh(_line_no); }
 	inline uint16_t func_count() const
-	{ return endian_swap(arg_func_count) & 0x03ff; }
+	{
+		return be16toh(_arg_func_count) & 0x3f;
+	}
+	inline uint8_t argc() const
+	{
+		return be16toh(_arg_func_count) >> 10;
+	}
 
 	inline uint16_t typevar_idx(uint16_t i) const
 	{
-		return (&arg_func_count)[i+1];
+		return be16toh(_typevars[i]);
 	}
 
 	static const uint16_t SIZE = 8;

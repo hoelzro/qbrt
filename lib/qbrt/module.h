@@ -16,20 +16,16 @@ struct Module;
 
 #pragma pack(push, 1)
 
-union ObjectFlags
-{
-	uint64_t raw;
-	struct {
-		uint64_t application : 1;
-		uint64_t reserved : 63;
-	} f;
-};
+#define SET_OFLAG(flags, bit, value) \
+	do { flags = value ? ( flags | bit) : (flags & (~ bit)); } while (0);
+
+#define OFLAG_APP (((uint64_t) 1) << 63)
 
 struct ObjectHeader
 {
 	char magic[4];
 	uint32_t qbrt_version;
-	ObjectFlags flags;
+	uint64_t flags;
 	uint16_t name;
 	uint16_t version;
 	uint16_t iteration;
@@ -37,6 +33,9 @@ struct ObjectHeader
 	uint16_t source_filename;
 
 	ObjectHeader();
+
+	bool application() const { flags & OFLAG_APP; }
+	void set_application(bool app) { SET_OFLAG(flags, OFLAG_APP, app); }
 
 	static const uint32_t SIZE = 26;
 };

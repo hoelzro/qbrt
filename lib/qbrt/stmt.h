@@ -198,31 +198,6 @@ struct if_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct ifcmp_stmt
-: public Stmt
-{
-	AsmReg *a;
-	AsmReg *b;
-	AsmLabel label;
-	int8_t opcode;
-
-	static ifcmp_stmt * eq(AsmReg *, AsmReg *, const std::string &lbl);
-	static ifcmp_stmt * ne(AsmReg *, AsmReg *, const std::string &lbl);
-
-	void allocate_registers(RegAlloc *);
-	void generate_code(AsmFunc &);
-	void pretty(std::ostream &) const;
-
-private:
-	ifcmp_stmt(uint8_t op, AsmReg *a, AsmReg *b
-			, const std::string &lbl)
-	: a(a)
-	, b(b)
-	, label(lbl)
-	, opcode(op)
-	{}
-};
-
 struct iffail_stmt
 : public Stmt
 {
@@ -270,6 +245,34 @@ struct cfailure_stmt
 	void collect_resources(ResourceSet &);
 	void generate_code(AsmFunc &);
 	void pretty(std::ostream &) const;
+};
+
+struct cmp_stmt
+: public Stmt
+{
+	AsmReg *result;
+	AsmReg *a;
+	AsmReg *b;
+	int8_t opcode;
+
+	static cmp_stmt * eq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * noteq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * gt(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * gteq(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * lt(AsmReg *result, AsmReg *, AsmReg *);
+	static cmp_stmt * lteq(AsmReg *result, AsmReg *, AsmReg *);
+
+	void allocate_registers(RegAlloc *);
+	void generate_code(AsmFunc &);
+	void pretty(std::ostream &) const;
+
+private:
+	cmp_stmt(uint8_t op, AsmReg *result, AsmReg *a, AsmReg *b)
+	: result(result)
+	, a(a)
+	, b(b)
+	, opcode(op)
+	{}
 };
 
 struct consti_stmt
@@ -656,12 +659,10 @@ struct patternvar_stmt
 struct recv_stmt
 : public Stmt
 {
-	recv_stmt(AsmReg *dst, AsmReg *tube)
+	recv_stmt(AsmReg *dst)
 	: dst(dst)
-	, tube(tube)
 	{}
 	AsmReg *dst;
-	AsmReg *tube;
 
 	void allocate_registers(RegAlloc *);
 	void generate_code(AsmFunc &);

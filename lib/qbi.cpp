@@ -4,6 +4,7 @@
 #include "qbrt/module.h"
 #include "qbrt/logic.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -136,8 +137,7 @@ uint8_t print_patternvar_instruction(const patternvar_instruction &i)
 
 uint8_t print_recv_instruction(const recv_instruction &i)
 {
-	cout << "recv " << pretty_reg(i.dst)
-		<<' '<< pretty_reg(i.tube) << endl;
+	cout << "recv " << pretty_reg(i.dst) << endl;
 	return recv_instruction::SIZE;
 }
 
@@ -212,6 +212,24 @@ uint8_t print_cfailure_instruction(const cfailure_instruction &i)
 	return cfailure_instruction::SIZE;
 }
 
+uint8_t print_cmp_instruction(const cmp_instruction &i)
+{
+	cout << "cmp";
+	switch (i.opcode()) {
+		case OP_CMP_EQ:    cout << "=";  break;
+		case OP_CMP_NOTEQ: cout << "!="; break;
+		case OP_CMP_GT:    cout << ">";  break;
+		case OP_CMP_GTEQ:  cout << ">="; break;
+		case OP_CMP_LT:    cout << "<";  break;
+		case OP_CMP_LTEQ:  cout << "<="; break;
+	}
+	print_register(i.result);
+	print_register(i.a);
+	print_register(i.b);
+	cout << endl;
+	return 0;
+}
+
 uint8_t print_consti_instruction(const consti_instruction &i)
 {
 	cout << "consti";
@@ -274,28 +292,6 @@ uint8_t print_if_instruction(const if_instruction &i)
 	return if_instruction::SIZE;
 }
 
-uint8_t print_ifcmp_instruction(const ifcmp_instruction &i)
-{
-	const char *bcname;
-	switch (i.opcode()) {
-		case OP_IFEQ:
-			bcname = "ifeq ";
-			break;
-		case OP_IFNOTEQ:
-			bcname = "ifnoteq ";
-			break;
-		default:
-			bcname = "unk ";
-			break;
-	}
-	cout << bcname;
-	print_jump_delta(i.jump_data);
-	print_register(i.ra);
-	print_register(i.rb);
-	cout << endl;
-	return ifcmp_instruction::SIZE;
-}
-
 uint8_t print_iffail_instruction(const iffail_instruction &i)
 {
 	cout << (i.iffail() ? "iffail " : "ifnotfail ");
@@ -319,6 +315,12 @@ void set_printers()
 {
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
+	PRINTER[OP_CMP_EQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_NOTEQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_GT] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_GTEQ] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_LT] = (instruction_printer) print_cmp_instruction;
+	PRINTER[OP_CMP_LTEQ] = (instruction_printer) print_cmp_instruction;
 	PRINTER[OP_FIELDGET] = (instruction_printer) print_fieldget_instruction;
 	PRINTER[OP_FIELDSET] = (instruction_printer) print_fieldset_instruction;
 	PRINTER[OP_IADD] = (instruction_printer) print_binaryop_instruction;
@@ -346,8 +348,6 @@ void set_printers()
 	PRINTER[OP_GOTO] = (instruction_printer) print_goto_instruction;
 	PRINTER[OP_IF] = (instruction_printer) print_if_instruction;
 	PRINTER[OP_IFNOT] = (instruction_printer) print_if_instruction;
-	PRINTER[OP_IFEQ] = (instruction_printer) print_ifcmp_instruction;
-	PRINTER[OP_IFNOTEQ] = (instruction_printer) print_ifcmp_instruction;
 	PRINTER[OP_IFFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_IFNOTFAIL] = (instruction_printer) print_iffail_instruction;
 	PRINTER[OP_NEWPROC] = (instruction_printer) print_newproc_instruction;
@@ -372,7 +372,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		case PFC_ABSTRACT:
 		case PFC_DEFAULT:
 			protocol = tbl.ptr< ProtocolResource >(f.context_idx);
-			pname = fetch_string(tbl, protocol->name_idx);
+			pname = fetch_string(tbl, protocol->name_idx());
 			break;
 		case PFC_OVERRIDE:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
@@ -428,7 +428,8 @@ uint8_t print_instruction(const uint8_t *funcdata)
 		cerr << "\nnull printer for: " << (int) i.opcode() << endl;
 		exit(1);
 	}
-	return p(i);
+	p(i);
+	return isize(i.opcode());
 }
 
 void print_function_code(const FunctionHeader &f, uint32_t size
@@ -615,7 +616,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 				cerr << "null protocol for function " << fname << endl;
 				return;
 			}
-			pname = fetch_string(tbl, proto->name_idx);
+			pname = fetch_string(tbl, proto->name_idx());
 			break;
 		case FCT_POLYMORPH:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
@@ -636,7 +637,7 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const ProtocolResource &p(tbl.obj< ProtocolResource >(i));
-	const StringResource &pname(tbl.obj< StringResource >(p.name_idx));
+	const StringResource &pname(tbl.obj< StringResource >(p.name_idx()));
 	printf("protocol %s/%u", pname.value, p.argc());
 
 	const StringResource &prototype(
@@ -723,19 +724,26 @@ void show_object_info(const char *objname)
 	const ObjectHeader &header(mod->header);
 	const ResourceTable &resource(mod->resource);
 
-	string isapp(header.flags.f.application ? "yes" : "no");
+	string isapp(header.application() ? "yes" : "no");
 	cout << "magic: " << header.magic << endl;
 	cout << "application: " << isapp << endl;
 	cout << "library: " << fetch_string(resource, header.name) << endl;
 	cout << "version: " << header.version << '.'
 		<< fetch_string(resource, header.iteration) << endl;
-	cout << "imports: " << header.imports << endl;
+	cout << "import list index: " << header.imports << endl;
 	cout << "bytes of code & data: " << resource.data_size << endl;
 	cout << "# of resources: " << (resource.resource_count - 1) << endl;
 	cout << hex;
-	cout << "data offset: " << ResourceTable::DATA_OFFSET << endl;
-	cout << "index offset: " << resource.index_offset() << endl;
+	cout << "data offset: 0x" << ResourceTable::DATA_OFFSET << endl;
+	cout << "index offset: 0x" << resource.index_offset() << endl;
 	cout << dec;
+	if (header.source_filename) {
+		const char *source_name;
+		source_name = fetch_string(resource, header.source_filename);
+		cout << "source filename: " << source_name << endl;
+	} else {
+		cout << "source filename not set\n";
+	}
 
 	print_imports(resource, header.imports);
 	print_resources(resource);

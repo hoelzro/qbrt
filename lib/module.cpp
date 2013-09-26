@@ -11,6 +11,7 @@ using namespace std;
 
 ObjectHeader::ObjectHeader()
 : qbrt_version(0)
+, flags(OFLAG_APP)
 , name(0)
 , version(0)
 , iteration(0)
@@ -21,8 +22,6 @@ ObjectHeader::ObjectHeader()
 	magic[1] = 'b';
 	magic[2] = 'r';
 	magic[3] = 't';
-	flags.raw = 0;
-	flags.f.application = 1;
 }
 
 bool operator < (const PolymorphArg &a, const PolymorphArg &b)
@@ -102,7 +101,7 @@ struct ProtocolSearch
 	int compare(const ResourceTable &tbl, uint16_t i) const
 	{
 		const ProtocolResource *proto = tbl.ptr< ProtocolResource >(i);
-		const char *pname = fetch_string(tbl, proto->name_idx);
+		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (name < pname) {
 			return -1;
 		}
@@ -145,7 +144,7 @@ struct ProtocolFunctionSearch
 
 		const ProtocolResource *proto;
 		proto = tbl.ptr< ProtocolResource >(f->context_idx);
-		const char *pname = fetch_string(tbl, proto->name_idx);
+		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (protocol < pname) {
 			return -1;
 		}
@@ -416,10 +415,18 @@ bool open_qb(ifstream &objstr, const std::string &objname)
 void read_header(ObjectHeader &h, istream &input)
 {
 	input.read((char *) &h, ObjectHeader::SIZE);
+	h.qbrt_version = be32toh(h.qbrt_version);
+	h.flags = be64toh(h.flags);
+	h.name = be16toh(h.name);
+	h.version = be16toh(h.version);
+	h.iteration = be16toh(h.iteration);
+	h.imports = be16toh(h.imports);
+	h.source_filename = be16toh(h.source_filename);
 }
 
 void read_resource_table(ResourceTable &tbl, istream &input)
 {
+#error "broken here. to be fixed shortly."
 	input.read((char *) &tbl.data_size, 4);
 	input.read((char *) &tbl.resource_count, 2);
 	uint32_t index_size(tbl.resource_count * ResourceInfo::SIZE);
@@ -449,8 +456,8 @@ Module * read_module(const string &objname)
 	}
 	const char *header_name(fetch_string(mod->resource, mod->header.name));
 	if (header_name != objname) {
-		cerr << "module name mismatch: " << header_name
-			<< " != " << objname & DIE;
+		cerr << "module name mismatch: " << mod->header.name << "/"
+			<< (int) *header_name << " != " << objname & DIE;
 	}
 
 	return mod;

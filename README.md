@@ -4,7 +4,7 @@ Qbrt is a concurrent bytecode assembly language and runtime interpreter.
 It's aim is to reduce the barrier to entry for language
 designers to build more concurrent and interoperable programming
 languages that take advantage of multiprocessor systems.
-It does so by making easy to access and use advanced features
+It does so by making it easy to access and use advanced features
 and a common runtime environment.
 
 ## Hello World Example
@@ -131,6 +131,7 @@ To build the components of qbrt, you'll need a few things:
 
 * gcc
 * rake
+* rubygem popen4
 
 ## Client Languages
 

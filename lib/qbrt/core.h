@@ -265,18 +265,18 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_GOTO		0x11
 #define OP_IF		0x12
 #define OP_IFNOT	0x13
-#define OP_IFEQ		0x14
-#define OP_IFNOTEQ	0x15
 #define OP_IFLT		0x16
 #define OP_IFLTEQ	0x17
 #define OP_IFGT		0x18
 #define OP_IFGTEQ	0x19
 #define OP_IFFAIL	0x1a
 #define OP_IFNOTFAIL	0x1b
-#define OP_EQ
-#define OP_LT
-#define OP_LE
-#define OP_NOT
+#define OP_CMP_EQ	0x1c
+#define OP_CMP_NOTEQ	0x1d
+#define OP_CMP_GT	0x1e
+#define OP_CMP_GTEQ	0x1f
+#define OP_CMP_LT	0x20
+#define OP_CMP_LTEQ	0x21
 #define OP_IADD		0x30
 #define OP_ISUB		0x31
 #define OP_IMULT	0x32

@@ -6,7 +6,7 @@ include Rake::DSL
 QBC = CTarget.new()
 QBC.name = 'qbc'
 QBC.include 'lib'
-QBC.compile_files("lib/asm.cpp", \
+QBC.compile_files("lib/qbc.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/instruction.cpp", \
@@ -23,7 +23,7 @@ QBCDEPS = ["o","o/qbc","o/qbc/lib","lib/qbparse.h","lib/qbparse.c"]
 QBI = CTarget.new()
 QBI.name = 'qbi'
 QBI.include 'lib'
-QBI.compile_files("lib/info.cpp", \
+QBI.compile_files("lib/qbi.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/module.cpp", \
@@ -35,7 +35,7 @@ QBI.debug!
 QBRT = CTarget.new()
 QBRT.name = 'qbrt'
 QBRT.include 'lib'
-QBRT.compile_files("lib/main.cpp", \
+QBRT.compile_files("lib/qbrt.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
 		  "lib/io.cpp", \
@@ -47,7 +47,7 @@ QBRT.obj_dir = 'o/qbrt'
 QBRT.link 'pthread'
 QBRT.debug!
 QBRT_DIRS = ["o","o/qbrt","o/qbrt/lib"]
-LIBQB = ['libqb/core.qb', 'libqb/io.qb']
+LIBQB = ['libqb/core.qb', 'libqb/io.qb', 'libqb/list.qb']
 
 TESTQB = CTarget.new()
 TESTQB.name = 'testqb'
@@ -126,10 +126,11 @@ file 'lib/qbparse.c' => ['lemon', 'lempar/lempar.c', 'lexparse/qb.y'] do
 	File.rename('lexparse/qb.c','lib/qbparse.c')
 end
 
-task :libqb => ["libqb/core.qb", "libqb/io.qb"]
+task :libqb => LIBQB
 rule '.qb' => [ proc { |qb| qb.sub(".qb", ".uqb") } ] do |t|
-	src = t.name.sub('libqb/', '').sub('.qb', '.uqb')
+	src = t.name.sub('libqb/', '').sub('.qb', '')
 	Dir.chdir "libqb/"
+	ENV['QBPATH'] = '.'
 	sh "../qbc #{src}"
 	Dir.chdir "../"
 end
@@ -173,7 +174,8 @@ def test_uqb(file)
 	passed = false
 	Dir.chdir "T/"
 	mod = file.chomp(File.extname(file))
-	sh "QBPATH=../libqb:. ../qbc #{mod}"
+	ENV['QBPATH'] = "../libqb:T"
+	sh "../qbc #{mod}"
 	Dir.chdir "../"
 	input_file = "T/DATA/#{mod}.input"
 	args_file = "T/DATA/#{mod}.args"

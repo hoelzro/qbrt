@@ -1,3 +1,4 @@
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/type.h"
 #include "qbrt/function.h"
@@ -23,7 +24,7 @@ CCTEST(check_logic_instruction_sizes)
 {
 	accert(sizeof(goto_instruction)) == goto_instruction::SIZE;
 	accert(sizeof(if_instruction)) == if_instruction::SIZE;
-	accert(sizeof(ifcmp_instruction)) == ifcmp_instruction::SIZE;
+	accert(sizeof(cmp_instruction)) == cmp_instruction::SIZE;
 	accert(sizeof(iffail_instruction)) == iffail_instruction::SIZE;
 	accert(sizeof(match_instruction)) == match_instruction::SIZE;
 	accert(sizeof(matchargs_instruction)) == matchargs_instruction::SIZE;

@@ -15,8 +15,9 @@
 #include "instruction.h"
 #include "qbtoken.h"
 #include "qbparse.h"
-#include "asm.h"
+#include "qbc.h"
 #include <string.h>
+#include <endian.h>
 
 using namespace std;
 
@@ -67,6 +68,17 @@ uint32_t label_index(const label_map &lmap, const std::string &lbl)
 	return it->second;
 }
 
+void write16(ostream &out, uint16_t value)
+{
+	value = htobe16(value);
+	out.write((const char *) &value, 2);
+}
+
+void write32(ostream &out, uint32_t value)
+{
+	value = htobe32(value);
+	out.write((const char *) &value, 4);
+}
 
 template < typename T >
 int compare_asmptr(const T *a, const T *b)
@@ -502,11 +514,11 @@ void ResourceSet::import(AsmString &module)
 uint32_t AsmImport::write(std::ostream &o) const
 {
 	uint16_t num(modules.size());
-	o.write((const char *) &num, 2);
+	write16(o, num);
 	uint32_t bytes(2);
 	set< AsmString * >::const_iterator it(modules.begin());
 	for (; it!=modules.end(); ++it) {
-		o.write((const char *) (*it)->index, 2);
+		write16(o, *(*it)->index);
 		bytes += 2;
 	}
 	return bytes;
@@ -586,8 +598,6 @@ void measure_jump_bytes(codeblock &code)
 			case OP_GOTO:
 			case OP_IF:
 			case OP_IFNOT:
-			case OP_IFEQ:
-			case OP_IFNOTEQ:
 			case OP_IFFAIL:
 			case OP_IFNOTFAIL:
 			case OP_MATCH:
@@ -659,7 +669,19 @@ void init_constant_registers()
  */
 void write_header(ostream &out, const ObjectHeader &h)
 {
-	out.write((const char *) &h, ObjectHeader::SIZE);
+	ObjectHeader be;
+	be.magic[0] = h.magic[0];
+	be.magic[1] = h.magic[1];
+	be.magic[2] = h.magic[2];
+	be.magic[3] = h.magic[3];
+	be.qbrt_version = htobe32(h.qbrt_version);
+	be.flags = htobe64(h.flags);
+	be.name = htobe16(h.name);
+	be.version = htobe16(h.version);
+	be.iteration = htobe16(h.iteration);
+	be.imports = htobe16(h.imports);
+	be.source_filename = htobe16(h.source_filename);
+	out.write((const char *) &be, ObjectHeader::SIZE);
 }
 
 /**
@@ -667,9 +689,8 @@ void write_header(ostream &out, const ObjectHeader &h)
  */
 void write_resource_header(ostream &out, const ResourceTableHeader &h)
 {
-	uint16_t count_plus_1 = h.resource_count + 1;
-	out.write((char *) &h.data_size, 4);
-	out.write((char *) &count_plus_1, 2);
+	write32(out, h.data_size);
+	write16(out, h.resource_count + 1);
 }
 
 
@@ -702,8 +723,8 @@ ostream & AsmTypeSpec::pretty(ostream &out) const
 
 uint32_t AsmTypeSpec::write(ostream &out) const
 {
-	out.write((const char *) name->index, 2);
-	out.write((const char *) fullname.index, 2);
+	write16(out, *name->index);
+	write16(out, *fullname.index);
 	uint32_t bytes(4);
 	if (this->empty()) {
 		return bytes;
@@ -711,7 +732,7 @@ uint32_t AsmTypeSpec::write(ostream &out) const
 
 	AsmTypeSpecList::const_iterator it(args->begin());
 	for (; it!=args->end(); ++it) {
-		out.write((const char *) (*it)->index, 2);
+		write16(out, *(*it)->index);
 		bytes += 2;
 	}
 	return bytes;
@@ -738,17 +759,16 @@ bool AsmFunc::has_code() const
 
 uint32_t AsmFunc::write(ostream &out) const
 {
-	out.write((const char *) name.index, 2);
-	out.write((const char *) doc.index, 2);
-	out.write((const char *) (&line_no), 2);
+	write16(out, *name.index);
+	write16(out, *doc.index);
+	write16(out, line_no);
 	if (ctx) {
-		out.write((const char *) ctx->index, 2);
+		write16(out, *ctx->index);
 	} else {
-		uint16_t zero(0);
-		out.write((const char *) &zero, 2);
+		write16(out, 0);
 	}
-	out.write((const char *) param_types.index, 2);
-	out.write((const char *) result_type.index, 2);
+	write16(out, *param_types.index);
+	write16(out, *result_type.index);
 	out.put(this->fcontext);
 	out.put(argc);
 	out.put(regc);
@@ -757,8 +777,8 @@ uint32_t AsmFunc::write(ostream &out) const
 
 	AsmParamList::const_iterator pit(params.begin());
 	for (; pit!=params.end(); ++pit) {
-		out.write((const char *) (*pit)->name.index, 2);
-		out.write((const char *) (*pit)->type.index, 2);
+		write16(out, *(*pit)->name.index);
+		write16(out, *(*pit)->type.index);
 		func_size += 4;
 	}
 
@@ -799,20 +819,20 @@ uint32_t AsmProtocol::write(ostream &out) const
 	uint16_t num_funcs(0);
 	if (num_funcs >= (1 << 10)) {
 		cerr << "oh shit that's a lot of functions" << endl;
+		exit(1);
 	}
 	uint16_t arg_func_counts((argc << 10) | num_funcs);
-	endian_fix(arg_func_counts);
 
-	out.write((const char *) name.index, 2);
-	out.write((const char *) doc.index, 2);
-	out.write((const char *) &line_no, 2);
-	out.write((const char *) &arg_func_counts, 2);
+	write16(out, *name.index);
+	write16(out, *doc.index);
+	write16(out, line_no);
+	write16(out, arg_func_counts);
 
 	uint32_t proto_size(ProtocolResource::SIZE);
 
 	list< AsmString * >::const_iterator it(typevar->begin());
 	for (; it!=typevar->end(); ++it) {
-		out.write((const char *) (*it)->index, 2);
+		write16(out, *(*it)->index);
 		proto_size += 2;
 	}
 
@@ -824,16 +844,16 @@ uint32_t AsmPolymorph::write(ostream &out) const
 	uint16_t num_types(type.size());
 	uint16_t num_funcs(0);
 
-	out.write((const char *) protocol.index, 2);
-	out.write((const char *) doc.index, 2);
-	out.write((const char *) &line_no, 2);
-	out.write((const char *) &num_types, 2);
-	out.write((const char *) &num_funcs, 2);
+	write16(out, *protocol.index);
+	write16(out, *doc.index);
+	write16(out, line_no);
+	write16(out, num_types);
+	write16(out, num_funcs);
 
 	uint32_t poly_size(PolymorphResource::HEADER_SIZE);
 	list< AsmTypeSpec * >::const_iterator it(type.begin());
 	for (; it!=type.end(); ++it) {
-		out.write((const char *) (*it)->index, 2);
+		write16(out, *(*it)->index);
 		poly_size += 2;
 	}
 	return poly_size;
@@ -855,19 +875,19 @@ uint32_t AsmConstruct::write(std::ostream &out) const
 {
 	uint8_t fld_count(fields.size());
 
-	out.write((const char *) name.index, 2);
-	out.write((const char *) doc.index, 2);
-	out.write((const char *) filename.index, 2);
-	out.write((const char *) &line_no, 2);
-	out.write((const char *) datatype.index, 2);
+	write16(out, *name.index);
+	write16(out, *doc.index);
+	write16(out, *filename.index);
+	write16(out, line_no);
+	write16(out, *datatype.index);
 	out.put(fld_count);
 	out.put('\0');
 
 	uint32_t size(12);
 	AsmParamList::const_iterator it(fields.begin());
 	for (; it!=fields.end(); ++it) {
-		out.write((const char *) (*it)->name.index, 2);
-		out.write((const char *) (*it)->type.index, 2);
+		write16(out, *(*it)->name.index);
+		write16(out, *(*it)->type.index);
 		size += 4;
 	}
 
@@ -881,10 +901,10 @@ ostream & AsmConstruct::pretty(ostream &o) const
 
 uint32_t AsmDataType::write(std::ostream &out) const
 {
-	out.write((const char *) name.index, 2);
-	out.write((const char *) doc.index, 2);
-	out.write((const char *) filename.index, 2);
-	out.write((const char *) &line_no, 2);
+	write16(out, *name.index);
+	write16(out, *doc.index);
+	write16(out, *filename.index);
+	write16(out, line_no);
 	out.put(argc);
 
 	return 9;
@@ -914,7 +934,8 @@ void write_resource_index(ostream &out, const ResourceIndex &index)
 
 	ResourceIndex::const_iterator it(index.begin());
 	for (; it!=index.end(); ++it) {
-		out.write((const char *) &(*it), ResourceInfo::SIZE);
+		ResourceInfo r(htobe32(it->offset), htobe16(it->type));
+		out.write((const char *) &r, ResourceInfo::SIZE);
 	}
 }
 
@@ -1306,7 +1327,7 @@ bool compile_module(ModuleMap &modmap, const string &module_name)
 
 	ObjectBuilder obj(module_name);
 	obj.header.qbrt_version = 13;
-	obj.header.flags.f.application = 1;
+	obj.header.set_application(1);
 
 	cout << "---\n";
 	g_parse_module = module_name;

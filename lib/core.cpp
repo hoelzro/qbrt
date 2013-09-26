@@ -6,6 +6,7 @@
 #include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -270,6 +271,7 @@ int qbrt_compare(const qbrt_value &a, const qbrt_value &b)
 		case VT_STRING:
 			return type_compare< const string & >(
 					*a.data.str, *b.data.str);
+		case VT_LIST:
 		case VT_CONSTRUCT:
 			return type_compare< const Construct & >(
 					*a.data.cons, *b.data.cons);
@@ -310,6 +312,12 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_CALL] = call_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RETURN] = return_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CFAILURE] = cfailure_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_EQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_NOTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LTEQ] = cmp_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTI] = consti_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTS] = consts_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CONSTHASH] = consthash_instruction::SIZE;
@@ -333,8 +341,6 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_GOTO] = goto_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IF] = if_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFNOT] = if_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_IFEQ] = ifcmp_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_IFNOTEQ] = ifcmp_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFFAIL] = iffail_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_IFNOTFAIL] = iffail_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CTUPLE] = ctuple_instruction::SIZE;

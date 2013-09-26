@@ -4,6 +4,7 @@
 #include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
+#include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
@@ -48,7 +49,6 @@ DEFINE_IWRITER(copy);
 DEFINE_IWRITER(return);
 DEFINE_IWRITER(goto);
 DEFINE_IWRITER(if);
-DEFINE_IWRITER(ifcmp);
 DEFINE_IWRITER(iffail);
 DEFINE_IWRITER(ctuple);
 DEFINE_IWRITER(stuple);
@@ -64,6 +64,12 @@ void init_writers()
 	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
 	WRITER[OP_CFAILURE] =
 		(instruction_writer) iwriter<cfailure_instruction>;
+	WRITER[OP_CMP_EQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_NOTEQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_GT] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_GTEQ] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_LT] = (instruction_writer)iwriter<cmp_instruction>;
+	WRITER[OP_CMP_LTEQ] = (instruction_writer)iwriter<cmp_instruction>;
 	WRITER[OP_CONSTI] = (instruction_writer) iwriter<consti_instruction>;
 	WRITER[OP_CONSTS] = (instruction_writer) iwriter<consts_instruction>;
 	WRITER[OP_CONSTHASH] =
@@ -94,8 +100,6 @@ void init_writers()
 	WRITER[OP_GOTO] = (instruction_writer) iwriter<goto_instruction>;
 	WRITER[OP_IF] = (instruction_writer) iwriter<if_instruction>;
 	WRITER[OP_IFNOT] = (instruction_writer) iwriter<if_instruction>;
-	WRITER[OP_IFEQ] = (instruction_writer) iwriter<ifcmp_instruction>;
-	WRITER[OP_IFNOTEQ] = (instruction_writer) iwriter<ifcmp_instruction>;
 	WRITER[OP_IFFAIL] = (instruction_writer) iwriter<iffail_instruction>;
 	WRITER[OP_IFNOTFAIL] = (instruction_writer) iwriter<iffail_instruction>;
 	WRITER[OP_CTUPLE] = (instruction_writer) iwriter<ctuple_instruction>;
@@ -112,5 +116,6 @@ uint8_t write_instruction(ostream &out, const instruction &i)
 		cerr << "instruction writer is null for: " << (int) i.opcode()
 			& DIE;
 	}
-	return w(out, i);
+	w(out, i);
+	return isize(i.opcode());
 }

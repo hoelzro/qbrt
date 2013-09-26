@@ -24,15 +24,13 @@ struct recv_instruction
 : public instruction
 {
 	uint16_t dst;
-	uint16_t tube;
 
-	recv_instruction(reg_t dst, reg_t tube)
+	recv_instruction(reg_t dst)
 	: instruction(OP_RECV)
 	, dst(dst)
-	, tube(tube)
 	{}
 
-	static const uint8_t SIZE = 5;
+	static const uint8_t SIZE = 3;
 };
 
 #pragma pack(pop)

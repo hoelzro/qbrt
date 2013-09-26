@@ -42,7 +42,7 @@
 #include <cstdlib>
 #include "qbparse.h"
 #include "qbtoken.h"
-#include "asm.h"
+#include "qbc.h"
 
 using namespace std;
 
@@ -227,6 +227,24 @@ stmt(A) ::= CALL reg(B) reg(C). {
 stmt(A) ::= CFAILURE reg(C) HASHTAG(B). {
 	A = new cfailure_stmt(C, B->strip_first());
 }
+stmt(A) ::= CMP_EQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::eq(B, C, D);
+}
+stmt(A) ::= CMP_NOTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::noteq(B, C, D);
+}
+stmt(A) ::= CMP_GT reg(B) reg(C) reg(D). {
+	A = cmp_stmt::gt(B, C, D);
+}
+stmt(A) ::= CMP_GTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::gteq(B, C, D);
+}
+stmt(A) ::= CMP_LT reg(B) reg(C) reg(D). {
+	A = cmp_stmt::lt(B, C, D);
+}
+stmt(A) ::= CMP_LTEQ reg(B) reg(C) reg(D). {
+	A = cmp_stmt::lteq(B, C, D);
+}
 stmt(A) ::= CONST reg(B) INT(C). {
 	A = new consti_stmt(B, C->intval());
 }
@@ -256,12 +274,6 @@ stmt(A) ::= IF reg(C) LABEL(B). {
 }
 stmt(A) ::= IFNOT reg(C) LABEL(B). {
 	A = new if_stmt(false, C, B->strip_first());
-}
-stmt(A) ::= IFEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::eq(B, C, D->strip_first());
-}
-stmt(A) ::= IFNOTEQ reg(B) reg(C) LABEL(D). {
-	A = ifcmp_stmt::ne(B, C, D->strip_first());
 }
 stmt(A) ::= IFFAIL reg(B) LABEL(C). {
 	A = new iffail_stmt(true, B, C->strip_first());
@@ -307,8 +319,8 @@ stmt(A) ::= NEWPROC reg(B) reg(C). {
 stmt(A) ::= PATTERNVAR reg(B). {
 	A = new patternvar_stmt(B);
 }
-stmt(A) ::= RECV reg(B) reg(C). {
-	A = new recv_stmt(B, C);
+stmt(A) ::= RECV reg(B). {
+	A = new recv_stmt(B);
 }
 stmt(A) ::= STRACC reg(B) reg(C). {
 	A = new stracc_stmt(B, C);
