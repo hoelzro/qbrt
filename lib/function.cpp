@@ -36,7 +36,7 @@ const char * QbrtFunction::protocol_name() const
 			const ModSym *protoms;
 			protoms = mod->resource.ptr< const ModSym >(
 					poly->protocol_idx);
-			name_idx = protoms->sym_name;
+			name_idx = protoms->sym_name();
 			break; }
 	}
 	return fetch_string(mod->resource, name_idx);
@@ -57,7 +57,7 @@ const char * QbrtFunction::protocol_module() const
 			const ModSym *protoms;
 			protoms = mod->resource.ptr< const ModSym >(
 					poly->protocol_idx);
-			mod_idx = protoms->mod_name;
+			mod_idx = protoms->mod_name();
 			break; }
 	}
 	return fetch_string(mod->resource, mod_idx);

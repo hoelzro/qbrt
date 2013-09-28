@@ -377,8 +377,8 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		case PFC_OVERRIDE:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
 			ms = &fetch_modsym(tbl, poly->protocol_idx);
-			module = fetch_string(tbl, ms->mod_name);
-			pname = fetch_string(tbl, ms->sym_name);
+			module = fetch_string(tbl, ms->mod_name());
+			pname = fetch_string(tbl, ms->sym_name());
 			break;
 	}
 
@@ -570,8 +570,8 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 void print_modsym(const ResourceTable &tbl, uint16_t index)
 {
 	const ModSym &modsym(tbl.obj< ModSym >(index));
-	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
-	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
+	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name()));
+	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name()));
 	printf("modsym(%s/%s)\n", mod.value, sym.value);
 }
 
@@ -621,8 +621,8 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 		case FCT_POLYMORPH:
 			poly = tbl.ptr< PolymorphResource >(f.context_idx);
 			proto_ms = &fetch_modsym(tbl, poly->protocol_idx);
-			modname = fetch_string(tbl, proto_ms->mod_name);
-			pname = fetch_string(tbl, proto_ms->sym_name);
+			modname = fetch_string(tbl, proto_ms->mod_name());
+			pname = fetch_string(tbl, proto_ms->sym_name());
 			break;
 	}
 	if (modname && *modname) {
@@ -649,8 +649,8 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const PolymorphResource &poly(tbl.obj< PolymorphResource >(i));
 	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx));
-	const char *modname(fetch_string(tbl, protoname.mod_name));
-	const char *symname(fetch_string(tbl, protoname.sym_name));
+	const char *modname(fetch_string(tbl, protoname.mod_name()));
+	const char *symname(fetch_string(tbl, protoname.sym_name()));
 	printf("polymorph ");
 	if (modname && *modname) {
 		printf("%s/", modname);

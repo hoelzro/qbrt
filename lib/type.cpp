@@ -53,8 +53,8 @@ void load_construct_value_types(ostringstream &out, const Construct &c)
 		const TypeSpecResource *tsr;
 		tsr = res.ptr< TypeSpecResource >(param.type_idx);
 		const ModSym &typems = fetch_modsym(res, tsr->name_idx);
-		const char *modnam = fetch_string(res, typems.mod_name);
-		const char *typnam = fetch_string(res, typems.sym_name);
+		const char *modnam = fetch_string(res, typems.mod_name());
+		const char *typnam = fetch_string(res, typems.sym_name());
 
 		if (modnam[0] == '*' && modnam[1] == '\0') {
 			qbrt_value::append_type(out, c.value(i));

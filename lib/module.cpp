@@ -34,7 +34,7 @@ uint32_t ResourceTable::offset(uint16_t i) const
 {
 	const ResourceInfo *info;
 	info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
-	return info->offset + ResourceTable::DATA_OFFSET;
+	return info->offset() + ResourceTable::DATA_OFFSET;
 }
 
 uint32_t ResourceTable::size(uint16_t i) const
@@ -42,12 +42,12 @@ uint32_t ResourceTable::size(uint16_t i) const
 	const ResourceInfo *info1;
 	info1 = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
 	if (i + 1 >= resource_count) {
-		return data_size - info1->offset;
+		return data_size - info1->offset();
 	}
 	const ResourceInfo *info2;
 	info2 = (const ResourceInfo *)
 		(index + (i + 1) * ResourceInfo::SIZE);
-	return info2->offset - info1->offset;
+	return info2->offset() - info1->offset();
 }
 
 void add_type(Module &mod, const std::string &name, const Type &t)
@@ -195,7 +195,7 @@ struct PolymorphFunctionSearch
 		poly = tbl.ptr< PolymorphResource >(f->context_idx);
 		const ModSym &protoms(fetch_modsym(tbl, poly->protocol_idx));
 		// compare protocol module
-		const char *other_mod = fetch_string(tbl, protoms.mod_name);
+		const char *other_mod = fetch_string(tbl, protoms.mod_name());
 		if (this->proto_mod < other_mod) {
 			return -1;
 		}
@@ -203,7 +203,7 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 		// compare protocol symbol
-		const char *other_sym = fetch_string(tbl, protoms.sym_name);
+		const char *other_sym = fetch_string(tbl, protoms.sym_name());
 		if (this->proto_name < other_sym) {
 			return -1;
 		}
@@ -426,9 +426,8 @@ void read_header(ObjectHeader &h, istream &input)
 
 void read_resource_table(ResourceTable &tbl, istream &input)
 {
-#error "broken here. to be fixed shortly."
-	input.read((char *) &tbl.data_size, 4);
-	input.read((char *) &tbl.resource_count, 2);
+	tbl.data_size = read32(input);
+	tbl.resource_count = read16(input);
 	uint32_t index_size(tbl.resource_count * ResourceInfo::SIZE);
 
 	uint8_t *data = new uint8_t[tbl.data_size];
