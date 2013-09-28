@@ -371,18 +371,18 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	switch (f.fcontext) {
 		case PFC_ABSTRACT:
 		case PFC_DEFAULT:
-			protocol = tbl.ptr< ProtocolResource >(f.context_idx);
+			protocol = tbl.ptr< ProtocolResource >(f.context_idx());
 			pname = fetch_string(tbl, protocol->name_idx());
 			break;
 		case PFC_OVERRIDE:
-			poly = tbl.ptr< PolymorphResource >(f.context_idx);
-			ms = &fetch_modsym(tbl, poly->protocol_idx);
+			poly = tbl.ptr< PolymorphResource >(f.context_idx());
+			ms = &fetch_modsym(tbl, poly->protocol_idx());
 			module = fetch_string(tbl, ms->mod_name());
 			pname = fetch_string(tbl, ms->sym_name());
 			break;
 	}
 
-	const char *fname = fetch_string(tbl, f.name_idx);
+	const char *fname = fetch_string(tbl, f.name_idx());
 	if (module && *module) {
 		cout << module << '/';
 	}
@@ -395,13 +395,13 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	}
 	cout << fname << "/" << (int) f.argc << ',' << (int) f.regc << ":\n";
 
-	const char *param_types = fetch_string(tbl, f.param_types_idx);
+	const char *param_types = fetch_string(tbl, f.param_types_idx());
 	cout << "function type: ";
 	if (param_types && *param_types) {
 		cout << param_types << " -> ";
 	}
 	const TypeSpecResource &result_type(
-			tbl.obj< TypeSpecResource >(f.result_type_idx));
+			tbl.obj< TypeSpecResource >(f.result_type_idx()));
 	const char *fullresult = fetch_string(tbl, result_type.fullname_idx);
 	cout << fullresult << endl;
 
@@ -411,8 +411,9 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		const char *typesym;
 		const char *fullname;
 		const TypeSpecResource *tspec;
-		for (int i(0); i<poly->type_count; ++i) {
-			tspec = tbl.ptr< TypeSpecResource >(poly->type[i]);
+		uint16_t typec(poly->type_count());
+		for (int i(0); i<typec; ++i) {
+			tspec = tbl.ptr< TypeSpecResource >(poly->type(i));
 			fullname = fetch_string(tbl, tspec->fullname_idx);
 			cout << ' ' << fullname;
 		}
@@ -498,7 +499,7 @@ void print_imports(const ResourceTable &tbl, uint16_t imports_index)
 void print_constructure(const ConstructResource &conres
 		, const ResourceTable &tbl)
 {
-	const char *name = fetch_string(tbl, conres.name_idx);
+	const char *name = fetch_string(tbl, conres.name_idx());
 	cout << "\nconstruct: " << name << '/' << (int)conres.fld_count << endl;
 	for (int i(0); i<conres.fld_count; ++i) {
 		const ParamResource &p(conres.fields[i]);
@@ -586,7 +587,7 @@ void print_typespec(const ResourceTable &tbl, uint16_t index)
 void print_construct(const ResourceTable &tbl, uint16_t index)
 {
 	const ConstructResource &cons(tbl.obj< ConstructResource >(index));
-	const StringResource &name(tbl.obj< StringResource >(cons.name_idx));
+	const StringResource &name(tbl.obj< StringResource >(cons.name_idx()));
 	printf("construct %s/%d\n", name.value, cons.fld_count);
 }
 
@@ -605,13 +606,13 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ProtocolResource *proto = NULL;
 	const PolymorphResource *poly = NULL;
 	const ModSym *proto_ms = NULL;
-	const char *fname = fetch_string(tbl, f.name_idx);
+	const char *fname = fetch_string(tbl, f.name_idx());
 	const char *fctx = fcontext_name(f.fcontext);
 	printf("%s function ", fctx);
 
 	switch (PFC_TYPE(f.fcontext)) {
 		case FCT_PROTOCOL:
-			proto = tbl.ptr< ProtocolResource >(f.context_idx);
+			proto = tbl.ptr< ProtocolResource >(f.context_idx());
 			if (!proto) {
 				cerr << "null protocol for function " << fname << endl;
 				return;
@@ -619,8 +620,8 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 			pname = fetch_string(tbl, proto->name_idx());
 			break;
 		case FCT_POLYMORPH:
-			poly = tbl.ptr< PolymorphResource >(f.context_idx);
-			proto_ms = &fetch_modsym(tbl, poly->protocol_idx);
+			poly = tbl.ptr< PolymorphResource >(f.context_idx());
+			proto_ms = &fetch_modsym(tbl, poly->protocol_idx());
 			modname = fetch_string(tbl, proto_ms->mod_name());
 			pname = fetch_string(tbl, proto_ms->sym_name());
 			break;
@@ -648,7 +649,7 @@ void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const PolymorphResource &poly(tbl.obj< PolymorphResource >(i));
-	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx));
+	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx()));
 	const char *modname(fetch_string(tbl, protoname.mod_name()));
 	const char *symname(fetch_string(tbl, protoname.sym_name()));
 	printf("polymorph ");
@@ -657,9 +658,10 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 	}
 	printf("%s", symname);
 
-	for (uint16_t i(0); i<poly.type_count; ++i) {
+	uint16_t typec(poly.type_count());
+	for (uint16_t i(0); i<typec; ++i) {
 		const TypeSpecResource &tspec(tbl.obj< TypeSpecResource >(
-					poly.type[i]));
+					poly.type(i)));
 		const char *fullname(fetch_string(tbl, tspec.fullname_idx));
 		printf(" %s", fullname);
 	}

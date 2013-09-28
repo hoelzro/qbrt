@@ -34,14 +34,23 @@ struct DataTypeResource
 
 struct ConstructResource
 {
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t filename_idx;
-	uint16_t lineno;
-	uint16_t datatype_idx;
+private:
+	uint16_t _name_idx;
+	uint16_t _doc_idx;
+	uint16_t _filename_idx;
+	uint16_t _lineno;
+	uint16_t _datatype_idx;
+
+public:
 	uint8_t fld_count;
 	uint8_t reserved;
 	ParamResource fields[];
+
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	uint16_t filename_idx() const { return be16toh(_filename_idx); }
+	uint16_t lineno() const { return be16toh(_lineno); }
+	uint16_t datatype_idx() const { return be16toh(_datatype_idx); }
 
 	static const uint32_t SIZE = 12;
 };

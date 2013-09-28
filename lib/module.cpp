@@ -83,7 +83,7 @@ const QbrtFunction * Module::fetch_function(const std::string &name) const
 			continue;
 		}
 		tbl.ptr(f, i);
-		fname = fetch_string(tbl, f->name_idx);
+		fname = fetch_string(tbl, f->name_idx());
 		if (name != fname) {
 			continue;
 		}
@@ -143,7 +143,7 @@ struct ProtocolFunctionSearch
 		}
 
 		const ProtocolResource *proto;
-		proto = tbl.ptr< ProtocolResource >(f->context_idx);
+		proto = tbl.ptr< ProtocolResource >(f->context_idx());
 		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (protocol < pname) {
 			return -1;
@@ -152,7 +152,7 @@ struct ProtocolFunctionSearch
 			return 1;
 		}
 
-		const char *fname = fetch_string(tbl, f->name_idx);
+		const char *fname = fetch_string(tbl, f->name_idx());
 		if (function < fname) {
 			return -1;
 		}
@@ -192,8 +192,8 @@ struct PolymorphFunctionSearch
 		}
 
 		const PolymorphResource *poly;
-		poly = tbl.ptr< PolymorphResource >(f->context_idx);
-		const ModSym &protoms(fetch_modsym(tbl, poly->protocol_idx));
+		poly = tbl.ptr< PolymorphResource >(f->context_idx());
+		const ModSym &protoms(fetch_modsym(tbl, poly->protocol_idx()));
 		// compare protocol module
 		const char *other_mod = fetch_string(tbl, protoms.mod_name());
 		if (this->proto_mod < other_mod) {
@@ -211,7 +211,7 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		const char *fname = fetch_string(tbl, f->name_idx);
+		const char *fname = fetch_string(tbl, f->name_idx());
 		if (function < fname) {
 			return -1;
 		}
@@ -219,7 +219,8 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		const char *param_types = fetch_string(tbl, f->param_types_idx);
+		const char *param_types =
+				fetch_string(tbl, f->param_types_idx());
 		return compare_types(value_types.c_str(), param_types);
 	}
 
@@ -291,7 +292,7 @@ struct ConstructSearch
 	{
 		const ConstructResource *i_cons;
 		i_cons = tbl.ptr< ConstructResource >(i);
-		const char *i_name = fetch_string(tbl, i_cons->name_idx);
+		const char *i_name = fetch_string(tbl, i_cons->name_idx());
 
 		if (name < i_name) {
 			return -1;
@@ -525,7 +526,7 @@ void Module::load_construct(qbrt_value &dst, const Module &m, const char *name)
 	const ConstructResource *construct_r;
 	construct_r = find_construct(m, name);
 
-	const Type *typ = indexed_datatype(m, construct_r->datatype_idx);
+	const Type *typ = indexed_datatype(m, construct_r->datatype_idx());
 
 	Construct *cons = new Construct(m, *construct_r);
 	qbrt_value::construct(dst, typ, cons);

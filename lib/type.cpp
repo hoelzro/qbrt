@@ -7,12 +7,12 @@ using namespace std;
 
 const DataTypeResource * Construct::datatype() const
 {
-	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx);
+	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx());
 }
 
 const char * Construct::name() const
 {
-	return fetch_string(mod.resource, resource.name_idx);
+	return fetch_string(mod.resource, resource.name_idx());
 }
 
 bool Construct::compare(const Construct &a, const Construct &b)
