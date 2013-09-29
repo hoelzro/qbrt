@@ -24,12 +24,6 @@ ObjectHeader::ObjectHeader()
 	magic[3] = 't';
 }
 
-bool operator < (const PolymorphArg &a, const PolymorphArg &b)
-{
-	// this is totally not the right thing
-	return a.module < b.module;
-}
-
 uint32_t ResourceTable::offset(uint16_t i) const
 {
 	const ResourceInfo *info;

@@ -40,19 +40,6 @@ struct ObjectHeader
 	static const uint32_t SIZE = 26;
 };
 
-struct ResourceName
-{
-	uint16_t name_id;
-	uint16_t resource_id;
-
-	ResourceName(uint16_t name, uint16_t id)
-		: name_id(name)
-		, resource_id(id)
-	{}
-
-	static const uint32_t SIZE = 4;
-};
-
 struct ResourceInfo
 {
 private:

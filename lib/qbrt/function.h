@@ -162,15 +162,6 @@ struct copy_instruction
 
 struct Module;
 
-struct PolymorphArg
-{
-	std::string module;
-	std::string type;
-	uint8_t arg_index;
-
-	friend bool operator < (const PolymorphArg &, const PolymorphArg &);
-};
-
 struct FunctionHeader
 {
 private:
