@@ -75,7 +75,7 @@ FunctionCall::FunctionCall(const QbrtFunction &func, qbrt_value_index &vals)
 
 const char * FunctionCall::name() const
 {
-	return fetch_string(mod->resource, header->name_idx);
+	return fetch_string(mod->resource, header->name_idx());
 }
 
 void FunctionCall::finish_frame(Worker &w)

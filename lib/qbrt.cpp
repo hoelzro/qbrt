@@ -745,8 +745,8 @@ void execute_lconstruct(OpContext &ctx, const lconstruct_instruction &i)
 {
 	const ResourceTable &resource(ctx.resource());
 	const ModSym &modsym(fetch_modsym(resource, i.modsym));
-	const char *modname = fetch_string(resource, modsym.mod_name);
-	const char *name = fetch_string(resource, modsym.sym_name);
+	const char *modname = fetch_string(resource, modsym.mod_name());
+	const char *name = fetch_string(resource, modsym.sym_name());
 	const Module *mod(find_module(ctx.worker(), modname));
 
 	Failure *fail;
@@ -776,8 +776,8 @@ void execute_loadfunc(OpContext &ctx, const lfunc_instruction &i)
 {
 	const ResourceTable &resource(ctx.resource());
 	const ModSym &modsym(fetch_modsym(resource, i.modsym));
-	const char *modname = fetch_string(resource, modsym.mod_name);
-	const char *fname = fetch_string(resource, modsym.sym_name);
+	const char *modname = fetch_string(resource, modsym.mod_name());
+	const char *fname = fetch_string(resource, modsym.sym_name());
 	const Module *mod(find_module(ctx.worker(), modname));
 	Failure *fail;
 
@@ -1187,18 +1187,18 @@ void qbrtcall(Worker &w, qbrt_value &res, function_value *f)
 		}
 		const Type *valtype = val->type;
 		const ParamResource &param(qfunc->header->params[i]);
-		const char *name = fetch_string(resource, param.name_idx);
+		const char *name = fetch_string(resource, param.name_idx());
 		const TypeSpecResource &type(
-			resource.obj< TypeSpecResource >(param.type_idx));
-		const ModSym &type_ms(fetch_modsym(resource, type.name_idx));
+			resource.obj< TypeSpecResource >(param.type_idx()));
+		const ModSym &type_ms(fetch_modsym(resource, type.name_idx()));
 		const char *type_mod =
-			fetch_string(resource, type_ms.mod_name);
+			fetch_string(resource, type_ms.mod_name());
 		// */anything means it's a type variable. it's fine so proceed
 		if (type_mod[0] == '*' && type_mod[1] == '\0') {
 			continue;
 		}
 		const char *type_name =
-			fetch_string(resource, type_ms.sym_name);
+			fetch_string(resource, type_ms.sym_name());
 		if (valtype->module != type_mod || valtype->name != type_name) {
 			cerr << "Type Mismatch: parameter " << name << '/' << i
 				<< " expected to be " << type_mod << '/'
