@@ -315,7 +315,7 @@ struct DataTypeSearch
 	{
 		const DataTypeResource *i_dtr;
 		i_dtr = tbl.ptr< DataTypeResource >(i);
-		const char *i_name = fetch_string(tbl, i_dtr->name_idx);
+		const char *i_name = fetch_string(tbl, i_dtr->name_idx());
 
 		if (name < i_name) {
 			return -1;
@@ -365,7 +365,7 @@ const Type * indexed_datatype(const Module &mod, uint16_t idx)
 		cerr << "DataTypeResource not found at: " << idx << endl;
 		return NULL;
 	}
-	const char *name = fetch_string(mod.resource, dtr->name_idx);
+	const char *name = fetch_string(mod.resource, dtr->name_idx());
 	const Type *t = new Type(mod.name, name, dtr->argc);
 	mod.indexed_type_cache[idx] = t;
 	return t;

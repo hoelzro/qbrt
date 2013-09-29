@@ -131,12 +131,7 @@ struct AsmModSym
 	, symbol(symname)
 	{}
 
-	virtual uint32_t write(std::ostream &o) const
-	{
-		o.write((const char *) module.index, 2);
-		o.write((const char *) symbol.index, 2);
-		return 4;
-	}
+	virtual uint32_t write(std::ostream &) const;
 
 	virtual std::ostream & pretty(std::ostream &o) const
 	{

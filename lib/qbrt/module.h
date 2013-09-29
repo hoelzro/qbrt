@@ -42,11 +42,9 @@ struct ObjectHeader
 
 struct ResourceInfo
 {
-private:
 	uint32_t _offset;
 	uint16_t _type;
 
-public:
 	uint32_t offset() const { return be32toh(_offset); }
 	uint32_t type() const { return be16toh(_type); }
 
@@ -73,13 +71,19 @@ public:
 
 struct ImportResource
 {
-	uint16_t count;
-	uint16_t modules[];
+private:
+	uint16_t _count;
+	uint16_t _modules[];
+
+public:
+	uint16_t count() const { return be16toh(_count); }
+	uint16_t modules(uint16_t i) const { return be16toh(_modules[i]); }
 };
 
 
 struct ResourceTableHeader
 {
+	// converted to host byte order when it's read
 	uint32_t data_size;
 	uint16_t resource_count;
 

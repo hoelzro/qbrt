@@ -402,7 +402,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	}
 	const TypeSpecResource &result_type(
 			tbl.obj< TypeSpecResource >(f.result_type_idx()));
-	const char *fullresult = fetch_string(tbl, result_type.fullname_idx);
+	const char *fullresult = fetch_string(tbl, result_type.fullname_idx());
 	cout << fullresult << endl;
 
 	if (poly) {
@@ -414,7 +414,7 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		uint16_t typec(poly->type_count());
 		for (int i(0); i<typec; ++i) {
 			tspec = tbl.ptr< TypeSpecResource >(poly->type(i));
-			fullname = fetch_string(tbl, tspec->fullname_idx);
+			fullname = fetch_string(tbl, tspec->fullname_idx());
 			cout << ' ' << fullname;
 		}
 		cout << endl;
@@ -448,11 +448,11 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 		cout << "args:\n";
 		for (int i(0); i<f.argc; ++i) {
 			const ParamResource &p(f.params[i]);
-			const char *name = fetch_string(tbl, p.name_idx);
+			const char *name = fetch_string(tbl, p.name_idx());
 			const TypeSpecResource &type(
-				tbl.obj< TypeSpecResource >(p.type_idx));
+				tbl.obj< TypeSpecResource >(p.type_idx()));
 			const char *fullname =
-				fetch_string(tbl, type.fullname_idx);
+				fetch_string(tbl, type.fullname_idx());
 			cout << '\t' << name << ' ' << fullname << endl;
 		}
 	}
@@ -488,9 +488,10 @@ void print_code(const ResourceTable &tbl)
 void print_imports(const ResourceTable &tbl, uint16_t imports_index)
 {
 	const ImportResource *import = tbl.ptr< ImportResource >(imports_index);
-	cout << "\nimported modules: " << import->count << endl;
-	for (int i(0); i<import->count; ++i) {
-		const char *module = fetch_string(tbl, import->modules[i]);
+	uint16_t cnt(import->count());
+	cout << "\nimported modules: " << cnt << endl;
+	for (int i(0); i<cnt; ++i) {
+		const char *module = fetch_string(tbl, import->modules(i));
 		cout << "\t" << module << endl;
 	}
 }
@@ -503,10 +504,10 @@ void print_constructure(const ConstructResource &conres
 	cout << "\nconstruct: " << name << '/' << (int)conres.fld_count << endl;
 	for (int i(0); i<conres.fld_count; ++i) {
 		const ParamResource &p(conres.fields[i]);
-		const char *name = fetch_string(tbl, p.name_idx);
+		const char *name = fetch_string(tbl, p.name_idx());
 		const TypeSpecResource &tsr(
-				tbl.obj< TypeSpecResource >(p.type_idx));
-		const char *fullname = fetch_string(tbl, tsr.fullname_idx);
+				tbl.obj< TypeSpecResource >(p.type_idx()));
+		const char *fullname = fetch_string(tbl, tsr.fullname_idx());
 		cout << '\t' << name <<' '<< fullname << endl;
 	}
 }
@@ -535,7 +536,7 @@ void print_hashtag(const ResourceTable &tbl, uint16_t index)
 void print_import_line(const ResourceTable &tbl, uint16_t index)
 {
 	const ImportResource &import(tbl.obj< ImportResource >(index));
-	printf("import %d\n", import.count);
+	printf("import %d\n", import.count());
 }
 
 void print_unsupported_resource(const ResourceTable &tbl, uint16_t i)
@@ -580,7 +581,7 @@ void print_typespec(const ResourceTable &tbl, uint16_t index)
 {
 	const TypeSpecResource &typespec(tbl.obj< TypeSpecResource >(index));
 	const StringResource &fullname(
-			tbl.obj< StringResource >(typespec.fullname_idx));
+			tbl.obj< StringResource >(typespec.fullname_idx()));
 	printf("typespec(%s)\n", fullname.value);
 }
 
@@ -594,7 +595,7 @@ void print_construct(const ResourceTable &tbl, uint16_t index)
 void print_datatype(const ResourceTable &tbl, uint16_t index)
 {
 	const DataTypeResource &dtr(tbl.obj< DataTypeResource >(index));
-	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx));
+	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx()));
 	printf("datatype %s/%d\n", name.value, dtr.argc);
 }
 
@@ -662,7 +663,7 @@ void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 	for (uint16_t i(0); i<typec; ++i) {
 		const TypeSpecResource &tspec(tbl.obj< TypeSpecResource >(
 					poly.type(i)));
-		const char *fullname(fetch_string(tbl, tspec.fullname_idx));
+		const char *fullname(fetch_string(tbl, tspec.fullname_idx()));
 		printf(" %s", fullname);
 	}
 	printf("\n");
