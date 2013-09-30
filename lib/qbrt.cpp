@@ -9,6 +9,7 @@
 #include "qbrt/module.h"
 #include "io.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"

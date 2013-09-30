@@ -1,13 +1,14 @@
 #include "qbc.h"
 #include "qbrt/stmt.h"
 #include "qbrt/logic.h"
-#include "qbrt/function.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 
 using namespace std;

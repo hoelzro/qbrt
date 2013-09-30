@@ -1,9 +1,9 @@
 
 #include "qbrt/core.h"
-#include "qbrt/function.h"
 #include "qbrt/module.h"
 #include "qbrt/logic.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
