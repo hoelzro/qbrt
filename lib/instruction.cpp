@@ -31,6 +31,8 @@ uint8_t iwriter(ostream &out, const I &i)
 void init_instruction_sizes()
 {
 	INSTRUCTION_SIZE[OP_CALL] = call_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CALL1] = call1_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CALL2] = call2_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RETURN] = return_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CFAILURE] = cfailure_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_CMP_EQ] = cmp_instruction::SIZE;
@@ -91,6 +93,8 @@ DEFINE_IWRITER(consti);
 DEFINE_IWRITER(consts);
 DEFINE_IWRITER(consthash);
 DEFINE_IWRITER(call);
+DEFINE_IWRITER(call1);
+DEFINE_IWRITER(call2);
 DEFINE_IWRITER(fork);
 DEFINE_IWRITER(fieldget);
 DEFINE_IWRITER(fieldset);
@@ -121,6 +125,8 @@ void init_writers()
 {
 	WRITER[OP_IADD] = (instruction_writer) iwriter<binaryop_instruction>;
 	WRITER[OP_CALL] = (instruction_writer) iwriter<call_instruction>;
+	WRITER[OP_CALL1] = (instruction_writer) iwriter<call1_instruction>;
+	WRITER[OP_CALL2] = (instruction_writer) iwriter<call2_instruction>;
 	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
 	WRITER[OP_CFAILURE] =
 		(instruction_writer) iwriter<cfailure_instruction>;

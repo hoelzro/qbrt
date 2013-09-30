@@ -21,6 +21,42 @@ struct call_instruction
 	static const uint8_t SIZE = 5;
 };
 
+struct call1_instruction
+: public instruction
+{
+	uint16_t result_reg;
+	uint16_t func_reg;
+	uint16_t a;
+
+	call1_instruction(reg_t result, reg_t func, reg_t a)
+		: instruction(OP_CALL1)
+		, result_reg(result)
+		, func_reg(func)
+		, a(a)
+	{}
+
+	static const uint8_t SIZE = 7;
+};
+
+struct call2_instruction
+: public instruction
+{
+	uint16_t result_reg;
+	uint16_t func_reg;
+	uint16_t a;
+	uint16_t b;
+
+	call2_instruction(reg_t result, reg_t func, reg_t a, reg_t b)
+		: instruction(OP_CALL2)
+		, result_reg(result)
+		, func_reg(func)
+		, a(a)
+		, b(b)
+	{}
+
+	static const uint8_t SIZE = 9;
+};
+
 struct return_instruction
 : public instruction
 {

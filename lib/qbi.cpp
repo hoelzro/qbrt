@@ -78,6 +78,27 @@ uint8_t print_call_instruction(const call_instruction &i)
 	return call_instruction::SIZE;
 }
 
+uint8_t print_call1_instruction(const call1_instruction &i)
+{
+	cout << "call1";
+	print_register(i.result_reg);
+	print_register(i.func_reg);
+	print_register(i.a);
+	cout << endl;
+	return 0;
+}
+
+uint8_t print_call2_instruction(const call2_instruction &i)
+{
+	cout << "call2";
+	print_register(i.result_reg);
+	print_register(i.func_reg);
+	print_register(i.a);
+	print_register(i.b);
+	cout << endl;
+	return 0;
+}
+
 uint8_t print_lcontext_instruction(const lcontext_instruction &i)
 {
 	cout << "lcontext " << pretty_reg(i.reg)
@@ -313,6 +334,8 @@ instruction_printer PRINTER[NUM_OP_CODES] = {0};
 void set_printers()
 {
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
+	PRINTER[OP_CALL1] = (instruction_printer) print_call1_instruction;
+	PRINTER[OP_CALL2] = (instruction_printer) print_call2_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
 	PRINTER[OP_CMP_EQ] = (instruction_printer) print_cmp_instruction;
 	PRINTER[OP_CMP_NOTEQ] = (instruction_printer) print_cmp_instruction;
