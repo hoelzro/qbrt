@@ -2,7 +2,6 @@
 #include "qbrt/core.h"
 #include "qbrt/schedule.h"
 #include "qbrt/function.h"
-#include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "qbrt/map.h"
 #include "qbrt/vector.h"

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 #include "qbrt/function.h"
-#include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
 #include "instruction/logic.h"

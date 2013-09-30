@@ -1,6 +1,5 @@
 #include "qbc.h"
 #include "qbrt/stmt.h"
-#include "qbrt/logic.h"
 #include "instruction/arithmetic.h"
 #include "instruction/function.h"
 #include "instruction/logic.h"

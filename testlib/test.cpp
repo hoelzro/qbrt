@@ -2,7 +2,6 @@
 #include "instruction/schedule.h"
 #include "instruction/type.h"
 #include "qbrt/function.h"
-#include "qbrt/logic.h"
 #include "accertion.h"
 
 
