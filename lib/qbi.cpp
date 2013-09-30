@@ -42,9 +42,9 @@ void print_binary_data(const uint8_t *data, uint16_t len)
 	cout << endl;
 }
 
-typedef uint8_t (*instruction_printer)(const instruction &);
+typedef void (*instruction_printer)(const instruction &);
 
-uint8_t print_binaryop_instruction(const binaryop_instruction &i)
+void print_binaryop_instruction(const binaryop_instruction &i)
 {
 	const char *opcode = "unknown";
 	switch (i.opcode()) {
@@ -66,29 +66,26 @@ uint8_t print_binaryop_instruction(const binaryop_instruction &i)
 	print_register(i.a);
 	print_register(i.b);
 	cout << endl;
-	return binaryop_instruction::SIZE;
 }
 
-uint8_t print_call_instruction(const call_instruction &i)
+void print_call_instruction(const call_instruction &i)
 {
 	cout << "call";
 	print_register(i.result_reg);
 	print_register(i.func_reg);
 	cout << endl;
-	return call_instruction::SIZE;
 }
 
-uint8_t print_call1_instruction(const call1_instruction &i)
+void print_call1_instruction(const call1_instruction &i)
 {
 	cout << "call1";
 	print_register(i.result_reg);
 	print_register(i.func_reg);
 	print_register(i.a);
 	cout << endl;
-	return 0;
 }
 
-uint8_t print_call2_instruction(const call2_instruction &i)
+void print_call2_instruction(const call2_instruction &i)
 {
 	cout << "call2";
 	print_register(i.result_reg);
@@ -96,30 +93,26 @@ uint8_t print_call2_instruction(const call2_instruction &i)
 	print_register(i.a);
 	print_register(i.b);
 	cout << endl;
-	return 0;
 }
 
-uint8_t print_lcontext_instruction(const lcontext_instruction &i)
+void print_lcontext_instruction(const lcontext_instruction &i)
 {
 	cout << "lcontext " << pretty_reg(i.reg)
 		<< " #" << i.hashtag << endl;
-	return lcontext_instruction::SIZE;
 }
 
-uint8_t print_lconstruct_instruction(const lconstruct_instruction &i)
+void print_lconstruct_instruction(const lconstruct_instruction &i)
 {
 	cout << "lconstruct " << pretty_reg(i.reg)
 		<< " modsym:" << i.modsym << endl;
-	return lconstruct_instruction::SIZE;
 }
 
-uint8_t print_lfunc_instruction(const lfunc_instruction &i)
+void print_lfunc_instruction(const lfunc_instruction &i)
 {
 	cout << "lfunc " << pretty_reg(i.reg) << " modsym:" << i.modsym << endl;
-	return lfunc_instruction::SIZE;
 }
 
-uint8_t print_match_instruction(const match_instruction &i)
+void print_match_instruction(const match_instruction &i)
 {
 	cout << "match";
 	print_register(i.result);
@@ -128,10 +121,9 @@ uint8_t print_match_instruction(const match_instruction &i)
 	cout << ' ';
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return match_instruction::SIZE;
 }
 
-uint8_t print_matchargs_instruction(const matchargs_instruction &i)
+void print_matchargs_instruction(const matchargs_instruction &i)
 {
 	cout << "matchargs";
 	print_register(i.result);
@@ -139,100 +131,87 @@ uint8_t print_matchargs_instruction(const matchargs_instruction &i)
 	cout << ' ';
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return matchargs_instruction::SIZE;
 }
 
-uint8_t print_newproc_instruction(const newproc_instruction &i)
+void print_newproc_instruction(const newproc_instruction &i)
 {
 	cout << "newproc " << pretty_reg(i.pid)
 		<<' '<< pretty_reg(i.func) << endl;
-	return newproc_instruction::SIZE;
 }
 
-uint8_t print_patternvar_instruction(const patternvar_instruction &i)
+void print_patternvar_instruction(const patternvar_instruction &i)
 {
 	cout << "patternvar " << pretty_reg(i.dst) << endl;
-	return patternvar_instruction::SIZE;
 }
 
-uint8_t print_recv_instruction(const recv_instruction &i)
+void print_recv_instruction(const recv_instruction &i)
 {
 	cout << "recv " << pretty_reg(i.dst) << endl;
-	return recv_instruction::SIZE;
 }
 
-uint8_t print_stracc_instruction(const stracc_instruction &i)
+void print_stracc_instruction(const stracc_instruction &i)
 {
 	cout << "stracc " << pretty_reg(i.dst)
 		<<' '<< pretty_reg(i.src) << endl;
-	return stracc_instruction::SIZE;
 }
 
-uint8_t print_loadobj_instruction(const loadobj_instruction &i)
+void print_loadobj_instruction(const loadobj_instruction &i)
 {
 	cout << "loadobj";
 	cout << " s" << i.modname << endl;
-	return loadobj_instruction::SIZE;
 }
 
-uint8_t print_move_instruction(const move_instruction &i)
+void print_move_instruction(const move_instruction &i)
 {
 	cout << "move";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return move_instruction::SIZE;
 }
 
-uint8_t print_ref_instruction(const ref_instruction &i)
+void print_ref_instruction(const ref_instruction &i)
 {
 	cout << "ref";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return ref_instruction::SIZE;
 }
 
-uint8_t print_copy_instruction(const copy_instruction &i)
+void print_copy_instruction(const copy_instruction &i)
 {
 	cout << "copy";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return copy_instruction::SIZE;
 }
 
-uint8_t print_consts_instruction(const consts_instruction &i)
+void print_consts_instruction(const consts_instruction &i)
 {
 	cout << "consts";
 	print_register(i.reg);
 	cout << " s" << i.string_id << endl;
-	return consts_instruction::SIZE;
 }
 
-uint8_t print_consthash_instruction(const consthash_instruction &i)
+void print_consthash_instruction(const consthash_instruction &i)
 {
 	cout << "consthash";
 	print_register(i.reg);
 	cout << " #" << i.hash_id << endl;
-	return consthash_instruction::SIZE;
 }
 
-uint8_t print_return_instruction(const return_instruction &i)
+void print_return_instruction(const return_instruction &i)
 {
 	cout << "ret\n";
-	return return_instruction::SIZE;
 }
 
-uint8_t print_cfailure_instruction(const cfailure_instruction &i)
+void print_cfailure_instruction(const cfailure_instruction &i)
 {
 	cout << "cfailure";
 	print_register(i.dst);
 	cout << " #" << i.hashtag_id << endl;
-	return cfailure_instruction::SIZE;
 }
 
-uint8_t print_cmp_instruction(const cmp_instruction &i)
+void print_cmp_instruction(const cmp_instruction &i)
 {
 	cout << "cmp";
 	switch (i.opcode()) {
@@ -247,86 +226,76 @@ uint8_t print_cmp_instruction(const cmp_instruction &i)
 	print_register(i.a);
 	print_register(i.b);
 	cout << endl;
-	return 0;
 }
 
-uint8_t print_consti_instruction(const consti_instruction &i)
+void print_consti_instruction(const consti_instruction &i)
 {
 	cout << "consti";
 	print_register(i.reg);
 	cout << " " << i.value << endl;
-	return consti_instruction::SIZE;
 }
 
-uint8_t print_ctuple_instruction(const ctuple_instruction &i)
+void print_ctuple_instruction(const ctuple_instruction &i)
 {
 	cout << "ctuple";
 	print_register(i.dst);
 	cout << (int) i.size << endl;
-	return ctuple_instruction::SIZE;
 }
 
-uint8_t print_fieldget_instruction(const fieldget_instruction &i)
+void print_fieldget_instruction(const fieldget_instruction &i)
 {
 	cout << "fieldget";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << " s" << i.field_name;
 	cout << endl;
-	return fieldget_instruction::SIZE;
 }
 
-uint8_t print_fieldset_instruction(const fieldset_instruction &i)
+void print_fieldset_instruction(const fieldset_instruction &i)
 {
 	cout << "fieldset";
 	print_register(i.dst);
 	cout << " s" << i.field_name;
 	print_register(i.src);
 	cout << endl;
-	return fieldset_instruction::SIZE;
 }
 
-uint8_t print_fork_instruction(const fork_instruction &i)
+void print_fork_instruction(const fork_instruction &i)
 {
 	cout << "fork ";
 	print_jump_delta(i.jump_data);
 	print_register(i.result);
 	cout << endl;
-	return fork_instruction::SIZE;
 }
 
-uint8_t print_goto_instruction(const goto_instruction &i)
+void print_goto_instruction(const goto_instruction &i)
 {
 	cout << "goto ";
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return goto_instruction::SIZE;
 }
 
-uint8_t print_if_instruction(const if_instruction &i)
+void print_if_instruction(const if_instruction &i)
 {
 	cout << (i.ifnot() ? "ifnot " : "if ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return if_instruction::SIZE;
 }
 
-uint8_t print_iffail_instruction(const iffail_instruction &i)
+void print_iffail_instruction(const iffail_instruction &i)
 {
 	cout << (i.iffail() ? "iffail " : "ifnotfail ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return iffail_instruction::SIZE;
 }
 
-uint8_t print_wait_instruction(const wait_instruction &i)
+void print_wait_instruction(const wait_instruction &i)
 {
 	cout << "wait";
 	print_register(i.reg);
 	cout << endl;
-	return wait_instruction::SIZE;
 }
 
 instruction_printer PRINTER[NUM_OP_CODES] = {0};
