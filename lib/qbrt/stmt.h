@@ -104,7 +104,7 @@ struct Stmt
 	virtual void allocate_registers(RegAlloc *) {}
 	virtual void collect_resources(ResourceSet &) {}
 	virtual void generate_code(AsmFunc &);
-	virtual void pretty(std::ostream &) const = 0;
+	virtual void pretty(std::ostream &) const {}
 };
 
 struct dparam_stmt
