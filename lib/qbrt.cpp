@@ -932,13 +932,13 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	RETURN_FAILURE(ctx, i.src);
 
 	Failure *f;
-	qbrt_value &dst(*ctx.dstvalue(i.dst));
-	const qbrt_value &src(*ctx.srcvalue(i.src));
+	qbrt_value *dst(ctx.dstvalue(i.dst));
+	const qbrt_value *src(ctx.srcvalue(i.src));
 
 	int op_pc(ctx.pc());
 	ctx.pc() += stracc_instruction::SIZE;
 
-	if (dst.type->id != VT_STRING) {
+	if (dst->type->id != VT_STRING) {
 		f = FAIL_TYPE(ctx.module_name(), ctx.function_name(), op_pc);
 		f->debug << "stracc destination is not a string";
 		qbrt_value::i(f->exit_code, 1);
@@ -947,28 +947,28 @@ void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 	}
 
 	ostringstream out;
-	switch (src.type->id) {
+	switch (src->type->id) {
 		case VT_STRING:
-			*dst.data.str += *src.data.str;
+			*dst->data.str += *src->data.str;
 			break;
 		case VT_INT:
-			out << src.data.i;
-			*dst.data.str += out.str();
+			out << src->data.i;
+			*dst->data.str += out.str();
 			break;
 		case VT_VOID:
 			f = FAIL_TYPE(ctx.module_name(), ctx.function_name()
 					, op_pc);
 			f->debug << "cannot append void to string";
 			cerr << f->debug_msg() << endl;
-			qbrt_value::fail(dst, f);
+			qbrt_value::fail(*dst, f);
 			break;
 		default:
 			f = FAIL_TYPE(ctx.module_name(), ctx.function_name()
 					, op_pc);
 			f->debug << "stracc source type is not supported: "
-				<< (int) src.type->id;
+				<< (int) src->type->id;
 			cerr << f->debug_msg() << endl;
-			qbrt_value::fail(dst, f);
+			qbrt_value::fail(*dst, f);
 			break;
 	}
 }
