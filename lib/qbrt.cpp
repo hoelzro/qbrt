@@ -1524,6 +1524,53 @@ void core_write(OpContext &ctx, qbrt_value &out)
 	ctx.io(stream.data.stream->write(*text.data.str));
 }
 
+Module * load_core_module(Application &app)
+{
+	Module *mod_core = const_cast< Module * >(load_module(app, "core"));
+	if (!mod_core) {
+		return NULL;
+	}
+
+	add_c_function(*mod_core, core_pid, "pid", 0, "");
+	add_c_function(*mod_core, core_send, "send", 2
+			, "io/Stream;core/String;");
+	add_c_function(*mod_core, core_wid, "wid", 0, "");
+	add_type(*mod_core, "Int", TYPE_INT);
+	add_type(*mod_core, "String", TYPE_STRING);
+	add_type(*mod_core, "ByteString", TYPE_STRING);
+	add_c_override(*mod_core, core_str_from_str, "core", "Stringy", "str", 1
+			, "core/String");
+	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
+			, "core/Int");
+	return mod_core;
+}
+
+Module * load_io_module(Application &app)
+{
+	Module *mod_io = new Module("io");
+	add_c_function(*mod_io, core_print, "print", 1, "core/String;");
+	add_c_function(*mod_io, core_open, "open", 2
+			, "core/String;core/String;");
+	add_c_function(*mod_io, core_write, "write", 2
+			, "io/Stream;core/String;");
+	add_c_function(*mod_io, core_getline, "getline", 1, "io/Stream;");
+	load_module(app, mod_io);
+	return mod_io;
+}
+
+Module * load_list_module(Application &app)
+{
+	Module *mod_list = const_cast< Module * >(load_module(app, "list"));
+	if (!mod_list) {
+		return NULL;
+	}
+	add_c_function(*mod_list, list_empty, "is_empty", 1, "core/List;");
+	add_c_function(*mod_list, list_head, "head", 1, "core/List;");
+	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");
+	load_module(app, mod_list);
+	return mod_list;
+}
+
 int main(int argc, const char **argv)
 {
 	if (argc < 2) {
@@ -1536,40 +1583,13 @@ int main(int argc, const char **argv)
 
 
 	Application app;
-	Module *mod_core = const_cast< Module * >(load_module(app, "core"));
-	if (!mod_core) {
-		return -1;
-	}
-	Module *mod_list = const_cast< Module * >(load_module(app, "list"));
-	if (!mod_list) {
-		return -1;
-	}
-	add_c_function(*mod_core, core_pid, "pid", 0, "");
-	add_c_function(*mod_core, core_send, "send", 2
-			, "io/Stream;core/String;");
-	add_c_function(*mod_core, core_wid, "wid", 0, "");
-	add_type(*mod_core, "Int", TYPE_INT);
-	add_type(*mod_core, "String", TYPE_STRING);
-	add_type(*mod_core, "ByteString", TYPE_STRING);
-	add_c_override(*mod_core, core_str_from_str, "core", "Stringy", "str", 1
-			, "core/String");
-	add_c_override(*mod_core, core_str_from_int, "core", "Stringy", "str", 1
-			, "core/Int");
-
-	add_c_function(*mod_list, list_empty, "is_empty", 1, "core/List;");
-	add_c_function(*mod_list, list_head, "head", 1, "core/List;");
-	add_c_function(*mod_list, list_pop, "pop", 1, "core/List;");
-
+	Module *mod_core(load_core_module(app));
 	Module *mod_io = new Module("io");
-	add_c_function(*mod_io, core_print, "print", 1, "core/String;");
-	add_c_function(*mod_io, core_open, "open", 2
-			, "core/String;core/String;");
-	add_c_function(*mod_io, core_write, "write", 2
-			, "io/Stream;core/String;");
-	add_c_function(*mod_io, core_getline, "getline", 1, "io/Stream;");
+	Module *mod_list(load_list_module(app));
+	if (!(mod_core && mod_io && mod_list)) {
+		return -1;
+	}
 
-	load_module(app, mod_list);
-	load_module(app, mod_io);
 	Worker &w0(new_worker(app));
 	Worker &w1(new_worker(app));
 
