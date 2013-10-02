@@ -24,17 +24,11 @@ ObjectHeader::ObjectHeader()
 	magic[3] = 't';
 }
 
-bool operator < (const PolymorphArg &a, const PolymorphArg &b)
-{
-	// this is totally not the right thing
-	return a.module < b.module;
-}
-
 uint32_t ResourceTable::offset(uint16_t i) const
 {
 	const ResourceInfo *info;
 	info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
-	return info->offset + ResourceTable::DATA_OFFSET;
+	return info->offset() + ResourceTable::DATA_OFFSET;
 }
 
 uint32_t ResourceTable::size(uint16_t i) const
@@ -42,12 +36,12 @@ uint32_t ResourceTable::size(uint16_t i) const
 	const ResourceInfo *info1;
 	info1 = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
 	if (i + 1 >= resource_count) {
-		return data_size - info1->offset;
+		return data_size - info1->offset();
 	}
 	const ResourceInfo *info2;
 	info2 = (const ResourceInfo *)
 		(index + (i + 1) * ResourceInfo::SIZE);
-	return info2->offset - info1->offset;
+	return info2->offset() - info1->offset();
 }
 
 void add_type(Module &mod, const std::string &name, const Type &t)
@@ -83,7 +77,7 @@ const QbrtFunction * Module::fetch_function(const std::string &name) const
 			continue;
 		}
 		tbl.ptr(f, i);
-		fname = fetch_string(tbl, f->name_idx);
+		fname = fetch_string(tbl, f->name_idx());
 		if (name != fname) {
 			continue;
 		}
@@ -143,7 +137,7 @@ struct ProtocolFunctionSearch
 		}
 
 		const ProtocolResource *proto;
-		proto = tbl.ptr< ProtocolResource >(f->context_idx);
+		proto = tbl.ptr< ProtocolResource >(f->context_idx());
 		const char *pname = fetch_string(tbl, proto->name_idx());
 		if (protocol < pname) {
 			return -1;
@@ -152,7 +146,7 @@ struct ProtocolFunctionSearch
 			return 1;
 		}
 
-		const char *fname = fetch_string(tbl, f->name_idx);
+		const char *fname = fetch_string(tbl, f->name_idx());
 		if (function < fname) {
 			return -1;
 		}
@@ -192,10 +186,10 @@ struct PolymorphFunctionSearch
 		}
 
 		const PolymorphResource *poly;
-		poly = tbl.ptr< PolymorphResource >(f->context_idx);
-		const ModSym &protoms(fetch_modsym(tbl, poly->protocol_idx));
+		poly = tbl.ptr< PolymorphResource >(f->context_idx());
+		const ModSym &protoms(fetch_modsym(tbl, poly->protocol_idx()));
 		// compare protocol module
-		const char *other_mod = fetch_string(tbl, protoms.mod_name);
+		const char *other_mod = fetch_string(tbl, protoms.mod_name());
 		if (this->proto_mod < other_mod) {
 			return -1;
 		}
@@ -203,7 +197,7 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 		// compare protocol symbol
-		const char *other_sym = fetch_string(tbl, protoms.sym_name);
+		const char *other_sym = fetch_string(tbl, protoms.sym_name());
 		if (this->proto_name < other_sym) {
 			return -1;
 		}
@@ -211,7 +205,7 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		const char *fname = fetch_string(tbl, f->name_idx);
+		const char *fname = fetch_string(tbl, f->name_idx());
 		if (function < fname) {
 			return -1;
 		}
@@ -219,7 +213,8 @@ struct PolymorphFunctionSearch
 			return 1;
 		}
 
-		const char *param_types = fetch_string(tbl, f->param_types_idx);
+		const char *param_types =
+				fetch_string(tbl, f->param_types_idx());
 		return compare_types(value_types.c_str(), param_types);
 	}
 
@@ -291,7 +286,7 @@ struct ConstructSearch
 	{
 		const ConstructResource *i_cons;
 		i_cons = tbl.ptr< ConstructResource >(i);
-		const char *i_name = fetch_string(tbl, i_cons->name_idx);
+		const char *i_name = fetch_string(tbl, i_cons->name_idx());
 
 		if (name < i_name) {
 			return -1;
@@ -320,7 +315,7 @@ struct DataTypeSearch
 	{
 		const DataTypeResource *i_dtr;
 		i_dtr = tbl.ptr< DataTypeResource >(i);
-		const char *i_name = fetch_string(tbl, i_dtr->name_idx);
+		const char *i_name = fetch_string(tbl, i_dtr->name_idx());
 
 		if (name < i_name) {
 			return -1;
@@ -370,7 +365,7 @@ const Type * indexed_datatype(const Module &mod, uint16_t idx)
 		cerr << "DataTypeResource not found at: " << idx << endl;
 		return NULL;
 	}
-	const char *name = fetch_string(mod.resource, dtr->name_idx);
+	const char *name = fetch_string(mod.resource, dtr->name_idx());
 	const Type *t = new Type(mod.name, name, dtr->argc);
 	mod.indexed_type_cache[idx] = t;
 	return t;
@@ -426,9 +421,8 @@ void read_header(ObjectHeader &h, istream &input)
 
 void read_resource_table(ResourceTable &tbl, istream &input)
 {
-#error "broken here. to be fixed shortly."
-	input.read((char *) &tbl.data_size, 4);
-	input.read((char *) &tbl.resource_count, 2);
+	tbl.data_size = read32(input);
+	tbl.resource_count = read16(input);
 	uint32_t index_size(tbl.resource_count * ResourceInfo::SIZE);
 
 	uint8_t *data = new uint8_t[tbl.data_size];
@@ -526,7 +520,7 @@ void Module::load_construct(qbrt_value &dst, const Module &m, const char *name)
 	const ConstructResource *construct_r;
 	construct_r = find_construct(m, name);
 
-	const Type *typ = indexed_datatype(m, construct_r->datatype_idx);
+	const Type *typ = indexed_datatype(m, construct_r->datatype_idx());
 
 	Construct *cons = new Construct(m, *construct_r);
 	qbrt_value::construct(dst, typ, cons);

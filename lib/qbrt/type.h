@@ -10,38 +10,66 @@ class Module;
 
 struct ParamResource
 {
-	uint16_t name_idx;	// String index
-	uint16_t type_idx;	// TypeSpecResource index
+private:
+	uint16_t _name_idx;	// String index
+	uint16_t _type_idx;	// TypeSpecResource index
+
+public:
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t type_idx() const { return be16toh(_type_idx); }
 };
 
 struct TypeSpecResource
 {
-	uint16_t name_idx;	// type modsym
-	uint16_t fullname_idx;	// string
-	uint16_t args[];	// other TypeSpecResource indexes
+private:
+	uint16_t _name_idx;	// type modsym
+	uint16_t _fullname_idx;	// string
+	uint16_t _args[];	// other TypeSpecResource indexes
+
+public:
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t fullname_idx() const { return be16toh(_fullname_idx); }
+	uint16_t args(uint16_t i) const { return be16toh(_args[i]); }
 };
 
 struct DataTypeResource
 {
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t filename_idx;
-	uint16_t lineno;
+private:
+	uint16_t _name_idx;
+	uint16_t _doc_idx;
+	uint16_t _filename_idx;
+	uint16_t _lineno;
+
+public:
 	uint8_t argc;
+
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	uint16_t filename_idx() const { return be16toh(_filename_idx); }
+	uint16_t lineno() const { return be16toh(_lineno); }
 
 	static const uint32_t SIZE = 9;
 };
 
 struct ConstructResource
 {
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t filename_idx;
-	uint16_t lineno;
-	uint16_t datatype_idx;
+private:
+	uint16_t _name_idx;
+	uint16_t _doc_idx;
+	uint16_t _filename_idx;
+	uint16_t _lineno;
+	uint16_t _datatype_idx;
+
+public:
 	uint8_t fld_count;
 	uint8_t reserved;
 	ParamResource fields[];
+
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	uint16_t filename_idx() const { return be16toh(_filename_idx); }
+	uint16_t lineno() const { return be16toh(_lineno); }
+	uint16_t datatype_idx() const { return be16toh(_datatype_idx); }
 
 	static const uint32_t SIZE = 12;
 };

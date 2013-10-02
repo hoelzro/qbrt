@@ -10,180 +10,31 @@
 #include <sstream>
 
 
-#pragma pack(push, 1)
-
-struct call_instruction
-: public instruction
-{
-	uint16_t result_reg;
-	uint16_t func_reg;
-
-	call_instruction(reg_t result, reg_t func)
-		: instruction(OP_CALL)
-		, result_reg(result)
-		, func_reg(func)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct return_instruction
-: public instruction
-{
-	return_instruction()
-	: instruction(OP_RETURN)
-	{}
-
-	static const uint8_t SIZE = 1;
-};
-
-struct cfailure_instruction
-: public instruction
-{
-	uint16_t dst;
-	uint16_t hashtag_id;
-
-	cfailure_instruction(reg_t dst, uint16_t hash_id)
-	: instruction(OP_CFAILURE)
-	, dst(dst)
-	, hashtag_id(hash_id)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct lcontext_instruction
-: public instruction
-{
-	uint16_t reg;
-	uint16_t hashtag;
-
-	lcontext_instruction(reg_t r, uint16_t hashtag)
-		: instruction(OP_LCONTEXT)
-		, reg(r)
-		, hashtag(hashtag)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct lfunc_instruction
-: public instruction
-{
-	uint16_t reg;
-	uint16_t modsym;
-
-	lfunc_instruction(reg_t r, uint16_t modsym)
-		: instruction(OP_LFUNC)
-		, reg(r)
-		, modsym(modsym)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct loadtype_instruction
-: public instruction
-{
-	uint16_t reg;
-	uint16_t modname;
-	uint16_t type;
-
-	loadtype_instruction(reg_t r, uint16_t mod, uint16_t type)
-		: instruction(OP_LFUNC)
-		, reg(r)
-		, modname(mod)
-		, type(type)
-	{}
-
-	static const uint8_t SIZE = 7;
-};
-
-struct loadobj_instruction
-: public instruction
-{
-	uint16_t modname;
-
-	loadobj_instruction(uint16_t mod)
-		: instruction(OP_LOADOBJ)
-		, modname(mod)
-	{}
-
-	static const uint8_t SIZE = 3;
-};
-
-struct move_instruction
-: public instruction
-{
-	uint16_t dst;
-	uint16_t src;
-
-	move_instruction(reg_t dst, reg_t src)
-		: instruction(OP_MOVE)
-		, dst(dst)
-		, src(src)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct ref_instruction
-: public instruction
-{
-	uint16_t dst;
-	uint16_t src;
-
-	ref_instruction(reg_t dst, reg_t src)
-		: instruction(OP_REF)
-		, dst(dst)
-		, src(src)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-struct copy_instruction
-: public instruction
-{
-	uint16_t dst;
-	uint16_t src;
-
-	copy_instruction(reg_t dst, reg_t src)
-		: instruction(OP_COPY)
-		, dst(dst)
-		, src(src)
-	{}
-
-	static const uint8_t SIZE = 5;
-};
-
-#pragma pack(pop)
-
-
 struct Module;
-
-struct PolymorphArg
-{
-	std::string module;
-	std::string type;
-	uint8_t arg_index;
-
-	friend bool operator < (const PolymorphArg &, const PolymorphArg &);
-};
 
 struct FunctionHeader
 {
-	uint16_t name_idx;
-	uint16_t doc_idx;
-	uint16_t line_no;
-	uint16_t context_idx;
-	uint16_t param_types_idx;
-	uint16_t result_type_idx;
+private:
+	uint16_t _name_idx;
+	uint16_t _doc_idx;
+	uint16_t _line_no;
+	uint16_t _context_idx;
+	uint16_t _param_types_idx;
+	uint16_t _result_type_idx;
+
+public:
 	uint8_t fcontext;
 	uint8_t argc;
 	uint8_t regc;
 	uint8_t reserved;
 	ParamResource params[];
+
+	uint16_t name_idx() const { return be16toh(_name_idx); }
+	uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	uint16_t line_no() const { return be16toh(_line_no); }
+	uint16_t context_idx() const { return be16toh(_context_idx); }
+	uint16_t param_types_idx() const { return be16toh(_param_types_idx); }
+	uint16_t result_type_idx() const { return be16toh(_result_type_idx); }
 
 	/** Get the address for where code starts */
 	const uint8_t * code() const
@@ -227,13 +78,23 @@ public:
 
 struct PolymorphResource
 {
-	uint16_t protocol_idx;
-	uint16_t doc_idx;
-	uint16_t line_no;
-	uint16_t type_count;
-	uint16_t func_count;
+private:
+	uint16_t _protocol_idx;
+	uint16_t _doc_idx;
+	uint16_t _line_no;
+	uint16_t _type_count;
+	uint16_t _func_count;
 
-	uint16_t type[]; // TypeSpec array
+	uint16_t _type[]; // TypeSpec array
+
+public:
+	uint16_t protocol_idx() const { return be16toh(_protocol_idx); }
+	uint16_t doc_idx() const { return be16toh(_doc_idx); }
+	uint16_t line_no() const { return be16toh(_line_no); }
+	uint16_t type_count() const { return be16toh(_type_count); }
+	uint16_t func_count() const { return be16toh(_func_count); }
+
+	uint16_t type(uint16_t i) const { return be16toh(_type[i]); }
 
 	static const uint16_t HEADER_SIZE = 10;
 };

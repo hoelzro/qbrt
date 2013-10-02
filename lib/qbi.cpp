@@ -1,9 +1,8 @@
 
 #include "qbrt/core.h"
-#include "qbrt/function.h"
 #include "qbrt/module.h"
-#include "qbrt/logic.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
@@ -43,9 +42,9 @@ void print_binary_data(const uint8_t *data, uint16_t len)
 	cout << endl;
 }
 
-typedef uint8_t (*instruction_printer)(const instruction &);
+typedef void (*instruction_printer)(const instruction &);
 
-uint8_t print_binaryop_instruction(const binaryop_instruction &i)
+void print_binaryop_instruction(const binaryop_instruction &i)
 {
 	const char *opcode = "unknown";
 	switch (i.opcode()) {
@@ -67,39 +66,53 @@ uint8_t print_binaryop_instruction(const binaryop_instruction &i)
 	print_register(i.a);
 	print_register(i.b);
 	cout << endl;
-	return binaryop_instruction::SIZE;
 }
 
-uint8_t print_call_instruction(const call_instruction &i)
+void print_call_instruction(const call_instruction &i)
 {
 	cout << "call";
 	print_register(i.result_reg);
 	print_register(i.func_reg);
 	cout << endl;
-	return call_instruction::SIZE;
 }
 
-uint8_t print_lcontext_instruction(const lcontext_instruction &i)
+void print_call1_instruction(const call1_instruction &i)
+{
+	cout << "call1";
+	print_register(i.result_reg);
+	print_register(i.func_reg);
+	print_register(i.a);
+	cout << endl;
+}
+
+void print_call2_instruction(const call2_instruction &i)
+{
+	cout << "call2";
+	print_register(i.result_reg);
+	print_register(i.func_reg);
+	print_register(i.a);
+	print_register(i.b);
+	cout << endl;
+}
+
+void print_lcontext_instruction(const lcontext_instruction &i)
 {
 	cout << "lcontext " << pretty_reg(i.reg)
 		<< " #" << i.hashtag << endl;
-	return lcontext_instruction::SIZE;
 }
 
-uint8_t print_lconstruct_instruction(const lconstruct_instruction &i)
+void print_lconstruct_instruction(const lconstruct_instruction &i)
 {
 	cout << "lconstruct " << pretty_reg(i.reg)
 		<< " modsym:" << i.modsym << endl;
-	return lconstruct_instruction::SIZE;
 }
 
-uint8_t print_lfunc_instruction(const lfunc_instruction &i)
+void print_lfunc_instruction(const lfunc_instruction &i)
 {
 	cout << "lfunc " << pretty_reg(i.reg) << " modsym:" << i.modsym << endl;
-	return lfunc_instruction::SIZE;
 }
 
-uint8_t print_match_instruction(const match_instruction &i)
+void print_match_instruction(const match_instruction &i)
 {
 	cout << "match";
 	print_register(i.result);
@@ -108,10 +121,9 @@ uint8_t print_match_instruction(const match_instruction &i)
 	cout << ' ';
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return match_instruction::SIZE;
 }
 
-uint8_t print_matchargs_instruction(const matchargs_instruction &i)
+void print_matchargs_instruction(const matchargs_instruction &i)
 {
 	cout << "matchargs";
 	print_register(i.result);
@@ -119,100 +131,87 @@ uint8_t print_matchargs_instruction(const matchargs_instruction &i)
 	cout << ' ';
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return matchargs_instruction::SIZE;
 }
 
-uint8_t print_newproc_instruction(const newproc_instruction &i)
+void print_newproc_instruction(const newproc_instruction &i)
 {
 	cout << "newproc " << pretty_reg(i.pid)
 		<<' '<< pretty_reg(i.func) << endl;
-	return newproc_instruction::SIZE;
 }
 
-uint8_t print_patternvar_instruction(const patternvar_instruction &i)
+void print_patternvar_instruction(const patternvar_instruction &i)
 {
 	cout << "patternvar " << pretty_reg(i.dst) << endl;
-	return patternvar_instruction::SIZE;
 }
 
-uint8_t print_recv_instruction(const recv_instruction &i)
+void print_recv_instruction(const recv_instruction &i)
 {
 	cout << "recv " << pretty_reg(i.dst) << endl;
-	return recv_instruction::SIZE;
 }
 
-uint8_t print_stracc_instruction(const stracc_instruction &i)
+void print_stracc_instruction(const stracc_instruction &i)
 {
 	cout << "stracc " << pretty_reg(i.dst)
 		<<' '<< pretty_reg(i.src) << endl;
-	return stracc_instruction::SIZE;
 }
 
-uint8_t print_loadobj_instruction(const loadobj_instruction &i)
+void print_loadobj_instruction(const loadobj_instruction &i)
 {
 	cout << "loadobj";
 	cout << " s" << i.modname << endl;
-	return loadobj_instruction::SIZE;
 }
 
-uint8_t print_move_instruction(const move_instruction &i)
+void print_move_instruction(const move_instruction &i)
 {
 	cout << "move";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return move_instruction::SIZE;
 }
 
-uint8_t print_ref_instruction(const ref_instruction &i)
+void print_ref_instruction(const ref_instruction &i)
 {
 	cout << "ref";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return ref_instruction::SIZE;
 }
 
-uint8_t print_copy_instruction(const copy_instruction &i)
+void print_copy_instruction(const copy_instruction &i)
 {
 	cout << "copy";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << endl;
-	return copy_instruction::SIZE;
 }
 
-uint8_t print_consts_instruction(const consts_instruction &i)
+void print_consts_instruction(const consts_instruction &i)
 {
 	cout << "consts";
 	print_register(i.reg);
 	cout << " s" << i.string_id << endl;
-	return consts_instruction::SIZE;
 }
 
-uint8_t print_consthash_instruction(const consthash_instruction &i)
+void print_consthash_instruction(const consthash_instruction &i)
 {
 	cout << "consthash";
 	print_register(i.reg);
 	cout << " #" << i.hash_id << endl;
-	return consthash_instruction::SIZE;
 }
 
-uint8_t print_return_instruction(const return_instruction &i)
+void print_return_instruction(const return_instruction &i)
 {
 	cout << "ret\n";
-	return return_instruction::SIZE;
 }
 
-uint8_t print_cfailure_instruction(const cfailure_instruction &i)
+void print_cfailure_instruction(const cfailure_instruction &i)
 {
 	cout << "cfailure";
 	print_register(i.dst);
 	cout << " #" << i.hashtag_id << endl;
-	return cfailure_instruction::SIZE;
 }
 
-uint8_t print_cmp_instruction(const cmp_instruction &i)
+void print_cmp_instruction(const cmp_instruction &i)
 {
 	cout << "cmp";
 	switch (i.opcode()) {
@@ -227,86 +226,76 @@ uint8_t print_cmp_instruction(const cmp_instruction &i)
 	print_register(i.a);
 	print_register(i.b);
 	cout << endl;
-	return 0;
 }
 
-uint8_t print_consti_instruction(const consti_instruction &i)
+void print_consti_instruction(const consti_instruction &i)
 {
 	cout << "consti";
 	print_register(i.reg);
 	cout << " " << i.value << endl;
-	return consti_instruction::SIZE;
 }
 
-uint8_t print_ctuple_instruction(const ctuple_instruction &i)
+void print_ctuple_instruction(const ctuple_instruction &i)
 {
 	cout << "ctuple";
 	print_register(i.dst);
 	cout << (int) i.size << endl;
-	return ctuple_instruction::SIZE;
 }
 
-uint8_t print_fieldget_instruction(const fieldget_instruction &i)
+void print_fieldget_instruction(const fieldget_instruction &i)
 {
 	cout << "fieldget";
 	print_register(i.dst);
 	print_register(i.src);
 	cout << " s" << i.field_name;
 	cout << endl;
-	return fieldget_instruction::SIZE;
 }
 
-uint8_t print_fieldset_instruction(const fieldset_instruction &i)
+void print_fieldset_instruction(const fieldset_instruction &i)
 {
 	cout << "fieldset";
 	print_register(i.dst);
 	cout << " s" << i.field_name;
 	print_register(i.src);
 	cout << endl;
-	return fieldset_instruction::SIZE;
 }
 
-uint8_t print_fork_instruction(const fork_instruction &i)
+void print_fork_instruction(const fork_instruction &i)
 {
 	cout << "fork ";
 	print_jump_delta(i.jump_data);
 	print_register(i.result);
 	cout << endl;
-	return fork_instruction::SIZE;
 }
 
-uint8_t print_goto_instruction(const goto_instruction &i)
+void print_goto_instruction(const goto_instruction &i)
 {
 	cout << "goto ";
 	print_jump_delta(i.jump_data);
 	cout << endl;
-	return goto_instruction::SIZE;
 }
 
-uint8_t print_if_instruction(const if_instruction &i)
+void print_if_instruction(const if_instruction &i)
 {
 	cout << (i.ifnot() ? "ifnot " : "if ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return if_instruction::SIZE;
 }
 
-uint8_t print_iffail_instruction(const iffail_instruction &i)
+void print_iffail_instruction(const iffail_instruction &i)
 {
 	cout << (i.iffail() ? "iffail " : "ifnotfail ");
 	print_jump_delta(i.jump_data);
 	print_register(i.op);
 	cout << endl;
-	return iffail_instruction::SIZE;
 }
 
-uint8_t print_wait_instruction(const wait_instruction &i)
+void print_wait_instruction(const wait_instruction &i)
 {
 	cout << "wait";
 	print_register(i.reg);
 	cout << endl;
-	return wait_instruction::SIZE;
 }
 
 instruction_printer PRINTER[NUM_OP_CODES] = {0};
@@ -314,6 +303,8 @@ instruction_printer PRINTER[NUM_OP_CODES] = {0};
 void set_printers()
 {
 	PRINTER[OP_CALL] = (instruction_printer) print_call_instruction;
+	PRINTER[OP_CALL1] = (instruction_printer) print_call1_instruction;
+	PRINTER[OP_CALL2] = (instruction_printer) print_call2_instruction;
 	PRINTER[OP_CFAILURE] = (instruction_printer) print_cfailure_instruction;
 	PRINTER[OP_CMP_EQ] = (instruction_printer) print_cmp_instruction;
 	PRINTER[OP_CMP_NOTEQ] = (instruction_printer) print_cmp_instruction;
@@ -371,18 +362,18 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	switch (f.fcontext) {
 		case PFC_ABSTRACT:
 		case PFC_DEFAULT:
-			protocol = tbl.ptr< ProtocolResource >(f.context_idx);
+			protocol = tbl.ptr< ProtocolResource >(f.context_idx());
 			pname = fetch_string(tbl, protocol->name_idx());
 			break;
 		case PFC_OVERRIDE:
-			poly = tbl.ptr< PolymorphResource >(f.context_idx);
-			ms = &fetch_modsym(tbl, poly->protocol_idx);
-			module = fetch_string(tbl, ms->mod_name);
-			pname = fetch_string(tbl, ms->sym_name);
+			poly = tbl.ptr< PolymorphResource >(f.context_idx());
+			ms = &fetch_modsym(tbl, poly->protocol_idx());
+			module = fetch_string(tbl, ms->mod_name());
+			pname = fetch_string(tbl, ms->sym_name());
 			break;
 	}
 
-	const char *fname = fetch_string(tbl, f.name_idx);
+	const char *fname = fetch_string(tbl, f.name_idx());
 	if (module && *module) {
 		cout << module << '/';
 	}
@@ -395,14 +386,14 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 	}
 	cout << fname << "/" << (int) f.argc << ',' << (int) f.regc << ":\n";
 
-	const char *param_types = fetch_string(tbl, f.param_types_idx);
+	const char *param_types = fetch_string(tbl, f.param_types_idx());
 	cout << "function type: ";
 	if (param_types && *param_types) {
 		cout << param_types << " -> ";
 	}
 	const TypeSpecResource &result_type(
-			tbl.obj< TypeSpecResource >(f.result_type_idx));
-	const char *fullresult = fetch_string(tbl, result_type.fullname_idx);
+			tbl.obj< TypeSpecResource >(f.result_type_idx()));
+	const char *fullresult = fetch_string(tbl, result_type.fullname_idx());
 	cout << fullresult << endl;
 
 	if (poly) {
@@ -411,9 +402,10 @@ void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)
 		const char *typesym;
 		const char *fullname;
 		const TypeSpecResource *tspec;
-		for (int i(0); i<poly->type_count; ++i) {
-			tspec = tbl.ptr< TypeSpecResource >(poly->type[i]);
-			fullname = fetch_string(tbl, tspec->fullname_idx);
+		uint16_t typec(poly->type_count());
+		for (int i(0); i<typec; ++i) {
+			tspec = tbl.ptr< TypeSpecResource >(poly->type(i));
+			fullname = fetch_string(tbl, tspec->fullname_idx());
 			cout << ' ' << fullname;
 		}
 		cout << endl;
@@ -447,11 +439,11 @@ void print_function_code(const FunctionHeader &f, uint32_t size
 		cout << "args:\n";
 		for (int i(0); i<f.argc; ++i) {
 			const ParamResource &p(f.params[i]);
-			const char *name = fetch_string(tbl, p.name_idx);
+			const char *name = fetch_string(tbl, p.name_idx());
 			const TypeSpecResource &type(
-				tbl.obj< TypeSpecResource >(p.type_idx));
+				tbl.obj< TypeSpecResource >(p.type_idx()));
 			const char *fullname =
-				fetch_string(tbl, type.fullname_idx);
+				fetch_string(tbl, type.fullname_idx());
 			cout << '\t' << name << ' ' << fullname << endl;
 		}
 	}
@@ -487,9 +479,10 @@ void print_code(const ResourceTable &tbl)
 void print_imports(const ResourceTable &tbl, uint16_t imports_index)
 {
 	const ImportResource *import = tbl.ptr< ImportResource >(imports_index);
-	cout << "\nimported modules: " << import->count << endl;
-	for (int i(0); i<import->count; ++i) {
-		const char *module = fetch_string(tbl, import->modules[i]);
+	uint16_t cnt(import->count());
+	cout << "\nimported modules: " << cnt << endl;
+	for (int i(0); i<cnt; ++i) {
+		const char *module = fetch_string(tbl, import->modules(i));
 		cout << "\t" << module << endl;
 	}
 }
@@ -498,14 +491,14 @@ void print_imports(const ResourceTable &tbl, uint16_t imports_index)
 void print_constructure(const ConstructResource &conres
 		, const ResourceTable &tbl)
 {
-	const char *name = fetch_string(tbl, conres.name_idx);
+	const char *name = fetch_string(tbl, conres.name_idx());
 	cout << "\nconstruct: " << name << '/' << (int)conres.fld_count << endl;
 	for (int i(0); i<conres.fld_count; ++i) {
 		const ParamResource &p(conres.fields[i]);
-		const char *name = fetch_string(tbl, p.name_idx);
+		const char *name = fetch_string(tbl, p.name_idx());
 		const TypeSpecResource &tsr(
-				tbl.obj< TypeSpecResource >(p.type_idx));
-		const char *fullname = fetch_string(tbl, tsr.fullname_idx);
+				tbl.obj< TypeSpecResource >(p.type_idx()));
+		const char *fullname = fetch_string(tbl, tsr.fullname_idx());
 		cout << '\t' << name <<' '<< fullname << endl;
 	}
 }
@@ -534,7 +527,7 @@ void print_hashtag(const ResourceTable &tbl, uint16_t index)
 void print_import_line(const ResourceTable &tbl, uint16_t index)
 {
 	const ImportResource &import(tbl.obj< ImportResource >(index));
-	printf("import %d\n", import.count);
+	printf("import %d\n", import.count());
 }
 
 void print_unsupported_resource(const ResourceTable &tbl, uint16_t i)
@@ -570,8 +563,8 @@ void print_escaped_string(const ResourceTable &tbl, uint16_t index)
 void print_modsym(const ResourceTable &tbl, uint16_t index)
 {
 	const ModSym &modsym(tbl.obj< ModSym >(index));
-	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name));
-	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name));
+	const StringResource &mod(tbl.obj< StringResource >(modsym.mod_name()));
+	const StringResource &sym(tbl.obj< StringResource >(modsym.sym_name()));
 	printf("modsym(%s/%s)\n", mod.value, sym.value);
 }
 
@@ -579,21 +572,21 @@ void print_typespec(const ResourceTable &tbl, uint16_t index)
 {
 	const TypeSpecResource &typespec(tbl.obj< TypeSpecResource >(index));
 	const StringResource &fullname(
-			tbl.obj< StringResource >(typespec.fullname_idx));
+			tbl.obj< StringResource >(typespec.fullname_idx()));
 	printf("typespec(%s)\n", fullname.value);
 }
 
 void print_construct(const ResourceTable &tbl, uint16_t index)
 {
 	const ConstructResource &cons(tbl.obj< ConstructResource >(index));
-	const StringResource &name(tbl.obj< StringResource >(cons.name_idx));
+	const StringResource &name(tbl.obj< StringResource >(cons.name_idx()));
 	printf("construct %s/%d\n", name.value, cons.fld_count);
 }
 
 void print_datatype(const ResourceTable &tbl, uint16_t index)
 {
 	const DataTypeResource &dtr(tbl.obj< DataTypeResource >(index));
-	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx));
+	const StringResource &name(tbl.obj< StringResource >(dtr.name_idx()));
 	printf("datatype %s/%d\n", name.value, dtr.argc);
 }
 
@@ -605,13 +598,13 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 	const ProtocolResource *proto = NULL;
 	const PolymorphResource *poly = NULL;
 	const ModSym *proto_ms = NULL;
-	const char *fname = fetch_string(tbl, f.name_idx);
+	const char *fname = fetch_string(tbl, f.name_idx());
 	const char *fctx = fcontext_name(f.fcontext);
 	printf("%s function ", fctx);
 
 	switch (PFC_TYPE(f.fcontext)) {
 		case FCT_PROTOCOL:
-			proto = tbl.ptr< ProtocolResource >(f.context_idx);
+			proto = tbl.ptr< ProtocolResource >(f.context_idx());
 			if (!proto) {
 				cerr << "null protocol for function " << fname << endl;
 				return;
@@ -619,10 +612,10 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 			pname = fetch_string(tbl, proto->name_idx());
 			break;
 		case FCT_POLYMORPH:
-			poly = tbl.ptr< PolymorphResource >(f.context_idx);
-			proto_ms = &fetch_modsym(tbl, poly->protocol_idx);
-			modname = fetch_string(tbl, proto_ms->mod_name);
-			pname = fetch_string(tbl, proto_ms->sym_name);
+			poly = tbl.ptr< PolymorphResource >(f.context_idx());
+			proto_ms = &fetch_modsym(tbl, poly->protocol_idx());
+			modname = fetch_string(tbl, proto_ms->mod_name());
+			pname = fetch_string(tbl, proto_ms->sym_name());
 			break;
 	}
 	if (modname && *modname) {
@@ -648,19 +641,20 @@ void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
 void print_polymorph_resource_line(const ResourceTable &tbl, uint16_t i)
 {
 	const PolymorphResource &poly(tbl.obj< PolymorphResource >(i));
-	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx));
-	const char *modname(fetch_string(tbl, protoname.mod_name));
-	const char *symname(fetch_string(tbl, protoname.sym_name));
+	const ModSym &protoname(fetch_modsym(tbl, poly.protocol_idx()));
+	const char *modname(fetch_string(tbl, protoname.mod_name()));
+	const char *symname(fetch_string(tbl, protoname.sym_name()));
 	printf("polymorph ");
 	if (modname && *modname) {
 		printf("%s/", modname);
 	}
 	printf("%s", symname);
 
-	for (uint16_t i(0); i<poly.type_count; ++i) {
+	uint16_t typec(poly.type_count());
+	for (uint16_t i(0); i<typec; ++i) {
 		const TypeSpecResource &tspec(tbl.obj< TypeSpecResource >(
-					poly.type[i]));
-		const char *fullname(fetch_string(tbl, tspec.fullname_idx));
+					poly.type(i)));
+		const char *fullname(fetch_string(tbl, tspec.fullname_idx()));
 		printf(" %s", fullname);
 	}
 	printf("\n");

@@ -8,7 +8,7 @@ using namespace std;
 
 const char * QbrtFunction::name() const
 {
-	return fetch_string(mod->resource, header->name_idx);
+	return fetch_string(mod->resource, header->name_idx());
 }
 
 uint32_t QbrtFunction::code_offset() const
@@ -26,17 +26,17 @@ const char * QbrtFunction::protocol_name() const
 		case FCT_PROTOCOL: {
 			const ProtocolResource *proto;
 			proto = mod->resource.ptr< const ProtocolResource >(
-					header->context_idx);
+					header->context_idx());
 			name_idx = proto->name_idx();
 			break; }
 		case FCT_POLYMORPH: {
 			const PolymorphResource *poly;
 			poly = mod->resource.ptr< const PolymorphResource >(
-					header->context_idx);
+					header->context_idx());
 			const ModSym *protoms;
 			protoms = mod->resource.ptr< const ModSym >(
-					poly->protocol_idx);
-			name_idx = protoms->sym_name;
+					poly->protocol_idx());
+			name_idx = protoms->sym_name();
 			break; }
 	}
 	return fetch_string(mod->resource, name_idx);
@@ -53,11 +53,11 @@ const char * QbrtFunction::protocol_module() const
 		case FCT_POLYMORPH: {
 			const PolymorphResource *poly;
 			poly = mod->resource.ptr< const PolymorphResource >(
-					header->context_idx);
+					header->context_idx());
 			const ModSym *protoms;
 			protoms = mod->resource.ptr< const ModSym >(
-					poly->protocol_idx);
-			mod_idx = protoms->mod_name;
+					poly->protocol_idx());
+			mod_idx = protoms->mod_name();
 			break; }
 	}
 	return fetch_string(mod->resource, mod_idx);

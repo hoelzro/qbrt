@@ -7,12 +7,12 @@ using namespace std;
 
 const DataTypeResource * Construct::datatype() const
 {
-	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx);
+	return mod.resource.ptr< DataTypeResource >(resource.datatype_idx());
 }
 
 const char * Construct::name() const
 {
-	return fetch_string(mod.resource, resource.name_idx);
+	return fetch_string(mod.resource, resource.name_idx());
 }
 
 bool Construct::compare(const Construct &a, const Construct &b)
@@ -32,7 +32,8 @@ void load_construct_value_types(ostringstream &out, const Construct &c)
 {
 	bool first(true);
 	const DataTypeResource *dtr = c.datatype();
-	const char *datatype_name = fetch_string(c.mod.resource, dtr->name_idx);
+	const char *datatype_name;
+	datatype_name = fetch_string(c.mod.resource, dtr->name_idx());
 	const ResourceTable &res(c.mod.resource);
 	out << c.mod.name << '/' << datatype_name;
 	if (dtr->argc == 0) {
@@ -51,10 +52,10 @@ void load_construct_value_types(ostringstream &out, const Construct &c)
 		}
 		const ParamResource &param(c.resource.fields[i]);
 		const TypeSpecResource *tsr;
-		tsr = res.ptr< TypeSpecResource >(param.type_idx);
-		const ModSym &typems = fetch_modsym(res, tsr->name_idx);
-		const char *modnam = fetch_string(res, typems.mod_name);
-		const char *typnam = fetch_string(res, typems.sym_name);
+		tsr = res.ptr< TypeSpecResource >(param.type_idx());
+		const ModSym &typems = fetch_modsym(res, tsr->name_idx());
+		const char *modnam = fetch_string(res, typems.mod_name());
+		const char *typnam = fetch_string(res, typems.sym_name());
 
 		if (modnam[0] == '*' && modnam[1] == '\0') {
 			qbrt_value::append_type(out, c.value(i));

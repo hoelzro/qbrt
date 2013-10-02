@@ -539,6 +539,14 @@ bool collect_string(ResourceSet &rs, AsmString &str)
 	return rs.collect(str);
 }
 
+
+uint32_t AsmModSym::write(std::ostream &o) const
+{
+	write16(o, *module.index);
+	write16(o, *symbol.index);
+	return 4;
+}
+
 bool collect_modsym(ResourceSet &rs, AsmModSym &modsym)
 {
 	rs.import(modsym.module);
@@ -934,7 +942,7 @@ void write_resource_index(ostream &out, const ResourceIndex &index)
 
 	ResourceIndex::const_iterator it(index.begin());
 	for (; it!=index.end(); ++it) {
-		ResourceInfo r(htobe32(it->offset), htobe16(it->type));
+		ResourceInfo r(htobe32(it->_offset), htobe16(it->_type));
 		out.write((const char *) &r, ResourceInfo::SIZE);
 	}
 }

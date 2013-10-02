@@ -40,27 +40,17 @@ struct ObjectHeader
 	static const uint32_t SIZE = 26;
 };
 
-struct ResourceName
-{
-	uint16_t name_id;
-	uint16_t resource_id;
-
-	ResourceName(uint16_t name, uint16_t id)
-		: name_id(name)
-		, resource_id(id)
-	{}
-
-	static const uint32_t SIZE = 4;
-};
-
 struct ResourceInfo
 {
-	uint32_t offset;
-	uint16_t type;
+	uint32_t _offset;
+	uint16_t _type;
+
+	uint32_t offset() const { return be32toh(_offset); }
+	uint32_t type() const { return be16toh(_type); }
 
 	ResourceInfo(uint32_t offset, uint16_t typ)
-		: offset(offset)
-		, type(typ)
+	: _offset(offset)
+	, _type(typ)
 	{}
 
 	static const uint32_t SIZE = 6;
@@ -68,8 +58,13 @@ struct ResourceInfo
 
 struct ModSym
 {
-	uint16_t mod_name;
-	uint16_t sym_name;
+private:
+	uint16_t _mod_name;
+	uint16_t _sym_name;
+
+public:
+	uint16_t mod_name() const { return be16toh(_mod_name); }
+	uint16_t sym_name() const { return be16toh(_sym_name); }
 
 	typedef std::vector< ModSym * > Array;
 };
@@ -87,13 +82,19 @@ struct FullId
 
 struct ImportResource
 {
-	uint16_t count;
-	uint16_t modules[];
+private:
+	uint16_t _count;
+	uint16_t _modules[];
+
+public:
+	uint16_t count() const { return be16toh(_count); }
+	uint16_t modules(uint16_t i) const { return be16toh(_modules[i]); }
 };
 
 
 struct ResourceTableHeader
 {
+	// converted to host byte order when it's read
 	uint32_t data_size;
 	uint16_t resource_count;
 
@@ -117,7 +118,7 @@ struct ResourceTable
 	{
 		const ResourceInfo *info;
 		info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
-		return info->type;
+		return info->type();
 	}
 
 	template < typename D >
@@ -128,7 +129,7 @@ struct ResourceTable
 		}
 		const ResourceInfo *info;
 		info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
-		return (const D *) (data + info->offset);
+		return (const D *) (data + info->offset());
 	}
 	template < typename D >
 	void ptr(const D *&p, uint16_t i) const
@@ -138,7 +139,7 @@ struct ResourceTable
 		}
 		const ResourceInfo *info;
 		info = (const ResourceInfo *) (index + i * ResourceInfo::SIZE);
-		p = (const D *) (data + info->offset);
+		p = (const D *) (data + info->offset());
 	}
 	template < typename D >
 	const D & obj(uint16_t i) const
@@ -259,8 +260,8 @@ static inline const ModSym & fetch_modsym(const ResourceTable &tbl, uint16_t i)
 static inline FullId fetch_fullid(const ResourceTable &tbl, uint16_t i)
 {
 	const ModSym &msr(fetch_modsym(tbl, i));
-	const char *mod(fetch_string(tbl, msr.mod_name));
-	const char *id(fetch_string(tbl, msr.sym_name));
+	const char *mod(fetch_string(tbl, msr.mod_name()));
+	const char *id(fetch_string(tbl, msr.sym_name()));
 	return FullId(mod, id);
 }
 
@@ -278,6 +279,19 @@ CFunction * add_c_override(Module &, c_function
 		, const std::string &protomod, const std::string &protoname
 		, const std::string &name, uint8_t argc
 		, const std::string &param_types);
+
+static inline uint16_t read16(std::istream &in)
+{
+	uint16_t result;
+	in.read((char *) &result, 2);
+	return be16toh(result);
+}
+static inline uint32_t read32(std::istream &in)
+{
+	uint32_t result;
+	in.read((char *) &result, 4);
+	return be32toh(result);
+}
 
 bool open_qb(std::ifstream &lib, const std::string &qbname);
 

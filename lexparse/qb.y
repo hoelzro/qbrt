@@ -221,6 +221,12 @@ fork_stmt(A) ::= FORK reg(B). {
 stmt(A) ::= fork_block(B). {
 	A = B;
 }
+stmt(A) ::= CALL reg(B) reg(C) reg(D) reg(E). {
+	A = new call_stmt(B, C, D, E);
+}
+stmt(A) ::= CALL reg(B) reg(C) reg(D). {
+	A = new call_stmt(B, C, D);
+}
 stmt(A) ::= CALL reg(B) reg(C). {
 	A = new call_stmt(B, C);
 }

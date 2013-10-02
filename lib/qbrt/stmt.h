@@ -104,7 +104,7 @@ struct Stmt
 	virtual void allocate_registers(RegAlloc *) {}
 	virtual void collect_resources(ResourceSet &) {}
 	virtual void generate_code(AsmFunc &);
-	virtual void pretty(std::ostream &) const = 0;
+	virtual void pretty(std::ostream &) const {}
 };
 
 struct dparam_stmt
@@ -221,9 +221,25 @@ struct call_stmt
 	call_stmt(AsmReg *result, AsmReg *func)
 		: result(result)
 		, function(func)
+		, a(NULL)
+		, b(NULL)
+	{}
+	call_stmt(AsmReg *result, AsmReg *func, AsmReg *p0)
+	: result(result)
+	, function(func)
+	, a(p0)
+	, b(NULL)
+	{}
+	call_stmt(AsmReg *result, AsmReg *func, AsmReg *p0, AsmReg *p1)
+	: result(result)
+	, function(func)
+	, a(p0)
+	, b(p1)
 	{}
 	AsmReg *result;
 	AsmReg *function;
+	AsmReg *a;
+	AsmReg *b;
 
 	void allocate_registers(RegAlloc *);
 	void generate_code(AsmFunc &);

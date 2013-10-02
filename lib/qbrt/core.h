@@ -300,6 +300,8 @@ static inline const Type & value_type(const qbrt_value &v)
 #define OP_MATCHARGS	0x51
 #define OP_FIELDGET	0x52
 #define OP_FIELDSET	0x53
+#define OP_CALL1	0x54
+#define OP_CALL2	0x55
 #define NUM_OP_CODES	0x100
 
 
@@ -384,31 +386,20 @@ struct jump_instruction
 
 #pragma pack(pop)
 
-extern uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
+/**
+ * Initialize the constant sizes of all instructions
+ */
 void init_instruction_sizes();
-
+/**
+ * Retrieve the size of an instruction given the opcode
+ */
 uint8_t isize(uint8_t opcode);
-
+/**
+ * Retrieve the size of an instruction
+ */
 static inline uint8_t isize(const instruction &i)
 {
 	return isize(i.opcode());
-}
-
-static inline void endian_fix(uint16_t &i)
-{
-	uint8_t *f = (uint8_t *) &i;
-	uint8_t tmp = f[0];
-	f[0] = f[1];
-	f[1] = tmp;
-}
-
-static inline uint16_t endian_swap(uint16_t i)
-{
-	uint8_t *f = (uint8_t *) &i;
-	uint8_t tmp = f[0];
-	f[0] = f[1];
-	f[1] = tmp;
-	return i;
 }
 
 

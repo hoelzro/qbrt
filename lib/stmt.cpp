@@ -1,13 +1,13 @@
 #include "qbc.h"
 #include "qbrt/stmt.h"
-#include "qbrt/logic.h"
-#include "qbrt/function.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
 #include <iostream>
+#include <sstream>
 #include <stdlib.h>
 
 using namespace std;
@@ -165,17 +165,37 @@ void call_stmt::allocate_registers(RegAlloc *r)
 {
 	r->assign_src(*function);
 	r->alloc_dst(*result);
+	if (a) {
+		r->assign_src(*a);
+		if (b) {
+			r->assign_src(*b);
+		}
+	}
 }
 
 void call_stmt::generate_code(AsmFunc &f)
 {
-	asm_instruction(f, new call_instruction(*result, *function));
+	instruction *i;
+	if (b) {
+		i = new call2_instruction(*result, *function, *a, *b);
+	} else if (a) {
+		i = new call1_instruction(*result, *function, *a);
+	} else {
+		i = new call_instruction(*result, *function);
+	}
+	asm_instruction(f, i);
 }
 
 void call_stmt::pretty(std::ostream &out) const
 {
 	out << "call " << *result
 		<< " " << *function;
+	if (a) {
+		out << " " << *a;
+		if (b) {
+			out << " " << *b;
+		}
+	}
 }
 
 void cfailure_stmt::allocate_registers(RegAlloc *r)

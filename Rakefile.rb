@@ -26,6 +26,7 @@ QBI.include 'lib'
 QBI.compile_files("lib/qbi.cpp", \
 		  "lib/core.cpp", \
 		  "lib/function.cpp", \
+		  "lib/instruction.cpp", \
 		  "lib/module.cpp", \
 		  "lib/type.cpp", \
 		 )

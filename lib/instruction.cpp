@@ -1,16 +1,20 @@
 #include "instruction.h"
 #include "qbrt/core.h"
-#include "qbrt/function.h"
-#include "qbrt/logic.h"
 #include "qbrt/tuple.h"
 #include "instruction/arithmetic.h"
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/string.h"
 #include "instruction/type.h"
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
+
+
+instruction_writer WRITER[NUM_OP_CODES] = {0};
+static uint8_t INSTRUCTION_SIZE[NUM_OP_CODES];
 
 
 template < typename I >
@@ -24,11 +28,73 @@ uint8_t iwriter(ostream &out, const I &i)
 	template uint8_t iwriter< i##_instruction >(ostream & \
 			, const i##_instruction &);
 
+void init_instruction_sizes()
+{
+	INSTRUCTION_SIZE[OP_CALL] = call_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CALL1] = call1_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CALL2] = call2_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_RETURN] = return_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CFAILURE] = cfailure_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_EQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_NOTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_GTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LT] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CMP_LTEQ] = cmp_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CONSTI] = consti_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CONSTS] = consts_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CONSTHASH] = consthash_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_FORK] = fork_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IADD] = binaryop_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IDIV] = binaryop_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IMULT] = binaryop_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_ISUB] = binaryop_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LCONTEXT] = lcontext_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LCONSTRUCT] = lconstruct_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LFUNC] = lfunc_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LOADTYPE] = loadtype_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_LOADOBJ] = loadobj_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_MATCH] = match_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_MATCHARGS] = matchargs_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_MOVE] = move_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_REF] = ref_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_COPY] = copy_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_FIELDGET] = fieldget_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_FIELDSET] = fieldset_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_GOTO] = goto_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IF] = if_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IFNOT] = if_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IFFAIL] = iffail_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_IFNOTFAIL] = iffail_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CTUPLE] = ctuple_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_STUPLE] = stuple_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CLIST] = clist_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_CONS] = cons_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_NEWPROC] = newproc_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_PATTERNVAR] = patternvar_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_RECV] = recv_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_STRACC] = stracc_instruction::SIZE;
+	INSTRUCTION_SIZE[OP_WAIT] = wait_instruction::SIZE;
+}
+
+uint8_t isize(uint8_t opcode)
+{
+	uint8_t sz(INSTRUCTION_SIZE[opcode]);
+	if (sz == 0) {
+		std::cerr << "Unset instruction size for opcode: "
+			<< (int) opcode << std::endl;
+		exit(1);
+	}
+	return sz;
+}
+
 DEFINE_IWRITER(binaryop);
 DEFINE_IWRITER(consti);
 DEFINE_IWRITER(consts);
 DEFINE_IWRITER(consthash);
 DEFINE_IWRITER(call);
+DEFINE_IWRITER(call1);
+DEFINE_IWRITER(call2);
 DEFINE_IWRITER(fork);
 DEFINE_IWRITER(fieldget);
 DEFINE_IWRITER(fieldset);
@@ -55,12 +121,12 @@ DEFINE_IWRITER(stuple);
 DEFINE_IWRITER(clist);
 DEFINE_IWRITER(cons);
 
-instruction_writer WRITER[NUM_OP_CODES] = {0};
-
 void init_writers()
 {
 	WRITER[OP_IADD] = (instruction_writer) iwriter<binaryop_instruction>;
 	WRITER[OP_CALL] = (instruction_writer) iwriter<call_instruction>;
+	WRITER[OP_CALL1] = (instruction_writer) iwriter<call1_instruction>;
+	WRITER[OP_CALL2] = (instruction_writer) iwriter<call2_instruction>;
 	WRITER[OP_RETURN] = (instruction_writer) iwriter<return_instruction>;
 	WRITER[OP_CFAILURE] =
 		(instruction_writer) iwriter<cfailure_instruction>;
