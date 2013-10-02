@@ -46,6 +46,19 @@ int inspect_indent(0);
 		return; \
 	}} while (0)
 
+#define READ_REG(val, ctx, reg) do { \
+	val = read_reg(ctx, reg, __FILE__, __LINE__); \
+	if (!val) { return; }} while (0)
+
+#define WRITE_REG(val, ctx, reg) do { \
+	val = write_reg(ctx, reg, __FILE__, __LINE__); \
+	if (!val) { return; }} while (0)
+
+#define RW_REG(val, ctx, reg) do { \
+	val = rwreg(ctx, reg, __FILE__, __LINE__); \
+	if (!val) { return; }} while (0)
+
+
 void init_const_registers()
 {
 	for (int i(0); i<16; ++i) {
@@ -79,10 +92,15 @@ struct OpContext
 {
 	virtual uint8_t argc() const = 0;
 	virtual uint8_t regc() const = 0;
+
+	virtual qbrt_value * value(uint8_t) = 0;
+	virtual qbrt_value * result() = 0;
+
 	virtual const qbrt_value * srcvalue(uint16_t) const = 0;
 	virtual qbrt_value * dstvalue(uint16_t) = 0;
 	virtual qbrt_value & refvalue(uint16_t) = 0;
 	virtual Failure * failure(uint16_t) = 0;
+
 	virtual const std::string & module_name() const = 0;
 	virtual const char * function_name() const = 0;
 	virtual int & pc() const = 0;
@@ -95,12 +113,133 @@ struct OpContext
 	{
 		CodeFrame::backtrace(f, worker().current->parent);
 	}
+	Failure * fail_frame(const char *type, const char *file, uint16_t line)
+	{
+		Failure *f = new Failure(type, module_name(), function_name()
+				, pc(), file, line);
+		qbrt_value::fail(*dstvalue(SPECIAL_REG_RESULT), f);
+		worker().current->cfstate = CFS_FAILED;
+	}
 	void fail_frame(Failure *f)
 	{
 		qbrt_value::fail(*dstvalue(SPECIAL_REG_RESULT), f);
 		worker().current->cfstate = CFS_FAILED;
 	}
 };
+
+/**
+ * Given a value, follow it's references. Then check for failure.
+ */
+static inline qbrt_value * readable_value(qbrt_value *val, OpContext &ctx
+		, const char *file, uint16_t lineno)
+{
+	qbrt_value *ref(val);
+	while (ref->type->id == VT_REF) {
+		ref = ref->data.ref;
+	}
+	if (ref->type->id == VT_FAILURE) {
+		Failure *fail = ref->data.failure;
+		fail->trace_down(ctx.module_name(), ctx.function_name(),
+			ctx.pc(), file, lineno);
+		FunctionCall &call(ctx.worker().current->function_call());
+		qbrt_value::fail(*call.result, fail);
+		call.cfstate = CFS_FAILED;
+		return NULL;
+	}
+	return ref;
+}
+
+static inline qbrt_value * primary_reg(OpContext &ctx
+		, uint8_t primary, const char *file, uint16_t lineno)
+{
+	if (primary >= ctx.regc()) {
+		ctx.fail_frame("#register404", file, lineno);
+		return NULL;
+	}
+	return ctx.value(primary);
+}
+
+static inline qbrt_value * secondary_reg(OpContext &ctx
+		, uint8_t primary, uint8_t secondary
+		, const char *file, uint16_t lineno)
+{
+	if (primary >= ctx.regc()) {
+		ctx.fail_frame("#register404", file, lineno);
+		return NULL;
+	}
+	qbrt_value *prim(readable_value(ctx.value(primary), ctx
+				, file, lineno));
+	if (!prim) {
+		return NULL;
+	}
+
+	qbrt_value_index *idx(prim->data.reg);
+	if (secondary >= idx->num_values()) {
+		ctx.fail_frame("#register404", file, lineno);
+		return NULL;
+	}
+	return &idx->value(secondary);
+}
+
+/**
+ * Get the value stored in a given register.
+ *
+ * If it's a failure, copy the failure the context result and return NULL
+ * If it's a promise, put the frame into wait and return NULL
+ * If it's a ref, follow the ref it's actual value and return it
+ * If it's a regular value, return it
+ */
+static inline const qbrt_value * read_reg(OpContext &ctx, uint16_t reg
+		, const char *file, uint16_t lineno)
+{
+	uint8_t primary, secondary;
+	qbrt_value *value(NULL);
+	if (REG_IS_PRIMARY(reg)) {
+		primary = REG_EXTRACT_PRIMARY(reg);
+		value = readable_value(primary_reg(ctx, primary, file, lineno)
+				, ctx, file, lineno);
+	} else if (REG_IS_SECONDARY(reg)) {
+		primary = REG_EXTRACT_SECONDARY1(reg);
+		secondary = REG_EXTRACT_SECONDARY2(reg);
+		value = secondary_reg(ctx, primary, secondary, file, lineno);
+		value = readable_value(value, ctx, file, lineno);
+	} else if (SPECIAL_REG_RESULT == reg) {
+		// this should check for null result
+		value = readable_value(ctx.result(), ctx, file, lineno);
+	} else if (REG_IS_CONST(reg)) {
+		value = &CONST_REGISTER[REG_EXTRACT_CONST(reg)];
+	} else {
+		ctx.fail_frame(FAIL_REGISTER404(ctx.module_name()
+					, ctx.function_name(), ctx.pc()));
+	}
+	return value;
+}
+
+static inline qbrt_value * write_reg(OpContext &ctx, uint16_t reg
+		, const char *file, uint16_t lineno)
+{
+	uint8_t primary, secondary;
+	qbrt_value *value(NULL);
+	if (REG_IS_PRIMARY(reg)) {
+		primary = REG_EXTRACT_PRIMARY(reg);
+		value = readable_value(primary_reg(ctx, primary, file, lineno)
+				, ctx, file, lineno);
+	} else if (REG_IS_SECONDARY(reg)) {
+		primary = REG_EXTRACT_SECONDARY1(reg);
+		secondary = REG_EXTRACT_SECONDARY2(reg);
+		value = secondary_reg(ctx, primary, secondary, file, lineno);
+		value = readable_value(value, ctx, file, lineno);
+	} else if (SPECIAL_REG_RESULT == reg) {
+		// this should check for null result
+		value = readable_value(ctx.result(), ctx, file, lineno);
+	} else if (CONST_REG_VOID == reg) {
+		return &ctx.worker().drain;
+	} else {
+		ctx.fail_frame(FAIL_REGISTER404(ctx.module_name()
+					, ctx.function_name(), ctx.pc()));
+	}
+	return value;
+}
 
 class WorkerOpContext
 : public OpContext
@@ -121,6 +260,15 @@ public:
 	virtual int & pc() const { return frame.pc; }
 	virtual uint8_t argc() const { return func.header->argc; }
 	virtual uint8_t regc() const { return func.num_values(); }
+	virtual qbrt_value * value(uint8_t reg)
+	{
+		return &func.value(reg);
+	}
+	virtual qbrt_value * result()
+	{
+		return func.result;
+	}
+
 	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
@@ -133,7 +281,7 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
-			return &follow_ref(func.value(primary));
+			return follow_ref(&func.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			if (primary >= regc()) {
@@ -158,7 +306,7 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
-			return &follow_ref(idx->value(secondary));
+			return follow_ref(idx->value(secondary));
 		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
 		} else if (REG_IS_CONST(reg)) {
@@ -181,7 +329,7 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
-			return &follow_ref(func.value(primary));
+			return follow_ref(&func.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			if (primary >= regc()) {
@@ -206,7 +354,7 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
-			return &follow_ref(idx->value(secondary));
+			return follow_ref(&idx->value(secondary));
 		} else if (CONST_REG_VOID == reg) {
 			return &w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
@@ -293,16 +441,25 @@ public:
 	virtual int & pc() const { return *(int *) NULL; }
 	virtual uint8_t argc() const { return cfunc.argc; }
 	virtual uint8_t regc() const { return cfunc.regc; }
+	virtual qbrt_value * value(uint8_t reg)
+	{
+		return &cfunc.value(reg);
+	}
+	virtual const qbrt_value * result(uint8_t reg) const
+	{
+		return &cfunc.value(reg);
+	}
+
 	virtual const qbrt_value * srcvalue(uint16_t reg) const
 	{
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return &follow_ref(cfunc.value(primary));
+			return follow_ref(cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return &follow_ref(cfunc.value(primary)).data.reg
+			return follow_ref(cfunc.value(primary)).data.reg
 				->value(secondary);
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no src result register for c functions\n";
@@ -319,11 +476,11 @@ public:
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return &follow_ref(cfunc.value(primary));
+			return follow_ref(cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return &follow_ref(cfunc.value(primary)).data.reg
+			return follow_ref(cfunc.value(primary)).data.reg
 				->value(secondary);
 		} else if (CONST_REG_VOID == reg) {
 			return &w.drain;

@@ -250,13 +250,13 @@ void load_function_value_types(std::ostringstream &, const function_value &);
 void reassign_func(function_value &funcval, const Function *newfunc);
 
 
-static inline qbrt_value & follow_ref(qbrt_value &val)
+static inline qbrt_value * follow_ref(qbrt_value *val)
 {
-	qbrt_value *ref = &val;
+	qbrt_value *ref = val;
 	while (ref->type->id == VT_REF) {
 		ref = ref->data.ref;
 	}
-	return *ref;
+	return ref;
 }
 
 
