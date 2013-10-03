@@ -145,6 +145,10 @@ static inline qbrt_value * readable_value(qbrt_value *val, OpContext &ctx
 		qbrt_value::fail(*call.result, fail);
 		call.cfstate = CFS_FAILED;
 		return NULL;
+	} else if (ref->type->id == VT_PROMISE) {
+		Worker &w(ctx.worker());
+		w.current->cfstate = CFS_PEERWAIT;
+		ref->data.promise->mark_to_notify(w.current->waiting_for_promise);
 	}
 	return ref;
 }

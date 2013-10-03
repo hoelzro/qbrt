@@ -51,6 +51,7 @@ private:
 	pthread_spinlock_t pipe_lock;
 };
 
+
 struct CodeFrame
 : public qbrt_value_index
 {
@@ -61,6 +62,7 @@ struct CodeFrame
 	CodeFrameType cftype;
 	CodeFrameState cfstate;
 	int pc;
+	bool waiting_for_promise;
 
 	CodeFrame(CodeFrame &parent, CodeFrameType type)
 	: proc(parent.proc)
@@ -70,6 +72,7 @@ struct CodeFrame
 	, cfstate(CFS_READY)
 	, pc(0)
 	, frame_context()
+	, waiting_for_promise(false)
 	{}
 
 	CodeFrame(CodeFrameType type)
@@ -80,6 +83,7 @@ struct CodeFrame
 	, cfstate(CFS_READY)
 	, pc(0)
 	, frame_context()
+	, waiting_for_promise(false)
 	{}
 
 	virtual FunctionCall & function_call() = 0;

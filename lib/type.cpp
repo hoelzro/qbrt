@@ -123,3 +123,34 @@ void List::reverse(qbrt_value &result, const qbrt_value &head)
 		List::is_empty(check, next);
 	}
 }
+
+
+Promise::Promise(TaskID tid)
+: promiser(tid)
+{
+	pthread_spin_init(&lock, PTHREAD_PROCESS_PRIVATE);
+}
+Promise::~Promise()
+{
+	notify();
+	pthread_spin_destroy(&lock);
+}
+
+void Promise::mark_to_notify(bool &w)
+{
+	w = true;
+	pthread_spin_lock(&lock);
+	waiters.push_back(&w);
+	pthread_spin_unlock(&lock);
+}
+
+void Promise::notify()
+{
+	pthread_spin_lock(&lock);
+	list< bool * >::iterator it(waiters.begin());
+	for (; it!=waiters.end(); ++it) {
+		**it = false;
+	}
+	waiters.end();
+	pthread_spin_unlock(&lock);
+}

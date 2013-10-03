@@ -186,12 +186,17 @@ struct Type
 
 struct Promise
 {
-	std::list< TaskID > waiter;
-	TaskID promiser;
+	const TaskID promiser;
 
-	Promise(TaskID tid)
-	: promiser(tid)
-	{}
+	Promise(TaskID tid);
+	~Promise();
+
+	void mark_to_notify(bool &);
+	void notify();
+
+private:
+	std::list< bool * > waiters;
+	pthread_spinlock_t lock;
 };
 
 #endif
