@@ -306,7 +306,7 @@ public:
 				frame.cfstate = CFS_FAILED;
 				return NULL;
 			}
-			return follow_ref(idx->value(secondary));
+			return follow_ref(&idx->value(secondary));
 		} else if (SPECIAL_REG_RESULT == reg) {
 			return func.result;
 		} else if (REG_IS_CONST(reg)) {
@@ -445,9 +445,11 @@ public:
 	{
 		return &cfunc.value(reg);
 	}
-	virtual const qbrt_value * result(uint8_t reg) const
+	virtual qbrt_value * result()
 	{
-		return &cfunc.value(reg);
+		cerr << "No result register available in C\n";
+		exit(-1);
+		return NULL;
 	}
 
 	virtual const qbrt_value * srcvalue(uint16_t reg) const
@@ -455,12 +457,12 @@ public:
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(cfunc.value(primary));
+			return follow_ref(&cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(cfunc.value(primary)).data.reg
-				->value(secondary);
+			return follow_ref(&(cfunc.value(primary).data.reg
+				->value(secondary)));
 		} else if (SPECIAL_REG_RESULT == reg) {
 			cerr << "no src result register for c functions\n";
 			return NULL;
@@ -476,12 +478,12 @@ public:
 		uint8_t primary, secondary;
 		if (REG_IS_PRIMARY(reg)) {
 			primary = REG_EXTRACT_PRIMARY(reg);
-			return follow_ref(cfunc.value(primary));
+			return follow_ref(&cfunc.value(primary));
 		} else if (REG_IS_SECONDARY(reg)) {
 			primary = REG_EXTRACT_SECONDARY1(reg);
 			secondary = REG_EXTRACT_SECONDARY2(reg);
-			return follow_ref(cfunc.value(primary)).data.reg
-				->value(secondary);
+			return follow_ref(&(cfunc.value(primary).data.reg
+				->value(secondary)));
 		} else if (CONST_REG_VOID == reg) {
 			return &w.drain;
 		} else if (SPECIAL_REG_RESULT == reg) {
@@ -1473,8 +1475,8 @@ ostream & inspect_function_value(ostream &out, const function_value &fv)
 ostream & inspect_ref(ostream &out, qbrt_value &ref)
 {
 	out << "ref:";
-	qbrt_value &val(follow_ref(ref));
-	return inspect(out, val);
+	qbrt_value *val(follow_ref(&ref));
+	return inspect(out, *val);
 }
 
 ostream & inspect(ostream &out, const qbrt_value &v)
@@ -1739,7 +1741,7 @@ int main(int argc, const char **argv)
 
 	Application app;
 	Module *mod_core(load_core_module(app));
-	Module *mod_io = new Module("io");
+	Module *mod_io(load_io_module(app));
 	Module *mod_list(load_list_module(app));
 	if (!(mod_core && mod_io && mod_list)) {
 		return -1;
