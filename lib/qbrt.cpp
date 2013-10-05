@@ -554,10 +554,10 @@ private:
 
 void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 {
-	const qbrt_value &a(*ctx.srcvalue(i.a));
-	const qbrt_value &b(*ctx.srcvalue(i.b));
-	RETURN_FAILURE(ctx, i.a);
-	RETURN_FAILURE(ctx, i.b);
+	const qbrt_value *a;
+	const qbrt_value *b;
+	READ_REG(a, ctx, i.a);
+	READ_REG(b, ctx, i.b);
 
 	Failure *fail;
 	qbrt_value *result(ctx.dstvalue(i.result));
@@ -565,22 +565,22 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 		case OP_IADD:
 		case OP_ISUB:
 		case OP_IMULT:
-			if (a.type->id != VT_INT) {
+			if (a->type->id != VT_INT) {
 				fail = FAIL_TYPE(ctx.module_name(),
 						ctx.function_name(), ctx.pc());
 				fail->debug << "unexpected type for first "
-					" operand in integer binary operation: "
-					<< a.type->id;
+					"operand in integer binary operation: "
+					<< (int) a->type->id;
 				qbrt_value::fail(*result, fail);
 				ctx.pc() += binaryop_instruction::SIZE;
 				return;
 			}
-			if (b.type->id != VT_INT) {
+			if (b->type->id != VT_INT) {
 				fail = FAIL_TYPE(ctx.module_name(),
 						ctx.function_name(), ctx.pc());
 				fail->debug << "unexpected type for second "
-					" operand in integer binary operation: "
-					<< b.type->id;
+					"operand in integer binary operation: "
+					<< (int) b->type->id;
 				qbrt_value::fail(*result, fail);
 				ctx.pc() += binaryop_instruction::SIZE;
 				return;
@@ -592,13 +592,13 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 	}
 	switch (i.opcode()) {
 		case OP_IADD:
-			qbrt_value::i(*result, a.data.i + b.data.i);
+			qbrt_value::i(*result, a->data.i + b->data.i);
 			break;
 		case OP_ISUB:
-			qbrt_value::i(*result, a.data.i - b.data.i);
+			qbrt_value::i(*result, a->data.i - b->data.i);
 			break;
 		case OP_IMULT:
-			qbrt_value::i(*result, a.data.i * b.data.i);
+			qbrt_value::i(*result, a->data.i * b->data.i);
 			break;
 	}
 	ctx.pc() += binaryop_instruction::SIZE;
@@ -606,23 +606,28 @@ void execute_binaryop(OpContext &ctx, const binaryop_instruction &i)
 
 void execute_divide(OpContext &ctx, const binaryop_instruction &i)
 {
-	const qbrt_value &b(*ctx.srcvalue(i.b));
+	const qbrt_value *a;
+	const qbrt_value *b;
+	READ_REG(a, ctx, i.a);
+	READ_REG(b, ctx, i.b);
+
 	qbrt_value &result(*ctx.dstvalue(i.result));
-	if (b.data.i == 0) {
+	if (b->data.i == 0) {
 		qbrt_value::fail(result, NEW_FAILURE("divideby0"
 				, ctx.module_name(), ctx.function_name()
 				, ctx.pc()));
 	} else {
-		const qbrt_value &a(*ctx.srcvalue(i.a));
-		qbrt_value::i(result, a.data.i / b.data.i);
+		qbrt_value::i(result, a->data.i / b->data.i);
 	}
 	ctx.pc() += binaryop_instruction::SIZE;
 }
 
 void execute_fieldget(OpContext &ctx, const fieldget_instruction &i)
 {
-	const qbrt_value *src(ctx.srcvalue(i.src));
-	qbrt_value *dst(ctx.dstvalue(i.dst));
+	const qbrt_value *src;
+	qbrt_value *dst;
+	READ_REG(src, ctx, i.src);
+	WRITE_REG(dst, ctx, i.dst);
 
 	const ResourceTable &resource(ctx.resource());
 	const char *field_name = fetch_string(resource, i.field_name);
@@ -639,8 +644,10 @@ void execute_fieldget(OpContext &ctx, const fieldget_instruction &i)
 
 void execute_fieldset(OpContext &ctx, const fieldset_instruction &i)
 {
-	const qbrt_value *src(ctx.srcvalue(i.src));
-	qbrt_value *dst(ctx.dstvalue(i.dst));
+	const qbrt_value *src;
+	qbrt_value *dst;
+	READ_REG(src, ctx, i.src);
+	WRITE_REG(dst, ctx, i.dst);
 
 	const ResourceTable &resource(ctx.resource());
 	const char *field_name = fetch_string(resource, i.field_name);
@@ -690,9 +697,11 @@ void execute_goto(OpContext &ctx, const goto_instruction &i)
  */
 void execute_if(OpContext &ctx, const if_instruction &i)
 {
-	const qbrt_value &op(*ctx.srcvalue(i.op));
-	if (i.opcode() == OP_IF && op.data.b
-			|| i.opcode() == OP_IFNOT && ! op.data.b) {
+	const qbrt_value *op;
+	READ_REG(op, ctx, i.op);
+
+	if (i.opcode() == OP_IF && op->data.b
+			|| i.opcode() == OP_IFNOT && ! op->data.b) {
 		ctx.pc() += if_instruction::SIZE;
 	} else {
 		ctx.pc() += i.jump();
@@ -725,9 +734,11 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
  */
 void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 {
-	const qbrt_value &op(*ctx.srcvalue(i.op));
-	bool is_failure(op.type->id == TYPE_FAILURE.id);
-	int valtype(op.type->id);
+	const qbrt_value *op;
+	READ_REG(op, ctx, i.op);
+
+	bool is_failure(op->type->id == TYPE_FAILURE.id);
+	int valtype(op->type->id);
 	if (i.opcode() == OP_IFFAIL && is_failure
 			|| i.opcode() == OP_IFNOTFAIL && ! is_failure) {
 		ctx.pc() += iffail_instruction::SIZE;
@@ -738,32 +749,28 @@ void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 
 void execute_cfailure(OpContext &ctx, const cfailure_instruction &i)
 {
+	qbrt_value *result;
+	WRITE_REG(result, ctx, i.dst);
+
 	const char *failtype = fetch_string(ctx.resource(), i.hashtag_id);
-	qbrt_value &result(*ctx.dstvalue(i.dst));
 	Failure *f = NEW_FAILURE(failtype, ctx.module_name()
 			, ctx.function_name(), ctx.pc());
 	ctx.backtrace(*f);
-	qbrt_value::fail(result, f);
+	qbrt_value::fail(*result, f);
 	ctx.pc() += cfailure_instruction::SIZE;
 }
 
 void execute_cmp(OpContext &ctx, const cmp_instruction &i)
 {
-	RETURN_FAILURE(ctx, i.a);
-	RETURN_FAILURE(ctx, i.b);
-	const qbrt_value &a(*ctx.srcvalue(i.a));
-	const qbrt_value &b(*ctx.srcvalue(i.b));
-	qbrt_value *dst = ctx.dstvalue(i.result);
-	Failure *f;
-	if (!dst) {
-		f = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
-				, ctx.pc());
-		ctx.backtrace(*f);
-		ctx.fail_frame(f);
-		return;
-	}
+	const qbrt_value *a;
+	const qbrt_value *b;
+	qbrt_value *dst;
+	READ_REG(a, ctx, i.a);
+	READ_REG(b, ctx, i.b);
+	WRITE_REG(dst, ctx, i.result);
 
-	int comparison(qbrt_compare(a, b));
+	Failure *f;
+	int comparison(qbrt_compare(*a, *b));
 	bool result;
 	switch (i.opcode()) {
 		case OP_CMP_EQ:
@@ -797,23 +804,21 @@ void execute_cmp(OpContext &ctx, const cmp_instruction &i)
 
 void execute_consti(OpContext &ctx, const consti_instruction &i)
 {
-	qbrt_value *dst = ctx.dstvalue(i.reg);
-	Failure *f;
-	if (!dst) {
-		f = FAIL_REGISTER404(ctx.module_name(), ctx.function_name()
-				, ctx.pc());
-		ctx.fail_frame(f);
-		return;
-	}
+	qbrt_value *dst;
+	WRITE_REG(dst, ctx, i.reg);
+
 	qbrt_value::i(*dst, i.value);
 	ctx.pc() += consti_instruction::SIZE;
 }
 
 void execute_move(OpContext &ctx, const move_instruction &i)
 {
-	qbrt_value &dst(*ctx.dstvalue(i.dst));
-	const qbrt_value &src(*ctx.srcvalue(i.src));
-	dst = src;
+	const qbrt_value *src;
+	qbrt_value *dst;
+	READ_REG(src, ctx, i.src);
+	WRITE_REG(dst, ctx, i.dst);
+
+	*dst = *src;
 	ctx.pc() += move_instruction::SIZE;
 }
 
@@ -827,51 +832,39 @@ void execute_ref(OpContext &ctx, const ref_instruction &i)
 
 void execute_copy(OpContext &ctx, const copy_instruction &i)
 {
-	qbrt_value *dst(ctx.dstvalue(i.dst));
-	if (!dst) {
-		cerr << "dst register for copy is invalid: " << i.dst << endl;
-		return;
-	}
-	const qbrt_value &src(*ctx.srcvalue(i.src));
-	*dst = src;
+	const qbrt_value *src;
+	qbrt_value *dst;
+	READ_REG(src, ctx, i.src);
+	WRITE_REG(dst, ctx, i.dst);
+
+	*dst = *src;
 	ctx.pc() += copy_instruction::SIZE;
 }
 
 void execute_consts(OpContext &ctx, const consts_instruction &i)
 {
-	RETURN_FAILURE(ctx, i.reg);
+	qbrt_value *dst;
+	WRITE_REG(dst, ctx, i.reg);
 
 	const char *str = fetch_string(ctx.resource(), i.string_id);
-	qbrt_value *dst = ctx.dstvalue(i.reg);
-	if (!dst) {
-		Failure *f = FAIL_REGISTER404(ctx.module_name()
-				, ctx.function_name(), ctx.pc());
-		f->debug << "invalid register: " << i.reg;
-		ctx.fail_frame(f);
-		return;
-	}
 	qbrt_value::str(*dst, str);
 	ctx.pc() += consts_instruction::SIZE;
 }
 
 void execute_consthash(OpContext &ctx, const consthash_instruction &i)
 {
+	qbrt_value *dst;
+	WRITE_REG(dst, ctx, i.reg);
+
 	const char *hash = fetch_string(ctx.resource(), i.hash_id);
-	qbrt_value::hashtag(*ctx.dstvalue(i.reg), hash);
+	qbrt_value::hashtag(*dst, hash);
 	ctx.pc() += consthash_instruction::SIZE;
 }
 
 void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
 {
-	qbrt_value *dst(ctx.dstvalue(i.dst));
-	if (!dst) {
-		Failure *f = FAIL_REGISTER404(ctx.module_name()
-				, ctx.function_name(), ctx.pc());
-		f->debug << "invalid register: " << i.dst;
-		ctx.fail_frame(f);
-		cerr << f->debug_msg() << endl;
-		return;
-	}
+	qbrt_value *dst;
+	WRITE_REG(dst, ctx, i.dst);
 
 	qbrt_value::tuple(*dst, new Tuple(i.size));
 	ctx.pc() += ctuple_instruction::SIZE;
@@ -879,16 +872,11 @@ void execute_ctuple(OpContext &ctx, const ctuple_instruction &i)
 
 void execute_lcontext(OpContext &ctx, const lcontext_instruction &i)
 {
+	qbrt_value *dst;
+	WRITE_REG(dst, ctx, i.reg);
+
 	const char *name = fetch_string(ctx.resource(), i.hashtag);
-	qbrt_value *dst(ctx.dstvalue(i.reg));
 	Failure *fail;
-	if (!dst) {
-		fail = FAIL_REGISTER404(ctx.module_name()
-				, ctx.function_name(), ctx.pc());
-		fail->debug << "invalid register: " << i.reg;
-		ctx.fail_frame(fail);
-		return;
-	}
 
 	qbrt_value *src = ctx.get_context(name);
 	if (src) {
@@ -1089,12 +1077,12 @@ void execute_recv(OpContext &ctx, const recv_instruction &i)
 
 void execute_stracc(OpContext &ctx, const stracc_instruction &i)
 {
+	const qbrt_value *src;
+	READ_REG(src, ctx, i.src);
 	RETURN_FAILURE(ctx, i.dst);
-	RETURN_FAILURE(ctx, i.src);
 
 	Failure *f;
 	qbrt_value *dst(ctx.dstvalue(i.dst));
-	const qbrt_value *src(ctx.srcvalue(i.src));
 
 	int op_pc(ctx.pc());
 	ctx.pc() += stracc_instruction::SIZE;
@@ -1156,14 +1144,14 @@ void call(Worker &ctx, qbrt_value &res, qbrt_value &f);
 
 void execute_call(OpContext &ctx, const call_instruction &i)
 {
-	Worker &w(ctx.worker());
+	qbrt_value *output;
+	WRITE_REG(output, ctx, i.result_reg);
+
 	qbrt_value &func_reg(*ctx.dstvalue(i.func_reg));
-	qbrt_value &output(*ctx.dstvalue(i.result_reg));
 
 	// increment pc so it's in the right place when we get back
 	ctx.pc() += call_instruction::SIZE;
-
-	call(w, output, func_reg);
+	call(ctx.worker(), *output, func_reg);
 }
 
 void execute_return(OpContext &ctx, const return_instruction &i)

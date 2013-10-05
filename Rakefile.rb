@@ -17,6 +17,7 @@ QBC.compile_files("lib/qbc.cpp", \
 		  "lib/type.cpp", \
 		 )
 QBC.obj_dir = 'o/qbc'
+QBC.link 'pthread'
 QBC.debug!
 QBCDEPS = ["o","o/qbc","o/qbc/lib","lib/qbparse.h","lib/qbparse.c"]
 
@@ -31,6 +32,7 @@ QBI.compile_files("lib/qbi.cpp", \
 		  "lib/type.cpp", \
 		 )
 QBI.obj_dir = 'o/qbi'
+QBI.link 'pthread'
 QBI.debug!
 
 QBRT = CTarget.new()

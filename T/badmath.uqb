@@ -3,8 +3,9 @@ func badmath core/Int
 
 const $0 5
 const $1 "not a number"
-
+## these aren't the right types!
 iadd $2 $0 $1
+
 const $0 8
 iadd $3 $0 $2
 
@@ -12,6 +13,7 @@ const $0 13
 iadd \result $0 $3
 
 end.
+
 
 func __main core/Void
 lfunc $0 io/print

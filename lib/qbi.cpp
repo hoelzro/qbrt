@@ -622,9 +622,9 @@ void print_function_resource_line(const ResourceTable &tbl, uint16_t i)
 		printf("%s/", modname);
 	}
 	if (pname && *pname) {
-		printf("%s", pname);
+		printf("%s ", pname);
 	}
-	printf(" %s/%d\n", fname, f.argc);
+	printf("%s/%d\n", fname, f.argc);
 }
 
 void print_protocol_resource_line(const ResourceTable &tbl, uint16_t i)
