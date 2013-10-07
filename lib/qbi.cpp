@@ -291,13 +291,6 @@ void print_iffail_instruction(const iffail_instruction &i)
 	cout << endl;
 }
 
-void print_wait_instruction(const wait_instruction &i)
-{
-	cout << "wait";
-	print_register(i.reg);
-	cout << endl;
-}
-
 instruction_printer PRINTER[NUM_OP_CODES] = {0};
 
 void set_printers()
@@ -346,7 +339,6 @@ void set_printers()
 		(instruction_printer) print_patternvar_instruction;
 	PRINTER[OP_RECV] = (instruction_printer) print_recv_instruction;
 	PRINTER[OP_STRACC] = (instruction_printer) print_stracc_instruction;
-	PRINTER[OP_WAIT] = (instruction_printer) print_wait_instruction;
 }
 
 void print_function_header(const FunctionHeader &f, const ResourceTable &tbl)

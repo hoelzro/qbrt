@@ -20,7 +20,6 @@ fork $2
   call $2 $1
   end.
 const $0 "hello "
-wait $2
 stracc $0 $2
 const $3 "!\n"
 stracc $0 $3

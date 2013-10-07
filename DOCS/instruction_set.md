@@ -134,8 +134,8 @@ fork $0            ## put a promise in $0
   end.             ## the fork instruction starts a block that stops here
                    ## with the end. statement
 const $3 4
-wait $0            ## wait here until $0 is set
-imult $4 $0 $3     ## $4 now contains 2 * 3 * 4, or 24
+imult $4 $0 $3     ## VM waits here until $0 is ready
+                   ## $4 now contains 2 * 3 * 4, or 24
 ```
 
 ### newproc
@@ -180,17 +180,6 @@ newproc $2 $0	## create a new process executing foo()
 recv $3.0	## wait here until a message arrives, then store it in $3.0
 call void $3	## print the value received from function foo()
 ```
-
-### wait
-
-Block the current execution path and wait for another execution
-path to set an actual value in the register.
-
-Arguments: &lt;reg&gt;
-
-* **reg** the register that currently contains a promise
-
-See **fork** above for an example.
 
 ## Jump Instructions
 

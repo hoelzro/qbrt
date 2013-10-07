@@ -700,19 +700,6 @@ struct stracc_stmt
 	void pretty(std::ostream &) const;
 };
 
-struct wait_stmt
-: public Stmt
-{
-	wait_stmt(AsmReg *reg)
-	: reg(reg)
-	{}
-	AsmReg *reg;
-
-	void allocate_registers(RegAlloc *);
-	void generate_code(AsmFunc &);
-	void pretty(std::ostream &) const;
-};
-
 struct ref_stmt
 : public Stmt
 {

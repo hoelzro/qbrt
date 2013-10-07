@@ -875,18 +875,3 @@ void stracc_stmt::pretty(std::ostream &out) const
 {
 	out << "stracc " << *dst <<' '<< *src;
 }
-
-void wait_stmt::allocate_registers(RegAlloc *r)
-{
-	r->assign_src(*reg);
-}
-
-void wait_stmt::generate_code(AsmFunc &f)
-{
-	asm_instruction(f, new wait_instruction(*reg));
-}
-
-void wait_stmt::pretty(std::ostream &out) const
-{
-	out << "wait " << *reg;
-}

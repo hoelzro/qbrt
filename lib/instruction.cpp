@@ -74,7 +74,6 @@ void init_instruction_sizes()
 	INSTRUCTION_SIZE[OP_PATTERNVAR] = patternvar_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_RECV] = recv_instruction::SIZE;
 	INSTRUCTION_SIZE[OP_STRACC] = stracc_instruction::SIZE;
-	INSTRUCTION_SIZE[OP_WAIT] = wait_instruction::SIZE;
 }
 
 uint8_t isize(uint8_t opcode)
@@ -172,7 +171,6 @@ void init_writers()
 	WRITER[OP_STUPLE] = (instruction_writer) iwriter<stuple_instruction>;
 	WRITER[OP_CLIST] = (instruction_writer) iwriter<clist_instruction>;
 	WRITER[OP_CONS] = (instruction_writer) iwriter<cons_instruction>;
-	WRITER[OP_WAIT] = (instruction_writer) iwriter<wait_instruction>;
 }
 
 uint8_t write_instruction(ostream &out, const instruction &i)

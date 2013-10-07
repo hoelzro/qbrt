@@ -733,19 +733,6 @@ void execute_fork(OpContext &ctx, const fork_instruction &i)
 	ctx.pc() += i.jump();
 }
 
-void execute_wait(OpContext &ctx, const wait_instruction &i)
-{
-	Worker &w(ctx.worker());
-	const qbrt_value &subject(*ctx.srcvalue(i.reg));
-	if (subject.type->id == VT_PROMISE) {
-		w.current->cfstate = CFS_PEERWAIT;
-		// wait right here, don't change the pc
-	} else {
-		w.current->cfstate = CFS_READY;
-		ctx.pc() += wait_instruction::SIZE;
-	}
-}
-
 void execute_goto(OpContext &ctx, const goto_instruction &i)
 {
 	ctx.pc() += i.jump();
@@ -1274,7 +1261,6 @@ void init_executioners()
 	x[OP_IFNOT] = (executioner) execute_if;
 	x[OP_IFFAIL] = (executioner) execute_iffail;
 	x[OP_IFNOTFAIL] = (executioner) execute_iffail;
-	x[OP_WAIT] = (executioner) execute_wait;
 }
 
 void execute_instruction(Worker &w, const instruction &i)

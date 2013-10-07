@@ -109,19 +109,6 @@ struct fork_instruction
 	static const uint8_t SIZE = 5;
 };
 
-struct wait_instruction
-: public instruction
-{
-	uint16_t reg;
-
-	wait_instruction(reg_t r)
-	: instruction(OP_WAIT)
-	, reg(r)
-	{}
-
-	static const uint8_t SIZE = 3;
-};
-
 
 #pragma pack(pop)
 

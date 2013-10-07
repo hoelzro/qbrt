@@ -139,7 +139,6 @@ TYPEVAR	\*[A-Z]{NAMEC}*
 "abstract"	{ BEGIN(ARGS); return_token(TOKEN_ABSTRACT); }
 "recv"		{ BEGIN(ARGS); return_token(TOKEN_RECV); }
 "stracc"	{ BEGIN(ARGS); return_token(TOKEN_STRACC); }
-"wait"		{ BEGIN(ARGS); return_token(TOKEN_WAIT); }
 "noop"		{
 		printf("noop token\n");
 		return_token(TOKEN_NOOP);

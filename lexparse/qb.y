@@ -331,9 +331,6 @@ stmt(A) ::= RECV reg(B). {
 stmt(A) ::= STRACC reg(B) reg(C). {
 	A = new stracc_stmt(B, C);
 }
-stmt(A) ::= WAIT reg(B). {
-	A = new wait_stmt(B);
-}
 stmt ::= NOOP. { std::cout << "noop\n"; }
 stmt(A) ::= REF reg(B) reg(C). {
 	A = new ref_stmt(B, C);
