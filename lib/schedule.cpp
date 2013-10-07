@@ -7,17 +7,17 @@ using namespace std;
 #define MAX_EPOLL_EVENTS 16
 
 
-bool Pipe::empty() const
+bool Channel::empty() const
 {
 	return data.empty();
 }
 
-void Pipe::push(qbrt_value *val)
+void Channel::push(qbrt_value *val)
 {
 	data.push_back(val);
 }
 
-qbrt_value * Pipe::pop()
+qbrt_value * Channel::pop()
 {
 	qbrt_value *val = data.front();
 	data.pop_front();

@@ -33,13 +33,13 @@ struct Application;
 typedef std::map< std::string, const Module * > ModuleMap;
 
 
-struct Pipe
+struct Channel
 {
 public:
-	Pipe()
-	: pipe_lock()
+	Channel()
+	: lock()
 	{
-		pthread_spin_init(&pipe_lock, PTHREAD_PROCESS_PRIVATE);
+		pthread_spin_init(&lock, PTHREAD_PROCESS_PRIVATE);
 	}
 
 	bool empty() const;
@@ -48,7 +48,7 @@ public:
 
 private:
 	std::list< qbrt_value * > data;
-	pthread_spinlock_t pipe_lock;
+	pthread_spinlock_t lock;
 };
 
 
@@ -183,7 +183,7 @@ struct ProcessRoot
 {
 	Worker *owner;
 	FunctionCall *call;
-	Pipe recv;
+	Channel recv;
 	qbrt_value result;
 	uint64_t pid;
 
