@@ -58,6 +58,10 @@ int inspect_indent(0);
 	val = rwreg(ctx, reg, __FILE__, __LINE__); \
 	if (!val) { return; }} while (0)
 
+#define READ_FAILED_REG(val, ctx, reg) do { \
+	val = read_failed_reg(ctx, reg, __FILE__, __LINE__); \
+	if (!val) { return; }} while (0)
+
 
 void init_const_registers()
 {
@@ -153,6 +157,33 @@ static inline qbrt_value * readable_value(qbrt_value *val, OpContext &ctx
 	return ref;
 }
 
+static inline qbrt_value * writable_value(qbrt_value *val, OpContext &ctx
+		, const char *file, uint16_t lineno)
+{
+	qbrt_value *ref(val);
+	while (ref->type->id == VT_REF) {
+		ref = ref->data.ref;
+	}
+	// overwrite failures or promises
+	return ref;
+}
+
+static inline qbrt_value * readable_failed_value(qbrt_value *val, OpContext &ctx
+		, const char *file, uint16_t lineno)
+{
+	qbrt_value *ref(val);
+	while (ref->type->id == VT_REF) {
+		ref = ref->data.ref;
+	}
+	// don't check for failures b/c we want to hear about those in this case
+	if (ref->type->id == VT_PROMISE) {
+		Worker &w(ctx.worker());
+		w.current->cfstate = CFS_PEERWAIT;
+		ref->data.promise->mark_to_notify(w.current->waiting_for_promise);
+	}
+	return ref;
+}
+
 static inline qbrt_value * primary_reg(OpContext &ctx
 		, uint8_t primary, const char *file, uint16_t lineno)
 {
@@ -226,18 +257,42 @@ static inline qbrt_value * write_reg(OpContext &ctx, uint16_t reg
 	qbrt_value *value(NULL);
 	if (REG_IS_PRIMARY(reg)) {
 		primary = REG_EXTRACT_PRIMARY(reg);
-		value = readable_value(primary_reg(ctx, primary, file, lineno)
+		value = writable_value(primary_reg(ctx, primary, file, lineno)
 				, ctx, file, lineno);
 	} else if (REG_IS_SECONDARY(reg)) {
 		primary = REG_EXTRACT_SECONDARY1(reg);
 		secondary = REG_EXTRACT_SECONDARY2(reg);
 		value = secondary_reg(ctx, primary, secondary, file, lineno);
-		value = readable_value(value, ctx, file, lineno);
+		value = writable_value(value, ctx, file, lineno);
 	} else if (SPECIAL_REG_RESULT == reg) {
 		// this should check for null result
-		value = readable_value(ctx.result(), ctx, file, lineno);
+		value = writable_value(ctx.result(), ctx, file, lineno);
 	} else if (CONST_REG_VOID == reg) {
 		return &ctx.worker().drain;
+	} else {
+		ctx.fail_frame(FAIL_REGISTER404(ctx.module_name()
+					, ctx.function_name(), ctx.pc()));
+	}
+	return value;
+}
+
+static inline const qbrt_value * read_failed_reg(OpContext &ctx, uint16_t reg
+		, const char *file, uint16_t lineno)
+{
+	uint8_t primary, secondary;
+	qbrt_value *value(NULL);
+	if (REG_IS_PRIMARY(reg)) {
+		primary = REG_EXTRACT_PRIMARY(reg);
+		value = readable_failed_value(primary_reg(ctx, primary
+				, file, lineno), ctx, file, lineno);
+	} else if (REG_IS_SECONDARY(reg)) {
+		primary = REG_EXTRACT_SECONDARY1(reg);
+		secondary = REG_EXTRACT_SECONDARY2(reg);
+		value = secondary_reg(ctx, primary, secondary, file, lineno);
+		value = readable_failed_value(value, ctx, file, lineno);
+	} else if (SPECIAL_REG_RESULT == reg) {
+		// this should check for null result
+		value = readable_failed_value(ctx.result(), ctx, file, lineno);
 	} else {
 		ctx.fail_frame(FAIL_REGISTER404(ctx.module_name()
 					, ctx.function_name(), ctx.pc()));
@@ -735,7 +790,7 @@ bool equal_value(const qbrt_value &a, const qbrt_value &b)
 void execute_iffail(OpContext &ctx, const iffail_instruction &i)
 {
 	const qbrt_value *op;
-	READ_REG(op, ctx, i.op);
+	READ_FAILED_REG(op, ctx, i.op);
 
 	bool is_failure(op->type->id == TYPE_FAILURE.id);
 	int valtype(op->type->id);
