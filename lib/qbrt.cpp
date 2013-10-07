@@ -152,7 +152,9 @@ static inline qbrt_value * readable_value(qbrt_value *val, OpContext &ctx
 	} else if (ref->type->id == VT_PROMISE) {
 		Worker &w(ctx.worker());
 		w.current->cfstate = CFS_PEERWAIT;
-		ref->data.promise->mark_to_notify(w.current->waiting_for_promise);
+		ref->data.promise->mark_to_notify(
+				w.current->waiting_for_promise);
+		return NULL;
 	}
 	return ref;
 }
@@ -179,7 +181,9 @@ static inline qbrt_value * readable_failed_value(qbrt_value *val, OpContext &ctx
 	if (ref->type->id == VT_PROMISE) {
 		Worker &w(ctx.worker());
 		w.current->cfstate = CFS_PEERWAIT;
-		ref->data.promise->mark_to_notify(w.current->waiting_for_promise);
+		ref->data.promise->mark_to_notify(
+				w.current->waiting_for_promise);
+		return NULL;
 	}
 	return ref;
 }
