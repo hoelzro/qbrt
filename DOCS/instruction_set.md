@@ -233,7 +233,7 @@ Arguments: &lt;op&gt; &lt;label&gt;
 Example:
 ```
 const $1 "initialized"
-brfail $1 @label
+iffail $1 @label
 const $1 "no branch"
 @label
 ## $1 is not a failure type, register $1 will always contain "no branch"
