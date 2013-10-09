@@ -32,6 +32,10 @@ end.
 Run unit tests in testlib/ with ```rake unit```.
 Run integration tests in T/ with ```rake T```.
 
+*NOTE*: If you want to run the unit tests, make sure to run `git submodule init`
+and `git submodule update` to grab the accertion submodule, upon which the
+unit tests depend.
+
 ## Features
 
 Why might you find qbrt interesting?
