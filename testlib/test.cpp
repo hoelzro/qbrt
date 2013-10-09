@@ -1,3 +1,4 @@
+#include "instruction/function.h"
 #include "instruction/logic.h"
 #include "instruction/schedule.h"
 #include "instruction/type.h"
@@ -28,7 +29,6 @@ CCTEST(check_logic_instruction_sizes)
 	accert(sizeof(match_instruction)) == match_instruction::SIZE;
 	accert(sizeof(matchargs_instruction)) == matchargs_instruction::SIZE;
 	accert(sizeof(fork_instruction)) == fork_instruction::SIZE;
-	accert(sizeof(wait_instruction)) == wait_instruction::SIZE;
 }
 
 CCTEST(check_schedule_instruction_sizes)
