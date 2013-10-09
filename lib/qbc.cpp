@@ -905,6 +905,7 @@ uint32_t AsmConstruct::write(std::ostream &out) const
 ostream & AsmConstruct::pretty(ostream &o) const
 {
 	o << "construct:" << name.value;
+	return o;
 }
 
 uint32_t AsmDataType::write(std::ostream &out) const
@@ -921,6 +922,7 @@ uint32_t AsmDataType::write(std::ostream &out) const
 ostream & AsmDataType::pretty(ostream &o) const
 {
 	o << "datatype:" << name.value << '/' << (int) argc;
+	return o;
 }
 
 

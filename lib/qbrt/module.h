@@ -34,7 +34,7 @@ struct ObjectHeader
 
 	ObjectHeader();
 
-	bool application() const { flags & OFLAG_APP; }
+	bool application() const { return flags & OFLAG_APP; }
 	void set_application(bool app) { SET_OFLAG(flags, OFLAG_APP, app); }
 
 	static const uint32_t SIZE = 26;

@@ -65,6 +65,7 @@ CFunction * add_c_override(Module &mod, c_function f
 {
 	CFunction *cfunc = add_c_function(mod, f, name, argc, param_types);
 	cfunc->set_protocol(protomod, protoname);
+	return cfunc;
 }
 
 const QbrtFunction * Module::fetch_function(const std::string &name) const

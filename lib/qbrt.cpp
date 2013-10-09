@@ -123,6 +123,7 @@ struct OpContext
 				, pc(), file, line);
 		qbrt_value::fail(*dstvalue(SPECIAL_REG_RESULT), f);
 		worker().current->cfstate = CFS_FAILED;
+		return f;
 	}
 	void fail_frame(Failure *f)
 	{
