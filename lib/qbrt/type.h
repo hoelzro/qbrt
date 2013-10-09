@@ -63,7 +63,7 @@ private:
 public:
 	uint8_t fld_count;
 	uint8_t reserved;
-	ParamResource fields[];
+	ParamResource fields[1];
 
 	uint16_t name_idx() const { return be16toh(_name_idx); }
 	uint16_t doc_idx() const { return be16toh(_doc_idx); }

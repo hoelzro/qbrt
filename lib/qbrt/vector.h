@@ -16,8 +16,8 @@ struct Vector
 	}
 
 	Vector(const Vector &v)
-		: value(v.value)
 	{
+		memcpy(value, v.value, sizeof(value));
 		memcpy(higher, v.higher, sizeof(higher));
 	}
 };

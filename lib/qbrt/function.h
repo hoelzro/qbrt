@@ -27,7 +27,7 @@ public:
 	uint8_t argc;
 	uint8_t regc;
 	uint8_t reserved;
-	ParamResource params[];
+	ParamResource params[1];
 
 	uint16_t name_idx() const { return be16toh(_name_idx); }
 	uint16_t doc_idx() const { return be16toh(_doc_idx); }
